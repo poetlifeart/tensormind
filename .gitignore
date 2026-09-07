@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+
+# Graphs built by the pipeline (all regenerable; the shipped one is kept)
+*.npz
+!graphdynamics/graph_brain_mild_v146_feeder_supernode.npz
+
+# Metric and benchmark outputs (the shipped split is kept)
+*.json
+!graphdynamics/val_test_split_v1.json
+results/
+
+# Model checkpoints — never committed, they live wherever --save-dir points
+*.pt
+*.pth
+
+# Figures and logs
+*.png
+*.log
+
+# Model weights that lpips / torch-fidelity download go to ~/.cache/torch,
+# outside the repo. Nothing to ignore for those.
