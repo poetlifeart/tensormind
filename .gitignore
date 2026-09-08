@@ -1,23 +1,69 @@
-# Python
+# ── Python ───────────────────────────────────────────────────────────────
 __pycache__/
-*.pyc
+*.py[cod]
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
 
-# Graphs built by the pipeline (all regenerable; the shipped one is kept)
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# ── Graphs built by the pipeline ─────────────────────────────────────────
+# All regenerable. The one shipped graph is kept.
 *.npz
+*.npy
+*.gml
+*.edgelist
 !graphdynamics/graph_brain_mild_v146_feeder_supernode.npz
+!graphnets/Budapest/budapest_connectome.gml
 
-# Metric and benchmark outputs (the shipped split is kept)
+# ── Metric and benchmark outputs ─────────────────────────────────────────
+# The shipped validation split is kept.
 *.json
 !graphdynamics/val_test_split_v1.json
 results/
 
-# Model checkpoints — never committed, they live wherever --save-dir points
+# ── Model checkpoints ────────────────────────────────────────────────────
+# Never committed. They live wherever --save-dir points.
 *.pt
 *.pth
+*.ckpt
+*.safetensors
+checkpoints/
+ckpt_*/
 
-# Figures and logs
+# ── Figures, logs, scratch ───────────────────────────────────────────────
 *.png
+*.jpg
+*.jpeg
+*.pdf
+*.svg
 *.log
+*.out
+*.tmp
+nohup.out
 
-# Model weights that lpips / torch-fidelity download go to ~/.cache/torch,
-# outside the repo. Nothing to ignore for those.
+# ── Data ─────────────────────────────────────────────────────────────────
+# CelebA-HQ and anything like it is supplied via --data, never committed.
+data/
+celebahq*/
+
+# ── Editors and OS ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# Model weights downloaded by lpips / torchmetrics / torchvision go to
+# ~/.cache/torch, outside the repo. Nothing to ignore for those.
