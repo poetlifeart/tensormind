@@ -112,6 +112,30 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from data_256 import generate_irregular_mask   # noqa: E402
 
 
+
+# ---- ADDED 2026-09-09: evaluate on the TRAINING mask distribution ----
+# The benchmark called generate_irregular_mask() with no target, so the
+# generator used its own default band, U(0.02, 0.70).  Training draws its
+# target from a band around mask_ratio -- U(0.09, 0.49) at the default 0.25 --
+# giving achieved coverage in [0.093, 0.541].  Measured over the 1,000-image
+# test half, that left 22% of scored samples outside anything the models saw
+# in training: 40% of the 0-20% band below it and 29% of the 40-60% band
+# above it, while the 20-40% band was entirely inside.  The two outer bands
+# were therefore partly extrapolation.
+#
+# --mask-dist training draws the target from exactly the band data_256 uses,
+# so the evaluation distribution matches the training one.  One uniform is
+# consumed from the same rng either way, so the only thing that changes is
+# the range it is drawn from.  The default stays 'benchmark', so existing
+# results reproduce unchanged.
+def _draw_mask(h, w, rng, mask_dist, mask_ratio):
+    if mask_dist == 'training':
+        lo = max(0.09, mask_ratio - 0.16)
+        hi = min(0.8, mask_ratio + 0.24)
+        return generate_irregular_mask(h, w, rng, target=rng.uniform(lo, hi))
+    return generate_irregular_mask(h, w, rng)
+
+
 def mask_coverage(mask_np):
     """Return fraction of pixels that are hidden (0)."""
     return 1.0 - mask_np.mean()
@@ -141,7 +165,8 @@ def assign_bucket(coverage):
     return -1
 
 
-def generate_bucketed_masks(n_images, h, w, min_per_bucket=MIN_PER_BUCKET):
+def generate_bucketed_masks(n_images, h, w, min_per_bucket=MIN_PER_BUCKET,
+                            mask_dist='benchmark', mask_ratio=0.25):
     """
     Generate masks for each image assigned to buckets.
 
@@ -161,7 +186,7 @@ def generate_bucketed_masks(n_images, h, w, min_per_bucket=MIN_PER_BUCKET):
         for bkt in range(NUM_BUCKETS):
             seed = img_idx * NUM_BUCKETS + bkt
             rng = np.random.default_rng(seed)
-            mask = generate_irregular_mask(h, w, rng)
+            mask = _draw_mask(h, w, rng, mask_dist, mask_ratio)
             cov = mask_coverage(mask)
             actual_bkt = assign_bucket(cov)
             if actual_bkt >= 0:
@@ -184,7 +209,7 @@ def generate_bucketed_masks(n_images, h, w, min_per_bucket=MIN_PER_BUCKET):
             img_idx = attempt % n_images
             seed = extra_seed_base + bkt_idx * max_extra_attempts + attempt
             rng = np.random.default_rng(seed)
-            mask = generate_irregular_mask(h, w, rng)
+            mask = _draw_mask(h, w, rng, mask_dist, mask_ratio)
             cov = mask_coverage(mask)
             actual_bkt = assign_bucket(cov)
             if actual_bkt == bkt_idx:
@@ -544,9 +569,31 @@ def main():
                         help="Path to model checkpoint (.pt)")
     parser.add_argument('--graph', type=str, default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'graph_brain_mild_v146_feeder_supernode.npz'),
                         help="Path to graph .npz file")
-    parser.add_argument('--val-dir', type=str,
-                        default='/home/vahid/data/celebahq256/validation/',
-                        help="Directory with validation images")
+    # ---- ADDED 2026-09-09: --data, and no hardcoded dataset path ----
+    # --val-dir defaulted to an absolute path on the author's machine, and the
+    # README documented `--data` -- which this parser did not accept, so every
+    # documented evaluation command died on "unrecognized arguments: --data".
+    # --data is now the primary flag and takes the dataset ROOT, matching the
+    # three trainers; --val-dir survives as an override for a loose directory
+    # of images. With neither, celebahq.resolve_val_dir() falls back to
+    # $TENSORMIND_CELEBAHQ, then to a cached copy, then downloads one.
+    parser.add_argument('--data', type=str, default=None,
+                        help="CelebA-HQ 256 root, holding train/ and validation/. "
+                             "Omit to use $TENSORMIND_CELEBAHQ, a cached copy, or "
+                             "to download a pinned one.")
+    parser.add_argument('--val-dir', type=str, default=None,
+                        help="Validation image directory. Overrides --data; normally "
+                             "you want --data.")
+    parser.add_argument('--no-download', action='store_true',
+                        help="Never download the dataset; fail instead.")
+    parser.add_argument('--mask-dist', choices=['benchmark', 'training'],
+                        default='benchmark',
+                        help="Coverage band the evaluation masks are drawn from. "
+                             "'benchmark' (default) is the published U(0.02,0.70); "
+                             "'training' matches what the models were trained on.")
+    parser.add_argument('--mask-ratio', type=float, default=0.25,
+                        help="Centre of the training coverage band, for --mask-dist "
+                             "training. Must match the value the model was trained with.")
     # ---- ADDED 2026-08-15 (issue 11) ----
     # There was no held-out test set: the benchmark scored the same 2000 images used
     # to select best_ep*.pt. val_test_split_v1.json splits them 1000/1000 so the
@@ -626,6 +673,11 @@ def main():
         lpips_model.eval()
 
     # Load validation image paths
+    # ---- ADDED 2026-09-09 ---- resolve the dataset, downloading if needed.
+    from celebahq import resolve_val_dir
+    args.val_dir = resolve_val_dir(args.val_dir, args.data,
+                                   download=not args.no_download)
+    print(f"Validation directory: {args.val_dir}")
     val_files = load_val_images(args.val_dir)
     # ---- ADDED 2026-08-15 (issue 11) ----
     # Restrict to one half of the validation set so the reported metric is not the
@@ -642,8 +694,11 @@ def main():
     print(f"Validation images: {n_images}  (subset={args.val_subset})")
 
     # Generate bucketed masks
+    print(f"Mask distribution: {args.mask_dist}"
+          + (f" (band around mask_ratio={args.mask_ratio})" if args.mask_dist == 'training' else ""))
     bucket_data = generate_bucketed_masks(
-        n_images, 256, 256, min_per_bucket=args.min_per_bucket)
+        n_images, 256, 256, min_per_bucket=args.min_per_bucket,
+        mask_dist=args.mask_dist, mask_ratio=args.mask_ratio)
 
     # Run evaluation
     print("\nRunning inference...")
@@ -673,6 +728,8 @@ def main():
         'graph': args.graph,
         'val_dir': args.val_dir,
         'n_val_images': n_images,
+        'mask_dist': args.mask_dist,
+        'mask_ratio': args.mask_ratio,
         'device': str(device),
         'buckets': summary,
         'baselines': BASELINES,

@@ -300,7 +300,17 @@ def validate(model, loader, device, perc_loss_fn=None):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=str, default='/home/vahid/data/celebahq256')
+    # ---- CHANGED 2026-09-09: no hardcoded dataset path ----
+    # was: default='/home/vahid/data/celebahq256' -- an absolute path on the
+    # author's machine, so the documented command only ran for one person.
+    # None now means: use $TENSORMIND_CELEBAHQ, then a cached copy, then
+    # download a pinned one. See celebahq.py.
+    parser.add_argument('--data', type=str, default=None,
+                        help="CelebA-HQ 256 root, holding train/ and validation/. "
+                             "Omit to use $TENSORMIND_CELEBAHQ, a cached copy, or "
+                             "to download a pinned one.")
+    parser.add_argument('--no-download', action='store_true',
+                        help="Never download the dataset; fail instead.")
     parser.add_argument('--batch', type=int, default=2)  # was 6; matched across models (2026-08-15)
     # ---- REVERTED 2026-08-16, same day: back to 3e-4. The 3e-3 change was WRONG.
     # It rested on comparing the "lr=" figures in the two training logs, but both
@@ -355,6 +365,11 @@ def main():
     os.makedirs(args.save_dir, exist_ok=True)
     device = torch.device(args.gpu if torch.cuda.is_available() else 'cpu')
     print(f"Device: {device}")
+
+    # ---- ADDED 2026-09-09 ---- resolve the dataset, downloading if needed.
+    from celebahq import resolve as _resolve_celebahq
+    args.data = _resolve_celebahq(args.data, download=not args.no_download)
+    print(f"CelebA-HQ root: {args.data}")
 
     train_ds = CelebAHQInpainting(args.data, split='train', mask_ratio=args.mask_ratio,
                                    irregular=True)
