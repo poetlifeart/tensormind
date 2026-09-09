@@ -32,6 +32,8 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
+import sys
 import time
 from collections import defaultdict
 
@@ -39,6 +41,10 @@ import numpy as np
 import networkx as nx
 
 from graph_singletrack import make_seeds, tensor_product, project_colors, save_graph
+
+# invariant (A3): odd-cycle witness, shared with the local construction
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+from odd_cycle_witness import find_odd_cycle, enforce_odd_cycle
 
 
 def community_aware_prune(n, edges, colors, target, inter_ratio=0.3):
@@ -302,6 +308,9 @@ def main():
         bad = sum(1 for i in range(len(edges)) if colors[int(edges[i, 0])] == colors[int(edges[i, 1])])
         assert bad == 0, f"Step {step}: {bad} same-color edges!"
 
+        # (A3) record one odd cycle as a witness, before any deletion
+        witness = find_odd_cycle(n, edges)
+
         # Prune at each step with community awareness
         mult = prune_mult[step - 1]
         budget = int(round(n * math.log2(n) * mult))
@@ -309,6 +318,9 @@ def main():
             print(f"  Budget (n * log2(n) * {mult}): {budget:,}")
             edges = community_aware_prune(n, edges, colors, budget,
                                           inter_ratio=args.inter_ratio)
+
+        # (A3) invariant safeguard: restore the witness if the scale went bipartite
+        edges = enforce_odd_cycle(n, edges, witness)
 
     # Triangle closing
     print(f"\nAdding triangle-closing edges: up to {args.add:,}")

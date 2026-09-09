@@ -23,12 +23,15 @@ RECIPE
 DETERMINISTIC given: python 3.13.5, numpy 2.3.4, networkx 3.5 (pin networkx).
 Run:  python3 emergence_localrepair_standalone.py
 """
-import math, time, os
+import math, time, os, sys
 from collections import defaultdict
 import numpy as np, networkx as nx
 from networkx.algorithms.community import louvain_communities, modularity
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+# invariant (A3): odd-cycle witness, shared with the global construction
+sys.path.insert(0, os.path.join(HERE, '..'))
+from odd_cycle_witness import find_odd_cycle, enforce_odd_cycle
 BUDAPEST = os.path.join(HERE,
                         '..', '..', 'Budapest', 'budapest_connectome.gml')
 # original (pre-tensormind): '/home/vahid/Desktop/finalthree/budapest_connectome.gml'
@@ -123,8 +126,12 @@ def build_fine():
     n=7; edges=SEED.copy(); c=COLORS.copy()
     for _ in range(4):
         n,edges=tensor_product(n,edges,7,SEED); c=project_colors(c,7); b=edge_budget(n)
+        # (A3) record one odd cycle as a witness, before any deletion
+        witness=find_odd_cycle(n,edges)
         edges=triangle_prune_local(n,edges,c,int(round(b*PRUNE_FRAC)))
         edges=add_chromatic_to_budget(n,edges,c,int(round(b*ADD_FRAC)))
+        # (A3) invariant safeguard: restore the witness if the scale went bipartite
+        edges=enforce_odd_cycle(n,edges,witness)
     return n, edges
 
 def coarsen(n, edges):
