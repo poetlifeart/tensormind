@@ -156,3 +156,7 @@ The audit dominates everything else.
 | 16,807-node parent | 1,000 | days |
 
 The other five metrics are minutes at 1,015 nodes.
+
+on CPU   Intel Core i9-9940X — 14 cores / 28 threads, 3.3 GHz (4.5 boost), 19.7 MB L3
+RAM   62 GB (33 GB available). 
+
