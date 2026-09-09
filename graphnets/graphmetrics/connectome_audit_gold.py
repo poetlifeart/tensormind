@@ -1194,8 +1194,13 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
         return 'fail'
 
     def _geff_verdict():
-        # Achard & Bullmore 2007: brain E_glob near random.
-        # 0.8 <= ratio < 1.0 encodes "near random" (empirical range 0.84-0.99).
+        # Iturria-Medina et al. 2008 (NeuroImage 40:1064-1076) define E*_glob as
+        # the ratio of real to equivalent-random global efficiency and report
+        # that it is under 1 for human and mammalian brain networks; their
+        # Table 1 gives 0.90-0.95 over 20 subjects (mean 0.93, S.D. 0.01).
+        # Latora & Marchiori 2001 define E_glob itself (Eq. 1).
+        # 0.8 <= ratio < 1.0 encodes "near but below random", with 0.8 a
+        # conservative floor below the observed 0.90.
         r = comp['global_eff']['ratio']
         if 0.8 <= r < 1.0:
             return 'pass'

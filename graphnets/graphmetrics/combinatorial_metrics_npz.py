@@ -59,8 +59,12 @@ def load_graph(path: str) -> nx.Graph:
             else:
                 G = nx.Graph()
                 G.add_nodes_from(range(n))
+                # mask_12 is written as (n2, n1): row = layer-2 index, col =
+                # layer-1 index (see save_graph in graph_sparsify_memb.py).
+                # It is square (n1 == n2), so a transposed read does not raise --
+                # it silently builds a different graph.
                 rs, cs = np.where(d['mask_12'])
-                G.add_edges_from(zip(rs.astype(int), (cs + n1).astype(int)))
+                G.add_edges_from(zip(cs.astype(int), (rs + n1).astype(int)))
                 rs, cs = np.where(d['mask_13'])
                 G.add_edges_from(zip((rs + n1 + n2).astype(int), cs.astype(int)))
                 rs, cs = np.where(d['mask_23'])
@@ -210,16 +214,34 @@ def min_cut_bal(G: nx.Graph) -> dict:
     n = G.number_of_nodes()
     m = G.number_of_edges()
     L = nx.laplacian_matrix(G).astype(float)
-    _, vecs = scipy.sparse.linalg.eigsh(L, k=2, which='SM')
-    fiedler = vecs[:, 1]
+    # eigsh(which='SM') does NOT return eigenvalues in ascending order -- it
+    # returns [lambda_2, lambda_1] here -- so the columns must be reordered
+    # explicitly.  Taking vecs[:, 1] unsorted picks the constant lambda_1
+    # eigenvector and bisects on numerical noise.
+    vals, vecs = scipy.sparse.linalg.eigsh(L, k=2, which='SM')
+    order = np.argsort(vals)
+    fiedler = vecs[:, order[1]]
 
-    median_val = np.median(fiedler)
-    part_a = set(i for i in range(n) if fiedler[i] <= median_val)
-    part_b = set(range(n)) - part_a
+    # eigsh fixes neither the eigenvalue order nor the eigenvector sign, and for
+    # odd n the median is an element of the vector, so a '<= median' split keeps
+    # the tied node on the same side under both signs -- the two splits are then
+    # not complements and the cut is not reproducible.  Split by rank instead,
+    # and since this is a *minimum* balanced cut, take the better of the two
+    # admissible balanced splits when n is odd.
+    nodes = list(G.nodes())
+    rank = np.argsort(fiedler, kind='stable')
 
-    cut = sum(1 for u, v in G.edges() if (u in part_a) != (v in part_a))
-    fiedler_val = float(np.sort(scipy.sparse.linalg.eigsh(
-        L, k=2, which='SM', return_eigenvectors=False))[1])
+    def _cut(size):
+        part_a = set(nodes[i] for i in rank[:size])
+        return sum(1 for u, v in G.edges() if (u in part_a) != (v in part_a)), part_a
+
+    cut, part_a = _cut(n // 2)
+    if n % 2:
+        cut_alt, part_alt = _cut(n // 2 + 1)
+        if cut_alt < cut:
+            cut, part_a = cut_alt, part_alt
+    part_b = set(nodes) - part_a
+    fiedler_val = float(vals[order[1]])
 
     return {
         'cut_size': cut,
