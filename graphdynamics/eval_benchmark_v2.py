@@ -116,12 +116,21 @@ from data_256 import generate_irregular_mask   # noqa: E402
 # ---- ADDED 2026-09-09: evaluate on the TRAINING mask distribution ----
 # The benchmark called generate_irregular_mask() with no target, so the
 # generator used its own default band, U(0.02, 0.70).  Training draws its
-# target from a band around mask_ratio -- U(0.09, 0.49) at the default 0.25 --
-# giving achieved coverage in [0.093, 0.541].  Measured over the 1,000-image
-# test half, that left 22% of scored samples outside anything the models saw
-# in training: 40% of the 0-20% band below it and 29% of the 40-60% band
-# above it, while the 20-40% band was entirely inside.  The two outer bands
-# were therefore partly extrapolation.
+# target from a band around mask_ratio -- U(0.09, 0.49) at the default 0.25.
+#
+# ---- CORRECTED 2026-09-10 ----
+# This note used to say the training band gives achieved coverage in
+# [0.093, 0.541] and that 22% of scored samples lay outside it, 29% of the
+# 40-60% band being ABOVE it.  Both were wrong: they came from too small a
+# training sample.  Re-measured over 30,000 training draws, achieved coverage
+# runs [0.0904, 0.6040] -- the generator overshoots its target, so the heavy
+# end of training reaches past the heaviest scored mask (0.5999).  There is
+# no upper gap.  Against the real 4,893-sample scored set the true figure is
+# 11.8% outside (579 samples), ALL of them below the training floor and all
+# in the 0-20% band, which is 38.6% of that band; the 20-40% and 40-60%
+# bands are entirely inside.  Stable across thresholds: 11.8% at the
+# measured training minimum, 12.2% at its 0.1st percentile, 11.8% at the
+# 0.09 target floor.
 #
 # --mask-dist training draws the target from exactly the band data_256 uses,
 # so the evaluation distribution matches the training one.  One uniform is
