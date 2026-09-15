@@ -1,16 +1,17 @@
 # graphdynamics
 
-The three inpainting models from the paper's benchmark table, their training
-scripts, and the two evaluation scripts.
+The inpainting models, their training scripts, and the two evaluation scripts.
 
-| paper row | model | trainer |
-|---|---|---|
-| Graph${+}$attn. | `v1003/model_v1003super.py` | `v1003/train_v1003super.py` |
-| Graph | `feeder1004/feeder1004.py` | `feeder1004/train_feeder1004.py` |
-| U-Net | `unet/model_unetonly.py` | `unet/train_unetonly_rolling.py` |
+| paper row | model | trainer | status |
+|---|---|---|---|
+| Graph${+}$attn. | `v1003/model_v1003super.py` | `v1003/train_v1003super.py` | **reported** |
+| U-Net | `unet/model_unetonly.py` | `unet/train_unetonly_rolling.py` | **baseline** |
+| Graph (no attn.) | `feeder1004/feeder1004.py` | `feeder1004/train_feeder1004.py` | quoted as equivalent |
 
 `feeder1004` is `v1003super` with the supernode attention removed — the ablation.
-Its header records the parent's md5 and the three lines that differ.
+Its header records the md5 of the file it was copied from and the three lines
+that differ. The paper reports the attention arm and states that removing the
+attention changes nothing measurable; see *Results* below.
 
 ## What ships here
 
@@ -25,20 +26,20 @@ eval_benchmark_v2.py                          PSNR / SSIM / LPIPS / L1 by mask c
 eval_fid_2026-08-31.py                        FID
 ```
 
-The split is the default for `--split-file`. **Pass `--graph` explicitly.**
+Both the graph and the split are defaults, so `--graph` and `--split-file` can be
+omitted. The commands below pass `--graph` anyway, to be explicit about which
+substrate each number belongs to.
 
-The reported models train on `graph_degmatch_parent_supernode.npz`, the final
-parent from `graphnets/construction/finalgraph/`. The older
+`graph_degmatch_parent_supernode.npz` is the final parent built by
+`graphnets/construction/finalgraph/` — a compressed copy of its
+`parent_degmatch_masks.npz`, arrays identical, supernode map included.
+Rebuild it there if you want to check.
+
 `graph_brain_mild_v146_feeder_supernode.npz` is the feeder lift the earlier runs
-used; it is kept only so those numbers remain reproducible, and it is still the
-scripts' built-in default. Every command below names the graph, so copy them as
-written:
+used. It is kept only so those numbers stay reproducible; pass it explicitly to
+get them. Nothing defaults to it any more.
 
-```bash
---graph graph_degmatch_parent_supernode.npz
-```
-
-Both files resolve relative to the script, so any working directory works.
+Both resolve relative to the script, so any working directory works.
 
 ## The data
 
@@ -122,13 +123,61 @@ the downloaded one.
 **Use a fresh `--save-dir` for every run.** `train_feeder1004.py` says so in its own
 docstring: reusing one overwrites the previous run's checkpoints.
 
-The paper trained three seeds per architecture, batch 2, 50 epochs with cosine LR.
-There is no early stopping: every run trains the full 50 epochs. The reported
+Seeds are set with `--seed`; use a matching `--save-dir`:
+
+```bash
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz \
+    --seed 1 --save-dir ckpt_v1003_s1
+```
+
+Batch 2, 50 epochs, cosine LR. There is no early stopping: every run trains the full 50 epochs. The reported
 checkpoint is chosen by a pre-declared rule on the selection half of the
 validation split — **the first epoch after epoch 40 at which three consecutive
 epochs report the same validation loss to four decimal places**. On the reported
 runs that selects epoch 45 (with attention) and epoch 47 (without), costing
 0.0001 and 0.0000 against simply taking epoch 49.
+
+## Results
+
+All on the final parent, seed 0, checkpoint chosen by the rule above, scored by
+`eval_benchmark_v2.py` on the reporting half of the validation split. Mean over
+the six coverage buckets.
+
+**Benchmark mask distribution** — `U(0.02, 0.70)`, the published convention:
+
+| | L1 % | PSNR dB | SSIM | LPIPS |
+|---|---|---|---|---|
+| Graph${+}$attn. (ep45) | 1.4506 | 29.826 | 0.90403 | 0.09329 |
+| Graph, no attn. (ep47) | 1.4507 | 29.843 | 0.90415 | 0.09332 |
+
+**Training mask distribution** — `--mask-dist training`, `U(0.09, 0.49)`:
+
+| | L1 % | PSNR dB | SSIM | LPIPS |
+|---|---|---|---|---|
+| Graph${+}$attn. (ep45) | 1.4099 | 29.352 | 0.90553 | 0.09179 |
+| Graph, no attn. (ep47) | 1.4088 | 29.389 | 0.90565 | 0.09174 |
+
+**The attention makes no measurable difference.** L1 differs by −0.0000 on
+benchmark masks and +0.0011 on training masks — both far inside the seed spread
+(sd 0.0030 across baseline seeds), and the sign is not stable between the two.
+Final validation loss: 0.043542 with attention, 0.043599 without, a gap of
+5.7e-05.
+
+**On reading the two distributions.** The aggregate moves a lot between them
+(L1 1.4506 → 1.4099) but that is a change in the sample mix, not in model
+behaviour. The training band's floor at 0.09 starves the 0-10% bucket
+(652 → 64 samples) and its target ceiling at 0.49 starves 50-60%
+(827 → 240, reached only by overshoot). The four middle buckets, which both
+bands populate properly, agree to within 0.01. Report the benchmark numbers as
+the headline and the training-band pass as a robustness check.
+
+**Seeds.** The paper reports **three seeds of the attention arm**; the table
+above is seed 0, with seeds 1 and 2 to be added. The no-attention arm is one
+seed, quoted only to establish that the attention makes no difference. Seed
+spread on this benchmark is ~0.003 in L1, so a single seed resolves nothing
+below ~0.006 — which is why the attention claim rests on the direction of the
+difference being unstable rather than on its size.
+
 
 ## Evaluate
 
