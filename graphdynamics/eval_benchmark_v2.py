@@ -576,7 +576,8 @@ def main():
         description="Benchmark RecurrentBrainNet on CelebA-HQ 256 irregular masks")
     parser.add_argument('--checkpoint', type=str, required=True,
                         help="Path to model checkpoint (.pt)")
-    parser.add_argument('--graph', type=str, default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'graph_brain_mild_v146_feeder_supernode.npz'),
+    parser.add_argument('--graph', type=str, # CHANGED 2026-09-14: default is now the reported finalgraph parent.
+                        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'graph_degmatch_parent_supernode.npz'),
                         help="Path to graph .npz file")
     # ---- ADDED 2026-09-09: --data, and no hardcoded dataset path ----
     # --val-dir defaulted to an absolute path on the author's machine, and the

@@ -24,7 +24,12 @@ ENV/
 *.gml
 *.edgelist
 !graphdynamics/graph_brain_mild_v146_feeder_supernode.npz
+!graphdynamics/graph_degmatch_parent_supernode.npz
 !graphnets/Budapest/budapest_connectome.gml
+# finalgraph inputs: the Budapest target and the tiered-selection weights.
+# Both are required to run the construction and neither is regenerable here.
+!graphnets/construction/finalgraph/inputs/bud_w.npy
+!graphnets/construction/finalgraph/inputs/v146_weights.pkl
 
 # ── Metric and benchmark outputs ─────────────────────────────────────────
 # The shipped validation split is kept.

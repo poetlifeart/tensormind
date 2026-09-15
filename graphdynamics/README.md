@@ -15,7 +15,8 @@ Its header records the parent's md5 and the three lines that differ.
 ## What ships here
 
 ```
-graph_brain_mild_v146_feeder_supernode.npz   16,807 nodes / 344,483 edges, 1,015 supernodes
+graph_degmatch_parent_supernode.npz          16,807 nodes / 337,980 edges, 1,015 supernodes  <- REPORTED
+graph_brain_mild_v146_feeder_supernode.npz   16,807 nodes / 344,483 edges, 1,015 supernodes  (superseded)
 val_test_split_v1.json                       which 1,000 validation images are the reporting half
 celebahq.py                                   dataset resolution + optional download
 celebahq_val_manifest_v1.npz                  fingerprints of the 2,000 validation images, in order
@@ -24,9 +25,20 @@ eval_benchmark_v2.py                          PSNR / SSIM / LPIPS / L1 by mask c
 eval_fid_2026-08-31.py                        FID
 ```
 
-The graph and the split are the defaults for `--graph` and `--split-file`, so you
-do not need to pass either. Both resolve relative to the script, so any working
-directory works.
+The split is the default for `--split-file`. **Pass `--graph` explicitly.**
+
+The reported models train on `graph_degmatch_parent_supernode.npz`, the final
+parent from `graphnets/construction/finalgraph/`. The older
+`graph_brain_mild_v146_feeder_supernode.npz` is the feeder lift the earlier runs
+used; it is kept only so those numbers remain reproducible, and it is still the
+scripts' built-in default. Every command below names the graph, so copy them as
+written:
+
+```bash
+--graph graph_degmatch_parent_supernode.npz
+```
+
+Both files resolve relative to the script, so any working directory works.
 
 ## The data
 
@@ -35,16 +47,17 @@ script here fetches a pinned copy on first use and reuses it afterwards.
 
 ```bash
 # nothing to do -- downloads ~3 GB to ~/.cache/tensormind/celebahq256, once
-python3 v1003/train_v1003super.py --save-dir ckpt_v1003_s0
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0
 
 # or point at your own copy
-python3 v1003/train_v1003super.py --data /path/to/celebahq256 --save-dir ckpt_v1003_s0
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz \
+    --data /path/to/celebahq256 --save-dir ckpt_v1003_s0
 
 # or set it once for every script
 export TENSORMIND_CELEBAHQ=/path/to/celebahq256
 
 # or refuse to download and fail loudly instead
-python3 v1003/train_v1003super.py --no-download --save-dir ckpt_v1003_s0
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --no-download --save-dir ckpt_v1003_s0
 ```
 
 Resolution order: `--data` → `$TENSORMIND_CELEBAHQ` → `~/.cache/tensormind/celebahq256`
@@ -98,9 +111,9 @@ The last line is unnecessary if you pass `--data` and bring your own CelebA-HQ.
 One command per architecture. Each writes checkpoints to `--save-dir`.
 
 ```bash
-python3 v1003/train_v1003super.py       --save-dir ckpt_v1003_s0
-python3 feeder1004/train_feeder1004.py  --save-dir ckpt_feeder1004_s0
-python3 unet/train_unetonly_rolling.py  --save-dir ckpt_unet_s0
+python3 v1003/train_v1003super.py      --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0
+python3 feeder1004/train_feeder1004.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_feeder1004_s0
+python3 unet/train_unetonly_rolling.py --save-dir ckpt_unet_s0   # no graph
 ```
 
 Add `--data /path/to/celebahq256` to any of them to use your own copy instead of
@@ -109,18 +122,32 @@ the downloaded one.
 **Use a fresh `--save-dir` for every run.** `train_feeder1004.py` says so in its own
 docstring: reusing one overwrites the previous run's checkpoints.
 
-The paper trained three seeds per architecture, batch 2, 50 epochs with cosine LR,
-and selected the checkpoint by a stopping rule on the selection half of the
-validation split.
+The paper trained three seeds per architecture, batch 2, 50 epochs with cosine LR.
+There is no early stopping: every run trains the full 50 epochs. The reported
+checkpoint is chosen by a pre-declared rule on the selection half of the
+validation split — **the first epoch after epoch 40 at which three consecutive
+epochs report the same validation loss to four decimal places**. On the reported
+runs that selects epoch 45 (with attention) and epoch 47 (without), costing
+0.0001 and 0.0000 against simply taking epoch 49.
 
 ## Evaluate
 
 ```bash
-python3 eval_benchmark_v2.py    --checkpoint CKPT.pt --v1003super
-python3 eval_benchmark_v2.py    --checkpoint CKPT.pt --feeder1004
+python3 eval_benchmark_v2.py    --checkpoint CKPT.pt --v1003super --graph graph_degmatch_parent_supernode.npz
+python3 eval_benchmark_v2.py    --checkpoint CKPT.pt --feeder1004 --graph graph_degmatch_parent_supernode.npz
 python3 eval_benchmark_v2.py    --checkpoint CKPT.pt --unet
 
-python3 eval_fid_2026-08-31.py  --checkpoint CKPT.pt --v1003super
+python3 eval_fid_2026-08-31.py  --checkpoint CKPT.pt --v1003super --graph graph_degmatch_parent_supernode.npz
+```
+
+**Evaluate on both mask distributions.** Training draws its coverage target from
+`U(0.09, 0.49)`; the benchmark's default draws from `U(0.02, 0.70)`. They use the
+same generator with different inputs, and 11.8% of scored samples fall outside
+the training range — all below its floor, all in the 0-20% band. Add
+`--mask-dist training` for the second pass:
+
+```bash
+python3 eval_benchmark_v2.py --checkpoint CKPT.pt --v1003super --graph graph_degmatch_parent_supernode.npz --mask-dist training
 ```
 
 Same data resolution as the trainers: `--data /path/to/celebahq256` to use your

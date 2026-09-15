@@ -40,7 +40,8 @@ import eval_benchmark_v2 as EB
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--checkpoint', required=True)
-    ap.add_argument('--graph', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'graph_brain_mild_v146_feeder_supernode.npz'))
+    # CHANGED 2026-09-14: default is now the reported finalgraph parent.
+    ap.add_argument('--graph', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'graph_degmatch_parent_supernode.npz'))
     # ---- ADDED 2026-09-09 ---- see the note in eval_benchmark_v2.py: --data is
     # the documented flag, --val-dir is the override, and neither being given
     # resolves via $TENSORMIND_CELEBAHQ / cache / pinned download.

@@ -292,7 +292,11 @@ def main():
     # attn_1 on iteration 0, observed-loss on raw).
     # default='/home/vahid/experimentbrain/graph_v1003_feeder_supernode.npz')
     parser.add_argument('--graph', type=str,
-                        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'graph_brain_mild_v146_feeder_supernode.npz'))
+                        # ---- CHANGED 2026-09-14: the reported graph is the finalgraph parent ----
+                        # was: '..','graph_brain_mild_v146_feeder_supernode.npz' (the feeder
+                        # lift, 344,483 edges). That graph is superseded; pass it
+                        # explicitly to reproduce the earlier runs.
+                        default=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'graph_degmatch_parent_supernode.npz'))
     # ---- CHANGED 2026-09-09: no hardcoded dataset path ----
     # was: default='/home/vahid/data/celebahq256' -- an absolute path on the
     # author's machine, so the documented command only ran for one person.

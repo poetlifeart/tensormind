@@ -1,0 +1,12 @@
+# Intermediates and outputs of the three steps -- rebuilt by running them.
+# Each is a dense uint8 mask array; compressed they are ~0.5 MB, raw ~92 MB.
+parent_bigswap3_masks.npz
+parent_final_masks.npz
+parent_degmatch_masks.npz
+graph_bigswap3.npz
+graph_final.npz
+graph_degmatch.npz
+bigswap3_w.npy
+final_w.npy
+degmatch_w.npy
+__pycache__/

@@ -9,12 +9,13 @@ repository is the Budapest reference connectome, used for comparison.
 graphnets/                      build the graphs and measure them
   Budapest/                     budapest_connectome.gml   1,015 nodes / 70,654 edges
   construction/
-    global/                     parent -> quotient -> lift
+    global/                     the parent, and the earlier quotient/lift path
+    finalgraph/                 THE PAPER'S GRAPH: parent -> matched quotient
     local/                      the local-repair construction
   graphmetrics/                 six metric scripts
 
-graphdynamics/                  the three inpainting models
-  v1003/                        Graph+attn.
+graphdynamics/                  the inpainting models
+  v1003/                        Graph+attn.  <- the reported arm
   feeder1004/                   Graph  (v1003 minus supernode attention)
   unet/                         U-Net baseline
 ```
@@ -63,22 +64,54 @@ defaults to 0.3, `--add` to 10000); running them bare gives a different graph.
 
 See `construction/global/README.md` for the full stage-by-stage description.
 
-## Steps 2 and 3. From the parent  (independent of each other)
+## Step 2. The final graph pair  (required — this is what the paper reports)
 
-Both read only the parent, so they can run in either order or in parallel.
+```bash
+cd graphnets/construction/finalgraph
+python3 step1_match_bundles.py        # relocation + Budapest bundle match
+python3 step2_symmetric_swap_lift.py  # 6,500-edge swap + Feeder inversion
+python3 step4_degree_match.py         # degree-sequence refinement
+```
+
+Outputs, in that directory:
+- `parent_degmatch_masks.npz` — **16,807 / 337,980**, the final parent, carries
+  the 1,015-supernode map
+- `graph_degmatch.npz` + `degmatch_w.npy` — **1,015 / 71,098**, the final
+  quotient and its bundle weights
+
+The quotient is *derived* from the parent by counting cross-supernode edges,
+never authored. Full description, endpoint rules, results and caveats in
+`finalgraph/README.md`.
+
+(There is no `step3`; the numbering is historical. A bridge-protected variant
+occupied that slot and was dropped — see `finalgraph/README.md`.)
+
+## Step 3. The earlier coarsening  (no longer how the quotient is obtained)
+
+**The global parent is still required — it is the input to step 2 — but it is no
+longer coarsened to Budapest this way.** These scripts applied a tiered selection
+that displayed 70,538 of the 143,679 supernode pairs holding at least one parent
+edge. That is what `finalgraph/` replaces: not showing a pair means deleting its
+parent edges, and deleting all 101,816 of them disconnects the parent into three
+components. `finalgraph/` relocates them instead.
+
+One thing here is still needed. `save_v146_npz.py` produces the witness weights
+and the displayed-pair list that `finalgraph/inputs/v146_weights.pkl` holds, and
+step1 reads them as its starting point. The shipped `.pkl` means you do not have
+to rerun it, but this is where it came from.
 
 ```bash
 python3 graphnets/construction/global/quotient/save_v146_npz.py
-```
-Coarsens to 1,015 super-nodes and applies the 6,500-edge swap. Outputs:
-- `quotient/graph_v14.npz` — 1,015 / 70,537 (pre-swap)
-- `quotient/graph_v146_6500.npz` — 1,015 / 70,538 (post-swap; most tables use this)
-
-```bash
 python3 graphnets/construction/global/quotient/lift/invert146_feeder.py
 ```
-Maps the swap's non-witness quotient edges back to parent scale. Output:
-- `quotient/lift/graph_brain_mild_v146_feeder.npz` — 16,807 / 344,483
+- `quotient/graph_v14.npz` — 1,015 / 70,537 (pre-swap)
+- `quotient/graph_v146_6500.npz` — 1,015 / 70,538 (post-swap)
+- `quotient/lift/graph_brain_mild_v146_feeder.npz` — 16,807 / 344,483 (feeder lift)
+
+The feeder lift was the substrate for the earlier inpainting runs. **The models
+now train on the final parent** — shipped as
+`graphdynamics/graph_degmatch_parent_supernode.npz`, identical to
+`finalgraph/parent_degmatch_masks.npz` with the supernode map attached.
 
 ## Step 4. The local construction  (independent of steps 1-3)
 
@@ -96,15 +129,17 @@ Needs nothing from the global pipeline. Can run first, last, or alongside.
 
 ## What you end up with
 
-| graph | nodes | edges | built by |
-|---|---|---|---|
-| global parent | 16,807 | 337,983 | step 1 |
-| pre-swap quotient (v14) | 1,015 | 70,537 | step 2 |
-| post-swap quotient (v146) | 1,015 | 70,538 | step 2 |
-| feeder lift | 16,807 | 344,483 | step 3 |
-| local parent | 16,807 | 277,319 | step 4 |
-| local quotient | 1,015 | 67,094 | step 4 |
-| Budapest (shipped) | 1,015 | 70,654 | — |
+| graph | nodes | edges | built by | status |
+|---|---|---|---|---|
+| global parent | 16,807 | 337,983 | step 1 | input to everything |
+| **final parent** | **16,807** | **337,980** | **step 2** | **reported** |
+| **final quotient** | **1,015** | **71,098** | **step 2** | **reported** |
+| pre-swap quotient (v14) | 1,015 | 70,537 | step 3 | superseded |
+| post-swap quotient (v146) | 1,015 | 70,538 | step 3 | superseded |
+| feeder lift | 16,807 | 344,483 | step 3 | superseded |
+| local parent | 16,807 | 277,319 | step 4 | comparison |
+| local quotient | 1,015 | 67,094 | step 4 | comparison |
+| Budapest (shipped) | 1,015 | 70,654 | — | reference |
 
 ---
 
