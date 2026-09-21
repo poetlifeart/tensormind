@@ -13,6 +13,7 @@ substance; these are the ones that made the published numbers.
 | `clique_census.py` | clique number ω, histogram peak, maximal cliques | clique tables |
 | `combinatorial_metrics_npz.py` | vertex cover, matching, Hoffman bound, spanning forest, balanced bisection | both combinatorial tables |
 | `richclub_other_graphs.py` | rich-club curves, 1,000 nulls, `MINNODES=20` | rich-club figure and counts |
+| `skeleton_fractality.py` | box-covering fractality of the graph **and of its skeleton** | fractality discussion |
 
 ## Usage — one graph in, one JSON out
 
@@ -26,6 +27,7 @@ python3 run_controllability.py       --graph G.npz --json controllability.json
 python3 clique_census.py             --graph G.npz --json cliques.json
 python3 combinatorial_metrics_npz.py --graph G.npz --json combinatorial.json
 python3 richclub_other_graphs.py     --graph G.npz --json richclub.json
+python3 skeleton_fractality.py       --graph G.npz --json skeleton.json
 ```
 
 `--graph` accepts `.npz` or `.gml`. Give each run its own `--json`: a metric
@@ -124,3 +126,90 @@ Pin `networkx==3.5`: anything calling Louvain drifts across versions at fixed se
 The audit dominates. On the 16,807-node parent, 1,000 nulls is days; 100 nulls is
 hours. On a 1,015-node quotient it is roughly 1.5–2 hours with 100 nulls plus
 1,000 rich-club nulls.
+
+## skeleton_fractality.py
+
+Box-covering fractality measured twice: on the graph, and on its **skeleton** —
+the maximum spanning tree by edge betweenness.
+
+A fractal network in the sense of Goh, Salvi, Kahng & Kim (PRL 96, 018701,
+2006) *is* a skeleton dressed with local shortcuts. The skeleton carries the
+fractality; the shortcuts make the full graph small-world. Measuring the full
+graph measures the dressed object, which is why dense low-diameter graphs come
+out non-fractal even when their backbone is not.
+
+Input:  `--graph` (`.npz` or `.gml`; `.npz` accepts either an `edges` array or
+        the tripartite `mask_12/13/23` form).
+Output: one JSON with a `full` and a `skeleton` block, each carrying `n`, `m`,
+        `d_B`, `r2_power`, `r2_exp`, `gap`, `npts`, `radii`, `counts`,
+        `diameter`, `giant_fraction`, and a `verdict` of `power law` /
+        `exponential` / `too few points`.
+
+    python3 skeleton_fractality.py --graph G.npz --json skeleton.json
+    python3 skeleton_fractality.py --graph G.npz --json skeleton.json --pivots 256
+
+`n` is the giant component, which is what everything is measured on; `m` is the
+edge count of the whole input graph, so the two do not correspond when
+`giant_fraction < 1`. `diameter` is the largest distance seen from 300 sampled
+sources, hence a lower bound on the true diameter, and it is what sets the radius
+ladder (`r = 1 … diameter/2`).
+
+### The two fits
+
+Box covering claims, for each radius `r`, the ball of that radius around an
+uncovered vertex, and counts the balls needed. The fractal hypothesis is a power
+law in the box size, and the non-fractal alternative is an exponential — the two
+forms the script fits:
+
+```
+fractal        N_B(r)  ~  r^(-d_B)         fitted as   log N_B = -d_B log r + a
+non-fractal    N_B(r)  ~  exp(-beta r)     fitted as   log N_B = -beta r   + b
+```
+
+Both are ordinary least squares on the same response `log N_B` over the same
+radii, with the same number of parameters, so their `R²` values are directly
+comparable. `gap = r2_power - r2_exp`: positive means the power law wins, which
+is the fractal signature; negative means the exponential wins, which is the
+small-world signature. `d_B` is `-1` times the power-law slope; `beta` is fitted
+but not written to the JSON.
+
+**One honest caveat on the abscissa.** Song, Havlin & Makse define the relation
+on the box *size* `l_B` — every pair of nodes inside a box is closer than `l_B`.
+This script fits on the ball *radius* `r`, and a ball of radius `r` has
+`l_B ≈ 2r + 1`. The exponential fit is unaffected, since
+`exp(-beta(2r+1))` differs from `exp(-2 beta r)` only by a constant factor, but
+the power-law fit is **not** invariant under that affine shift, and the reported
+`d_B` is a radius exponent. The two agree in the large-`r` limit; at the small
+radii actually available on a low-diameter graph they need not, and the
+power-versus-exponential comparison inherits that bias.
+
+**Read `npts` before reading `gap`.** A box-covering fit on fewer than about
+ten points is not evidence in either direction — that is how graphs with
+provably bounded diameter get reported as fractal. The script prints a warning
+below ten and refuses to fit below four.
+
+`--pivots N` samples edge betweenness instead of computing it exactly. Exact is
+O(nm) and is the default; above roughly 20,000 nodes sampling is required, and
+the skeleton is then approximate. On a 1,015-node graph the two agree closely.
+
+`--trials` sets how many ball-cover restarts are run per radius (the minimum is
+kept, since the cover is a greedy heuristic). `--seed` fixes the RNG.
+
+### References
+
+- Song, Havlin & Makse, "Self-similarity of complex networks", *Nature*
+  433:392–395 (2005). doi:10.1038/nature03248 — box covering, the relation
+  `N_B(l_B) ~ l_B^(-d_B)` (their Eq. 3), and the pure exponential
+  `N_B(l_B) ~ exp(-l_B/l_e)` reported for the non-fractal networks, which is the
+  alternative `gap` scores against.
+- Song, Gallos, Havlin & Makse, "How to calculate the fractal dimension of a
+  complex network: the box covering algorithm", *J. Stat. Mech.* 2007:P03006
+  (2007). doi:10.1088/1742-5468/2007/03/P03006 — the covering algorithms, and
+  the mapping of minimum box covering to graph colouring. The greedy ball cover
+  used here is a burning heuristic in that family, not a minimum cover, which is
+  why `--trials` restarts and keeps the smallest count.
+- Goh, Salvi, Kahng & Kim, "Skeleton and fractal scaling in complex networks",
+  *Phys. Rev. Lett.* 96:018701 (2006). doi:10.1103/PhysRevLett.96.018701 — the
+  skeleton as the spanning tree formed by the edges of highest betweenness
+  centrality, and fractal networks as "a fractal skeleton dressed with local
+  shortcuts", which is what measuring both blocks is for.

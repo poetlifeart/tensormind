@@ -14,6 +14,8 @@ Sections
     dist     the raw distribution against the reference
     fan      how many distinct vertices actually participate at each end
     tract    counting rules and fitted transforms
+    law      the model's axon law f(W), on the colour-to-colour bundles it
+             actually acts on -- a finer object than the coarse relations above
     floor    the irreducible KS floor, and why it exists
 
 Reads ../graphs/ and ../reference/, and rebuilds the parent with ../construct.py
@@ -144,7 +146,122 @@ def sec_floor(**_):
     print("  reference's are MEAN fibre counts, which take fractional values.")
     print("  That is a difference between the two measurements, not the graphs.")
 
-SECTIONS = dict(dist=sec_dist, fan=sec_fan, tract=sec_tract, floor=sec_floor)
+# ------------------------------------------------------------------- the law
+P_EXP, C_KNEE = 0.05, 11.0
+
+def n_axons(W, p=P_EXP, c=C_KNEE):
+    """Axons carrying a bundle of W fine edges.
+
+        f(W) = round( W^p * (1 + (W-1)/c)^(1-p) ),  minimum 1
+
+    f(1) = 1 identically, for every p and c -- a single edge is a single axon
+    by construction of the form, not by a choice of constants.  For large W,
+    f -> W / c^(1-p): the growth is asymptotically LINEAR with a constant
+    compression factor c^(1-p) = 9.76, not sub-linear.  What is sub-linear is
+    f/W, which falls monotonically from 1 to 1/c^(1-p) = 0.102, so the heaviest
+    bundles are compressed hardest.  The log-log slope runs from
+    p + (1-p)/c = 0.136 at W = 1 to 1 as W grows; p alone is not the low-W
+    exponent.  Neither limit fixes p or c -- the asymptote gives one equation in
+    two unknowns.  Both constants are fitted, and nothing in the construction
+    supplies them.
+
+    This is the same function the recurrent model applies, in
+    graphdynamics/v1004bundle/model_v1004bundle.py as
+    BundleSparseLinear._n_axons.  If one changes, change both.
+    """
+    W = np.asarray(W, dtype=float)
+    return np.clip(np.round(W**p * (1.0 + (W - 1.0) / c)**(1.0 - p)), 1.0, None)
+
+
+def load_bundles():
+    """The model's colour-to-colour bundles, read from the model's own input.
+
+    A bundle is (ordered supernode pair, colour pair).  Inside one layer the
+    colour pair is fixed, so BundleSparseLinear's key
+    `sid_in[source] * n_super + sid_out[target]` is exactly that.  The three
+    undirected colour pairs give three independent partitions of the parent's
+    edges, and nothing is pooled across colour classes.
+
+    `graphs/cnew_parent_supernode.npz` is byte-identical to the model's
+    `graph_8k_parent_supernode.npz`, so this reproduces the model's bundles
+    exactly, without rebuilding the parent.
+
+    Returns the per-bundle weights; per bundle, the unordered supernode pair it
+    belongs to (-1 where the two supernodes coincide); and which colour pair it
+    came from (0 = 1-2, 1 = 1-3, 2 = 2-3).
+    """
+    d = np.load(os.path.join(PKG, 'graphs', 'cnew_parent_supernode.npz'))
+    sid = [d['supernode_id_1'], d['supernode_id_2'], d['supernode_id_3']]
+    ns = int(d['n_supernodes'])
+    W, pair, lay = [], [], []
+    for t, (k, (i, j)) in enumerate((('mask_12', (0, 1)), ('mask_13', (0, 2)),
+                                     ('mask_23', (1, 2)))):
+        row, col = np.nonzero(d[k])          # row indexes colour j, col colour i
+        key = sid[i][col].astype(np.int64) * ns + sid[j][row]
+        uk, cnt = np.unique(key, return_counts=True)
+        a, b = uk // ns, uk % ns
+        W.append(cnt.astype(float))
+        pair.append(np.where(a == b, -1, np.minimum(a, b) * ns + np.maximum(a, b)))
+        lay.append(np.full(len(uk), t))
+    return np.concatenate(W), np.concatenate(pair), np.concatenate(lay)
+
+
+def sec_law(**_):
+    Wp, B = load_weights()
+    W, pair, lay = load_bundles()
+    F = n_axons(W)
+    print("\n=== THE LAW ======================================================")
+    print("  f(W) = round( W^%.2f * (1 + (W-1)/%.1f)^%.2f ),  minimum 1"
+          % (P_EXP, C_KNEE, 1 - P_EXP))
+    print("\n     W    f(W)     f/W")
+    for w in (1, 2, 3, 5, 10, 20, 50, 100, 200):
+        f = float(n_axons(w))
+        print("  %4d  %6.0f  %6.3f" % (w, f, f / w))
+    print("\n  f/W falls monotonically from 1 to 1/%.1f^%.2f = %.3f, so the heaviest"
+          % (C_KNEE, 1 - P_EXP, C_KNEE**-(1 - P_EXP)))
+    print("  bundles are compressed hardest.  The smooth form is strictly concave;")
+    print("  the rounded f is only monotone, since its steps are 0 or exactly 1.")
+    print("\n  THE OBJECT.  The law acts on COLOUR-TO-COLOUR bundles -- one per")
+    print("  (supernode pair, colour pair) -- not on the pooled quotient weights.")
+    print("  The three colour pairs partition the parent's %s edges into %s"
+          % (f"{int(W.sum()):,}", f"{len(W):,}"))
+    print("  bundles.  Pooling them by supernode pair alone gives the %s coarse"
+          % f"{len(Wp):,}")
+    print("  relations used by the other sections, and is a DIFFERENT object.")
+    print()
+    for tag, x in (("bundles W", W), ("axons f(W)", F),
+                   ("pooled quotient W", Wp), ("reference fibres", B)):
+        x = np.asarray(x, float); x = x[x > 0]
+        srt = np.sort(x); cum = np.cumsum(srt)
+        gini = float((2*np.arange(1, len(srt)+1) - len(srt) - 1).dot(srt)
+                     / (len(srt) * cum[-1]))
+        print("    %-20s n=%-7d median=%6.2f  mean=%6.2f  max=%7.1f  "
+              "Gini=%.3f  mass<=5=%5.1f%%"
+              % (tag, len(x), np.median(x), x.mean(), x.max(), gini,
+                 100 * x[x <= 5].sum() / x.sum()))
+    m = pair >= 0
+    tot = np.zeros(int(pair[m].max()) + 1)
+    np.add.at(tot, pair[m].astype(np.int64), F[m])
+    tot = tot[tot > 0]
+    dup = lay > 0                            # the 1-3 and 2-3 partitions
+    print("\n  Axons per bundle %.3f.  The model instantiates five layers, two of"
+          % F.mean())
+    print("  them transposes, so the 1-3 and 2-3 partitions are built twice:")
+    print("    %s bundles, %s axons -- the model's graph-weight count."
+          % (f"{len(W) + int(dup.sum()):,}", f"{int(F.sum() + F[dup].sum()):,}"))
+    print("\n  Summing axons over the colour pairs of one supernode pair gives the")
+    print("  only quantity commensurable with the reference's per-connection")
+    print("  fibre counts: n=%d  median=%.2f  mean=%.2f  max=%.0f"
+          % (len(tot), np.median(tot), tot.mean(), tot.max()))
+    print("  against the reference's %d / %.2f / %.2f / %.1f.  It is not a match,"
+          % (len(B), np.median(B), B.mean(), B.max()))
+    print("  and the law is not what produces the paper's fibre-bundle agreement:")
+    print("  that comes from the degree-matched relocation quotient, not from any")
+    print("  transform of the weights.  p and c are fitted; see the README.")
+
+
+SECTIONS = dict(dist=sec_dist, fan=sec_fan, tract=sec_tract,
+                law=sec_law, floor=sec_floor)
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__,

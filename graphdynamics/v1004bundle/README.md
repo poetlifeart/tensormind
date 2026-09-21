@@ -28,11 +28,20 @@ A bundle of `W` fine edges reduces to
 n(W) = round( W^0.05 * (1 + (W-1)/11)^0.95 )        at least 1
 ```
 
-axons, its edges dealt round-robin among them. That rule is measured, not
-chosen: it is the reduction that brings the construction's coarse-relation
-multiplicity onto the reference connectome's fibre-bundle distribution —
-median 1.67 against 1.67, Gini 0.371 against 0.305. See
-`../../graphnets/construction/bilateral/bundles/`.
+axons, its edges dealt round-robin among them. The rule is concave, so heavy
+bundles are compressed hardest: it pulls the construction's coarse-relation
+multiplicity down toward the reference connectome's range — mean 2.83 edges per
+bundle becomes 1.14 axons, against a reference `fiber_count_mean` of 2.03, and
+the heaviest bundle falls from 311 edges to 33 against a reference maximum of
+155. The distributions are not matched: ours stays more even than the
+reference, Gini 0.114 against 0.305. See
+`../../graphnets/construction/bilateral/bundles/`, section `law`.
+
+The two quantities are commensurable only loosely. A reference weight is a
+count of tractography streamlines between two ROIs, averaged over the subjects
+carrying the edge — not a count of axons, and sensitive to the tracking
+parameters. Ours is a count of fine edges. Both are aggregates on arbitrary
+scales, so the comparison is one of shape, not of magnitude.
 
 ## What it costs
 
@@ -46,7 +55,7 @@ median 1.67 against 1.67, Gini 0.371 against 0.305. See
 encoder, decoder, collector, twin path and supernode attention are untouched.
 
 Axons per bundle averages 1.14 — most bundles hold a single edge and reduce to
-one axon, while the heaviest (342 edges) gets 36.
+one axon, while the heaviest (311 edges) gets 33.
 
 ## Running it
 
