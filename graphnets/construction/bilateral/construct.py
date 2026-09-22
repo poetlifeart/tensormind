@@ -656,6 +656,13 @@ def main():
     if not args.parent_only:
         print("=" * 74)
         print(f"STAGE 3  COARSEN    targets {BLOCK_TARGETS}   (no thinning)")
+        # `block` here is the construction's own label, read off the first
+        # base-20 digit of each vertex index.  It is supplied for simplicity,
+        # not because the coarsening needs privileged information: Stage 2
+        # above has just run Louvain on this same parent with no labels given
+        # and recovered this exact partition at ARI = NMI = 1.000.  Since the
+        # two partitions are identical rather than merely similar, passing
+        # Louvain's output instead would leave every number below unchanged.
         label = coarsen(parent, block, BLOCK_TARGETS, seed=42)
         coarse, super_block, pairs, witness = build_coarse(
             u_arr, v_arr, label, block, sum(BLOCK_TARGETS))
