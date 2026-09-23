@@ -978,15 +978,25 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
                 'p': _pval(real[name], nv[name], higher=higher),
             }
 
-        # Small-world sigma (degree-preserving nulls, stricter than original)
+        # Small-world sigma, degree-preserving null.  Same transitivity-based
+        # definition as sigma_er; only the null ensemble differs.  It is NOT
+        # uniformly larger or smaller than a mean-clustering variant -- for the
+        # degmatch parent it is 15.37 against a clustering-based 10.12, while
+        # five other audited graphs go the other way.  Do not call it stricter.
         c_r = comp['transitivity']['ratio']
         l_r = comp['apl']['ratio']
         sigma = float(c_r / l_r) if np.isfinite(c_r) and np.isfinite(l_r) and l_r != 0 else float('nan')
 
-        # Humphries-Gurney exact: ER G(n,m) nulls (use Gcc's n,m to match real metrics)
+        # Humphries & Gurney S^Delta: transitivity-based, ER G(n,m) null.
+        # NOTE the numerator is TRANSITIVITY, not the mean local clustering
+        # coefficient.  H&G (2008) give both forms; S^Delta is their principal
+        # transitivity-based index and is what is implemented here.  sigma_dp
+        # below uses the SAME definition with a degree-preserving null, so the
+        # two indices differ only in their null ensemble.
+        # (Gcc's n,m are used so the null matches the real metrics.)
         n_gcc = Gcc.number_of_nodes()
         m_gcc = Gcc.number_of_edges()
-        print("  Computing ER G(n,m) sigma (Humphries-Gurney 2008 original)...")
+        print("  Computing ER G(n,m) sigma (H&G S^Delta, transitivity-based)...")
         er_rng = np.random.default_rng(seed + 7777)
         er_trans, er_apl = [], []
         for i in range(n_null):
@@ -999,7 +1009,8 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
         c_r_er = float(real['transitivity'] / er_trans_mean) if er_trans_mean > 0 else float('nan')
         l_r_er = float(real['apl'] / er_apl_mean) if er_apl_mean > 0 else float('nan')
         sigma_er = float(c_r_er / l_r_er) if np.isfinite(c_r_er) and np.isfinite(l_r_er) and l_r_er != 0 else float('nan')
-        print(f"  sigma_dp={sigma:.4f} (degree-preserving)  sigma_er={sigma_er:.4f} (ER, H&G original)")
+        print(f"  sigma_dp={sigma:.4f} (transitivity, degree-preserving null)  "
+              f"sigma_er={sigma_er:.4f} (transitivity, ER null; H&G S^Delta)")
 
     else:
         # ── No-null mode: analytical estimates ─────────────────────────
@@ -1171,13 +1182,16 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
     # ── Evidence scorecard ────────────────────────────────────────────
     # Three-state: 'pass', 'near_pass' (within ~10% of threshold), 'fail'
     def _sw_verdict_er():
-        # Humphries & Gurney 2008 exact: sigma_er > 1 using ER G(n,m) nulls
+        # H&G S^Delta > 1: transitivity ratio over path-length ratio, ER null.
+        # This is the SCORED small-worldness criterion; _sw_verdict_dp below is
+        # the same test with a degree-preserving null and is not scored.
         if np.isfinite(sigma_er) and sigma_er > 1.0:
             return 'pass'
         return 'fail'
 
     def _sw_verdict_dp():
-        # Degree-preserving sigma > 1 (stricter robustness check)
+        # Degree-preserving sigma > 1.  Defined for reference; NOT referenced
+        # in the evidence dict -- the scored criterion is small_world_sigma_er.
         if np.isfinite(sigma) and sigma > 1.0:
             return 'pass'
         return 'fail'
