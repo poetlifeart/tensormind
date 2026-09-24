@@ -76,3 +76,9 @@ Thumbs.db
 
 # Model weights downloaded by lpips / torchmetrics / torchvision go to
 # ~/.cache/torch, outside the repo. Nothing to ignore for those.
+
+# ── inputs and result files the paper points readers to ─────────────────
+!graphnets/construction/bilateral/reference/budapest_1015_70654.edgelist
+!graphnets/construction/bilateral/reference/bud_w.npy
+!graphnets/ablation/results_chromatic_ablation*.json
+!graphnets/ablation/audit_quot_seed*.json

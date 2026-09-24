@@ -220,7 +220,7 @@ python3 bind_rate.py
 **Run the ablation sweep** (50 runs, ~25 s each, ~21 min):
 
 ```bash
-python3 chromatic_ablation.py                  # full grid, writes results_chromatic_ablation.json
+python3 chromatic_ablation.py --out results_chromatic_ablation_shuffled.json   # full grid
 python3 chromatic_ablation.py --f 0 0.05 1.0 --seeds 99 1   # a quick subset
 ```
 
@@ -248,10 +248,12 @@ not launch one casually.
 
 | file | what |
 |---|---|
-| `chromatic_ablation.py` | the sweep; `--control` reproduces the deposited graph. Reports BOTH the nine-measure distance and the six-measure shape distance |
+| `chromatic_ablation.py` | the sweep; `--control` reproduces the deposited parent. Reports BOTH the nine-measure distance and the six-measure shape distance |
+| `fiedler_vs_bilateral.py` | does the Fiedler bisection *identify* the bilateral split, or only match its cut cost? Reports ARI/NMI and the Fiedler-vector correlation |
 | `bind_rate.py` | instruments closure and counts colour rejections |
 | `build_seed_quotients.py` | builds `quot_seed*.npz` for auditing |
-| `results_chromatic_ablation.json` | the 50-run sweep output |
+| `results_chromatic_ablation_shuffled.json` | the 50-run sweep — **the source of the paper's ablation table** |
+| `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper |
 | `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits, all 9/9 |
 
 **On code duplication, stated plainly.** `build_seed_quotients.py` does exec
