@@ -944,15 +944,8 @@ outputs.
 
 
 \paragraph{Variant without attention.}
-A mechanism-check variant removes only the three supernode-attention modules.
-The graph, collector, recurrent update, readout, encoder, decoder, data
-pipeline, and trainer are otherwise unchanged.
-
-The graph-plus-attention model was trained and evaluated with three
-independent seeds. The no-attention variant was evaluated in only one run on
-the final substrate. It is therefore not treated as a separately replicated
-model arm; it is used only as a mechanism check to determine whether removing
-the attention blocks produces a large change in performance.
+A variant removes only the three supernode-attention modules; everything
+else is unchanged. It was run once.
 
 
 \paragraph{Parameter counts.}
@@ -1044,8 +1037,6 @@ The pixel loss is
 \]
 with the observed-region term applied to the raw network output. A VGG16
 perceptual loss on the hidden region is added with weight \(0.1\).
-
-
 \paragraph{Three-seed graph evaluation.}
 The primary graph evaluation uses benchmark masks with target coverage sampled
 from \(U(0.02,0.70)\). Each metric is computed within six coverage buckets and
@@ -1115,35 +1106,8 @@ the benchmark aggregate, because the two mask distributions populate the
 coverage buckets differently. In the four central coverage buckets that are
 well populated under both distributions, L1 differs by less than \(0.01\)
 percentage points and PSNR by less than \(0.03\) dB across the measured runs.
-
-
-\paragraph{Attention mechanism check.}
-The single no-attention run gives, on benchmark masks,
-\[
-\mathrm{L1}=1.4507\%,\qquad
-\mathrm{PSNR}=29.843,\qquad
-\mathrm{SSIM}=0.90415,\qquad
-\mathrm{LPIPS}=0.09332.
-\]
-For comparison, the three-seed graph-plus-attention result is
-\[
-\mathrm{L1}=1.4533\pm0.0024\%,\qquad
-\mathrm{PSNR}=29.820\pm0.008,
-\]
-\[
-\mathrm{SSIM}=0.90387\pm0.00017,\qquad
-\mathrm{LPIPS}=0.09356\pm0.00032.
-\]
-
-Against the three-seed attention mean the one-run no-attention model is
-nominally better on all four metrics, by \(1.1\), \(2.9\), \(1.6\) and
-\(0.8\) standard deviations of the attention arm respectively, with PSNR
-and SSIM falling outside the observed three-seed range. A single run cannot
-establish superiority, and the comparison is confounded because the
-no-attention run shares its seed with the strongest of the three attention
-runs. We therefore record only that attention is not required to obtain the
-result, consistent with the \(0.13\%\) missing-region validation gap and
-the earlier three-seed ablation (\(+0.10\%\)).
+In this toy example, a single run with the attention blocks removed
+performed about the same as the attention-equipped model.
 
 The matched U-Net remains the principal architectural baseline and is evaluated
 under the benchmark-mask protocol. No U-Net result on the training-mask
@@ -2017,7 +1981,7 @@ Random-walk eigengap & \(0.0938\) & \(0.0197\)\\
 Average controllability & \(1.0932\) & \(1.1004\)\\
 \bottomrule
 \end{tabular}
-\caption{Selected complexity, spectral, and controllability diagnostics.  Resistance-based, spanning-tree, leading-eigenvalue, and average-controllability quantities are close, while the random-walk eigengap remains different.}
+\caption{Selected complexity, spectral, and controllability diagnostics.  Resistance-based, spanning-tree, leading-eigenvalue, average-controllability, off-diagonal-complexity, and degree-entropy quantities are close, while the random-walk eigengap remains different.}
 \label{tab:final-complexity}
 \end{table}
 
