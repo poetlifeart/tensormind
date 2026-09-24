@@ -57,6 +57,10 @@ ckpt_*/
 *.tmp
 nohup.out
 
+# ── except the supporting material the paper points to ──────────────────
+!docs/figures/*.png
+!docs/repository_notes.pdf
+
 # ── Data ─────────────────────────────────────────────────────────────────
 # CelebA-HQ and anything like it is supplied via --data, never committed.
 data/
