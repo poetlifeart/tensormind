@@ -37,12 +37,12 @@
 \maketitle
 
 \noindent
-This Supporting Information contains the detailed construction procedures,
+These notes contain the detailed construction procedures,
 parameter accounting, null-model definitions, extended graph audits, and
 computational-model specifications underlying the main article. The main text
 now emphasizes two comparatively simple constructions: the local
 prune--repair construction and the $8{,}000$-node seed-encoded construction.
-The Supporting Information gives reproducibility details for those models and
+These notes give reproducibility details for those models and
 retains the earlier, more elaborate $16{,}807$-node fixed-partition relocation
 pipeline as an optional refinement for the case in which fiber-bundle
 multiplicity is itself treated as an explicit target. The organization
@@ -1135,14 +1135,15 @@ For comparison, the three-seed graph-plus-attention result is
 \mathrm{LPIPS}=0.09356\pm0.00032.
 \]
 
-The no-attention values are close to the attention-model results, with
-differences comparable in scale to the seed-to-seed variation observed across
-the three attention runs. The direction of the small difference is not
-consistent across metrics. We therefore do not detect a substantial
-attention-dependent performance effect in this mechanism check. Because the
-no-attention condition contains only one run, we do not interpret this
-comparison as a replicated equivalence test and do not claim superiority in
-either direction.
+Against the three-seed attention mean the one-run no-attention model is
+nominally better on all four metrics, by \(1.1\), \(2.9\), \(1.6\) and
+\(0.8\) standard deviations of the attention arm respectively, with PSNR
+and SSIM falling outside the observed three-seed range. A single run cannot
+establish superiority, and the comparison is confounded because the
+no-attention run shares its seed with the strongest of the three attention
+runs. We therefore record only that attention is not required to obtain the
+result, consistent with the \(0.13\%\) missing-region validation gap and
+the earlier three-seed ablation (\(+0.10\%\)).
 
 The matched U-Net remains the principal architectural baseline and is evaluated
 under the benchmark-mask protocol. No U-Net result on the training-mask
@@ -2007,16 +2008,16 @@ Measure & Final quotient & Budapest\\
 \(\log_{10}\) Estrada index & \(78.34\) & \(77.72\)\\
 Graph energy / \(n\) & \(7.009\) & \(5.693\)\\
 Kirchhoff index / \(n^2\) & \(0.00985\) & \(0.01053\)\\
-Off-diagonal complexity & \(5.318\) & \(3.922\)\\
-Degree entropy & \(5.410\) & \(7.798\)\\
+Off-diagonal complexity & \(5.318\) & \(5.406\)\\
+Degree entropy & \(5.410\) & \(5.405\)\\
 \(\lambda_{\max}/\langle d\rangle\) & \(1.288\) & \(1.285\)\\
 Hoffman bound & \(6.612\) & \(7.908\)\\
-Perron eigengap & \(0.0938\) & \(0.0197\)\\
+Random-walk eigengap & \(0.0938\) & \(0.0197\)\\
 \(\log\tau(G)/n\) & \(4.791\) & \(4.774\)\\
 Average controllability & \(1.0932\) & \(1.1004\)\\
 \bottomrule
 \end{tabular}
-\caption{Selected complexity, spectral, and controllability diagnostics.  Resistance-based, spanning-tree, leading-eigenvalue, and average-controllability quantities are close, while off-diagonal complexity, degree entropy, and the Perron eigengap remain different.}
+\caption{Selected complexity, spectral, and controllability diagnostics.  Resistance-based, spanning-tree, leading-eigenvalue, and average-controllability quantities are close, while the random-walk eigengap remains different.}
 \label{tab:final-complexity}
 \end{table}
 
