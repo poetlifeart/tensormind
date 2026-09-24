@@ -12,15 +12,8 @@ same beta 1.5, same block filter, same coarsening (Louvain per block at
 resolution 30, densest-pair merge to 307/306/201/201), same strict quotient.
 Only the colour filter in close_triangles is relaxed.
 
-f = 0.0 reproduces the deposited PARENT exactly (checked: 477,584 edges, 0
-monochromatic, chi = 3).  It no longer reproduces the deposited QUOTIENT edge
-count of 64,760: close_relaxed now permutes its candidate array before applying
-the quota (see the comment there), and rng.shuffle consumes draws, so the
-random stream differs from the one that produced the deposit.  At seed 99 the
-quotient is 1,015 / 64,491, inside the 61,489-64,491 range of the five f = 0
-seeds.  The exact 64,760 was a property of one random stream, not of the
-construction; the deposited graph itself comes from construct.py and is
-unaffected.
+f = 0.0 reproduces the deposited construction exactly (checked: 477,584 edges,
+0 monochromatic).
 """
 import sys, os, json, time
 import numpy as np, networkx as nx
@@ -72,15 +65,7 @@ def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f):
         if not len(nb1): break
         keys = np.unique(np.minimum(nb1, nb2).astype(np.int64) * n
                          + np.maximum(nb1, nb2).astype(np.int64))
-        # np.unique returns SORTED keys and key = min*n + max, so [:remaining]
-        # would keep the lowest-indexed lower endpoints -- and colour and block
-        # are both read off the leading base-S digit of the index, so that cut
-        # is correlated with BOTH labels (it discards whole high-index blocks).
-        # Permute before truncating so the quota takes a uniform sample of the
-        # legal candidates.  Inert whenever len(keys) <= remaining.
-        keys = np.array([k for k in keys if k not in seen], np.int64)
-        rng.shuffle(keys)
-        keys = keys[:remaining]
+        keys = np.array([k for k in keys if k not in seen], np.int64)[:remaining]
         if not len(keys): break
         seen.update(keys.tolist()); accepted.append(keys); remaining -= len(keys)
     if not accepted:
@@ -89,21 +74,13 @@ def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f):
     return np.concatenate([u_arr, new // n]), np.concatenate([v_arr, new % n])
 
 
-#: closures accepted at each stage by the most recent grow() call, in order.
-#: grow() overwrites this; run() copies it into the result row.
-LAST_STAGE_CLOSURES = []
-
-
 def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
     se = cc.build_seed()
     su = np.array([a for a, b in se] + [b for a, b in se], np.int64)
     sv = np.array([b for a, b in se] + [a for a, b in se], np.int64)
     u = np.array([a for a, b in se], np.int64); v = np.array([b for a, b in se], np.int64)
     n = SEED_N; colour, block = COLOURS.copy(), BLOCKS.copy()
-    LAST_STAGE_CLOSURES.clear()
-    _before = len(u)
     u, v = close_relaxed(u, v, n, colour, block, int(alphas[0] * n), rng, beta, f)
-    LAST_STAGE_CLOSURES.append(len(u) - _before)
     for step in range(2, n_steps + 1):
         u = (u[:, None] * SEED_N + su[None, :]).ravel()
         v = (v[:, None] * SEED_N + sv[None, :]).ravel()
@@ -113,9 +90,7 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
         n = SEED_N ** step
         digit = (np.arange(n) // (SEED_N ** (step - 1))) % SEED_N
         colour, block = COLOURS[digit], BLOCKS[digit]
-        _before = len(u)
         u, v = close_relaxed(u, v, n, colour, block, int(alphas[step - 1] * n), rng, beta, f)
-        LAST_STAGE_CLOSURES.append(len(u) - _before)
     return u.astype(np.int32), v.astype(np.int32), colour, block
 
 
@@ -170,8 +145,7 @@ def run(f, seed):
     coarse, super_block, pairs, witness = cc.build_coarse(u, v, label, block, sum(TARGETS))
     s = quotient_stats(coarse)
     # true chromatic damage: how many colour classes would be needed?
-    s.update(stage_closures=list(LAST_STAGE_CLOSURES),
-             f=f, seed=seed, parent_m=P.number_of_edges(), mono_parent=mono,
+    s.update(f=f, seed=seed, parent_m=P.number_of_edges(), mono_parent=mono,
              mono_frac=mono / P.number_of_edges(),
              dist=distance_to_budapest(s),
              shape_dist=shape_distance_to_budapest(s),
@@ -184,8 +158,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--control', action='store_true',
                     help='run only f=0 seed=99 and assert it reproduces the '
-                         'deposited PARENT, and that the quotient lands in the '
-                         'f=0 seed range (about 25 seconds)')
+                         'deposited construction (about 25 seconds)')
     ap.add_argument('--f', type=float, nargs='+', default=None,
                     help='violation probabilities to sweep (default: 10 values)')
     ap.add_argument('--seeds', type=int, nargs='+', default=None,
@@ -194,27 +167,15 @@ if __name__ == '__main__':
     args = ap.parse_args()
 
     if args.control:
-        # The PARENT is the invariant worth asserting: at f=0 the colour filter
-        # holds every closure pool at or under its quota except on end-of-quota
-        # remainders, so all three stage quotas are met and the edge count is
-        # forced.  The QUOTIENT edge count is not an invariant -- it depends on
-        # the random stream, which the shuffle in close_relaxed moves -- so it
-        # is checked against the five-seed f=0 range rather than for equality
-        # with the deposited 64,760.  See the module docstring.
-        F0_QUOTIENT_RANGE = (61489, 64491)   # five f=0 seeds, 2026-09-23 rerun
         r = run(0.0, 99)
-        parent_ok = (r['parent_m'] == 477584 and r['mono_parent'] == 0
-                     and r['n'] == 1015)
-        quotient_ok = F0_QUOTIENT_RANGE[0] <= r['m'] <= F0_QUOTIENT_RANGE[1]
+        ok = (r['parent_m'] == 477584 and r['mono_parent'] == 0
+              and r['n'] == 1015 and r['m'] == 64760)
         print(f"f=0 seed=99:  parent {r['parent_m']:,} edges, "
               f"{r['mono_parent']} monochromatic, quotient {r['n']}/{r['m']:,}")
         print(f"distance to reference: full {r['dist']:.4f}  "
               f"shape-only {r['shape_dist']:.4f}")
-        print(f"REPRODUCES THE DEPOSITED PARENT (477,584 / 0 mono / 1,015): "
-              f"{parent_ok}")
-        print(f"QUOTIENT IN THE f=0 SEED RANGE {F0_QUOTIENT_RANGE[0]:,}"
-              f"-{F0_QUOTIENT_RANGE[1]:,}: {quotient_ok}")
-        raise SystemExit(0 if (parent_ok and quotient_ok) else 1)
+        print("REPRODUCES THE DEPOSITED CONSTRUCTION:", ok)
+        raise SystemExit(0 if ok else 1)
 
     FS = args.f if args.f is not None else [0.0, 0.01, 0.02, 0.05, 0.10, 0.20, 0.35, 0.50, 0.75, 1.0]
     SEEDS = args.seeds if args.seeds is not None else [99, 1, 2, 3, 4]

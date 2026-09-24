@@ -5,6 +5,24 @@ Code to build the graphs in *Causal Event Networks* and measure them.
 Everything is grown from a hard-coded seed. The only input file in this
 repository is the Budapest reference connectome, used for comparison.
 
+## Supporting material
+
+The paper has no separate Supporting Information file; it points here instead.
+The full construction procedures, parameter accounting, null-model definitions,
+extended audits and model specifications are in:
+
+- **[`docs/repository_notes.tex`](docs/repository_notes.tex)** — *Repository
+  notes for "Chromatically Constrained Tensor Graphs: Concurrency and Connectome
+  Topology"*. Figures it uses are in `docs/figures/`.
+
+To build the PDF:
+
+```bash
+cd docs && pdflatex repository_notes.tex && pdflatex repository_notes.tex
+```
+
+Needs `tcolorbox` (Debian/Ubuntu: `sudo apt install texlive-latex-extra`).
+
 ```
 graphnets/                      build the graphs and measure them
   Budapest/                     budapest_connectome.gml   1,015 nodes / 70,654 edges
