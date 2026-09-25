@@ -8,9 +8,9 @@ similar cost, not similar membership.  This script measures membership
 directly -- vertex agreement, ARI, NMI, and the correlation between the
 Fiedler vector and the centred bilateral indicator.
 
-It produces the ARI values quoted in the paper (0.996 for the 8k quotient,
-1.000 for the reference) and reproduces the published cut sizes 2,404 /
-2,568 as a side effect, so it doubles as a check on those.
+It reproduces the deposited bisection cut of 2,404 edges and shows that the
+Fiedler bisection and the bilateral split are the SAME partition on all 1,015
+supernodes (ARI = 1.000), as they are for the reference.
 
     python3 fiedler_vs_bilateral.py        # ~1 minute
 
@@ -55,9 +55,18 @@ print(f"\n|dH| bilateral      = {cutH:,}  ({100*cutH/m:.2f}%)   paper: 2,404 (3.
 L = nx.laplacian_matrix(Q).astype(float)
 vals, vecs = scipy.sparse.linalg.eigsh(L, k=2, which='SM')
 order = np.argsort(vals); lam2 = float(vals[order[1]]); v2 = vecs[:, order[1]]
-rank = np.argsort(v2, kind='stable'); half = Q.number_of_nodes()//2
-fied = np.zeros(Q.number_of_nodes(), int); fied[rank[:half]] = 1
-cutF = int((fied[E[:,0]] != fied[E[:,1]]).sum())
+# For odd n there are TWO admissible balanced splits, n//2 and n//2+1, and
+# combinatorial_metrics_npz.min_cut_bal reports the better of the two.  Taking
+# only rank[:n//2] gives 2,568 here; the other split gives 2,404 and is the one
+# min_cut_bal deposits.  Match the deposited function.
+rank = np.argsort(v2, kind='stable'); n_q = Q.number_of_nodes()
+_best = None
+for _size in (n_q // 2, n_q // 2 + 1):
+    _p = np.zeros(n_q, int); _p[rank[:_size]] = 1
+    _c = int((_p[E[:, 0]] != _p[E[:, 1]]).sum())
+    if _best is None or _c < _best[0]:
+        _best = (_c, _p)
+cutF, fied = _best
 print(f"|dF| Fiedler        = {cutF:,}  ({100*cutF/m:.2f}%)   paper: 2,568 (3.97%)")
 print(f"lambda_2            = {lam2:.4f}                    paper: 6.90")
 
