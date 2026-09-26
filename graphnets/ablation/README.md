@@ -236,32 +236,50 @@ change *which* seed closures are made without changing *how many*, which holds
 parent size fixed. With the cap, `k1 = 6` in all 40 runs and parent m spans
 481,056–481,428 against 477,584–512,180 uncapped.
 
-Percent change in coarse relations, paired within RNG seed, parent-matched:
+Percent change in coarse relations, paired within RNG seed, parent-matched.
+Twenty RNG seeds (`results_stage_ablation_capped20.json`); `d_z` is the mean
+paired difference over its standard deviation across matched pairs — Cohen's
+*d_z*, **not** a *t* statistic, which would be √n larger, and not the spread of
+either arm. `wrong sign` counts matched pairs moving the other way.
 
-| relaxed at | change | |
-|---|---:|---|
-| scale 2 only | **−11.48%** | 6.2 sd |
-| scales 2 and 3 | **−11.00%** | 3.2 sd |
-| scale 3 only | **−9.42%** | 4.3 sd |
-| all three stages | **−12.98%** | 3.0 sd |
-| scales 2+3, seed relaxed | −6.14% | 1.6 sd |
-| seed stage only | −5.31% | 0.9 sd |
+| relaxed at | change | d_z | n | wrong sign |
+|---|---:|---:|---:|---:|
+| scale 2 only | **−11.25%** | **9.0** | 14 | 0 |
+| scales 2 and 3 | **−10.55%** | **4.5** | 14 | 0 |
+| scale 3 only | **−8.06%** | **4.6** | 19 | 0 |
+| all three stages | **−12.08%** | **4.0** | 12 | 0 |
+| scales 2+3, seed relaxed | −6.24% | 1.6 | 15 | 1 |
+| seed stage only | −4.35% | 1.0 | 9 | **3** |
+
+Four of the six are unanimous in sign at d_z ≥ 4.0. The five-seed run
+(`results_stage_ablation_capped.json`) gives the same ordering and the same
+signs: −11.48 / −11.00 / −9.42 / −12.98 / −6.14 / −5.31.
+
+**The seed-stage row is directional at best, and its sign is not established** —
+three of nine matched pairs move the other way. It also loses the most pairs, for
+a structural reason: even with the cap, some seeds reach only five closures at
+f1 = 0 because the retry loop breaks on a round that redraws only already-seen
+pairs, while reaching six at f1 = 1. `k1` then differs across the arms and the
+pair is correctly disqualified. B lost 11 of 20 pairs that way against 1 of 20
+for scale 3 alone. More seeds will not fix that; a deterministic seed-stage
+enumeration would.
 
 At matched parent size the constraint shapes coarse-relation coverage at **every**
 stage, in the same direction, with the two later scales carrying roughly twice the
 seed stage's effect.
 
 **The effects are strongly sub-additive.** Scale 2 alone plus scale 3 alone
-predicts −20.90 pp; both together give −11.00 pp — an interaction of **+9.90 pp**.
+predicts −19.31 pp; both together give −10.55 pp — an interaction of
+**+8.77 pp** (+9.90 pp at five seeds). Scale 2 alone costs *more* than both later
+scales together, on 14 unanimous pairs each, so it is not noise.
 Relaxing scale 3 as well *recovers* most of what relaxing scale 2 costs, even
 though the both-scales corner carries 140,193 monochromatic edges against scale
 2's 51,162. This is the same non-monotonicity the scalar sweep shows as a minimum
 at f = 0.10, now localised to an interaction between scales.
 
-**Read the last two rows as direction only.** They rest on three parent-matched
-pairs each; pairs are lost when scale-2 quotas fall a few closures short of 1,600,
-which moves parent m by 62 edges per closure and correctly disqualifies the pair.
-Twenty seeds, about an hour, would put them on the same footing as the rest.
+Pairs are also lost when scale-2 or scale-3 quotas fall a few closures short
+(1,594–1,599 against 1,600; 239,998–239,999 against 240,000), which moves parent
+m and correctly disqualifies the pair.
 
 > Matched size does **not** follow from sharing `f1`. It follows from sharing `f1`
 > *and* the RNG seed, and only when the later quotas fill. `aggregate_stage.py`
@@ -332,7 +350,8 @@ not launch one casually.
 | `results_chromatic_ablation_shuffled.json` | the 50-run sweep — **the source of the paper's ablation table** |
 | `aggregate_stage.py` | the stage ablation's analysis: per-corner means, and the key comparisons PAIRED BY RNG SEED with parent-size equality verified per pair rather than assumed |
 | `results_stage_ablation.json` | the 8-corner (f1,f2,f3) cube x 5 seeds, seed-stage quota at its default 60. Shows the scaffold comparison is not parent-matchable: relaxing the seed stage adds ~30,752 edges by construction |
-| `results_stage_ablation_capped.json` | the same cube with `--seed-quota 6`, capping the seed stage at the number of closures the seed legally admits. Holds k1 = 6 in all 40 runs, so every comparison is parent-matched. **This is the one to read** |
+| `results_stage_ablation_capped.json` | the same cube with `--seed-quota 6`, capping the seed stage at the number of closures the seed legally admits, so every comparison is parent-matched. Five seeds |
+| `results_stage_ablation_capped20.json` | the capped cube at twenty seeds, 160 runs. **This is the one to read** |
 | `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper. `--out` no longer defaults to this path, and the script refuses to overwrite an existing output without `--force` |
 | `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits, all 9/9 |
 
