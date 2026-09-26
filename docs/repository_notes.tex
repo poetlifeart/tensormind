@@ -1583,7 +1583,7 @@ Criterion & Local quotient & Budapest & Verdict \\
 \midrule
 Clustering enriched & \(C=0.515\)\,(\(2.46\times\)) & \(3.04\times\) & PASS \\
 Path length near random & \(\mathrm{APL}=1.97\)\,(\(1.05\times\)) & \(1.19\times\) & PASS \\
-Small-worldness (degree-pres.) & \(\sigma_{\mathrm{dp}}=2.30\) & \(\sigma_{\mathrm{dp}}=2.22\) & PASS \\
+Small-worldness & \(\sigma_{\mathrm{ER}}=3.49\) (scored); \(\sigma_{\mathrm{dp}}=2.30\) & \(\sigma_{\mathrm{ER}}=3.41\) (scored); \(\sigma_{\mathrm{dp}}=2.22\) & PASS \\
 Modularity enriched & \(Q=0.524\)\,(\(8.24\times\)) & \(9.1\times\) & PASS \\
 Global efficiency near random & \(E_{\mathrm{glob}}=0.548\)\,(\(0.97\times\)) & \(0.90\times\) & PASS \\
 Local efficiency enriched & \(E_{\mathrm{loc}}=0.737\)\,(\(1.24\times\)) & \(1.38\times\) & PASS \\
@@ -1911,7 +1911,7 @@ Criterion & Final quotient & Verdict\\
 \midrule
 Clustering enriched & \(C=0.4724\), \(2.198\times\) null & PASS\\
 Path length near random & \(L=1.9811\), \(1.063\times\) null & PASS\\
-Small-worldness & \(\sigma_{\rm dp}=1.918\) & PASS\\
+Small-worldness & \(\sigma_{\rm ER}=2.880\) (scored); \(\sigma_{\rm dp}=1.918\) & PASS\\
 Modularity enriched & \(Q=0.4908\), \(8.00\times\) null & PASS\\
 Global efficiency near random & \(E_{\rm glob}=0.5492\), \(0.966\times\) null & PASS\\
 Local efficiency enriched & \(E_{\rm loc}=0.7304\), \(1.216\times\) null & PASS\\
@@ -1998,31 +1998,11 @@ the substrate.
 
 \begin{thebibliography}{99}
 
-\bibitem{Szalkai2015Budapest}
-B.~Szalkai, C.~Kerepesi, B.~Varga, and V.~Grolmusz,
-``The Budapest Reference Connectome Server v2.0,''
-\emph{Neuroscience Letters}, 595:60--62, 2015.
-doi:10.1016/j.neulet.2015.03.071.
-
-\bibitem{Szalkai2017Budapest}
-B.~Szalkai, C.~Kerepesi, B.~Varga, and V.~Grolmusz,
-``Parameterizable consensus connectomes from the Human Connectome Project:
-the Budapest Reference Connectome Server v3.0,''
-\emph{Cognitive Neurodynamics}, 11(1):113--116, 2017.
-doi:10.1007/s11571-016-9407-z.
-
-\bibitem{VargaGrolmusz2021Braingraph}
-B.~Varga and V.~Grolmusz,
-``The braingraph.org database with more than 1000 robust human connectomes
-in five resolutions,''
-\emph{Cognitive Neurodynamics}, 15:915--919, 2021.
-doi:10.1007/s11571-021-09670-5.
-
-\bibitem{LeskovecKronecker2010} 
-J.~Leskovec, D.~Chakrabarti, J.~Kleinberg, C.~Faloutsos, and
-Z.~Ghahramani,
-``Kronecker graphs: An approach to modeling networks,''
-\emph{Journal of Machine Learning Research}, 11:985--1042, 2010.
+\bibitem{KimWilhelm2008ComplexGraph}
+J.~Kim and T.~Wilhelm,
+``What is a complex graph?''
+\emph{Physica A: Statistical Mechanics and its Applications},
+387(11):2637--2652, 2008.
 
 \bibitem{Blondel2008}
 V.~D.~Blondel, J.-L.~Guillaume, R.~Lambiotte, and E.~Lefebvre,
@@ -2030,48 +2010,15 @@ V.~D.~Blondel, J.-L.~Guillaume, R.~Lambiotte, and E.~Lefebvre,
 \emph{Journal of Statistical Mechanics: Theory and Experiment},
 2008:P10008, 2008.
 
-\bibitem{RubinovSporns2010}
-M.~Rubinov and O.~Sporns,
-``Complex network measures of brain connectivity: uses and interpretations,''
-\emph{NeuroImage}, 52(3):1059--1069, 2010.
+\bibitem{Song2005}
+C.~Song, S.~Havlin, and H.~A.~Makse,
+``Self-similarity of complex networks,''
+\emph{Nature}, 433:392--395, 2005.
 
-\bibitem{FornitoZalBull2016}
-A.~Fornito, A.~Zalesky, and E.~T.~Bullmore,
-\emph{Fundamentals of Brain Network Analysis},
-Academic Press, San Diego, 2016.
-
-\bibitem{SizemoreCliques2018}
-A.~E. Sizemore, C.~Giusti, A.~Kahn, J.~M. Vettel, R.~F. Betzel,
-and D.~S. Bassett,
-``Cliques and cavities in the human connectome,''
-\emph{Journal of Computational Neuroscience}, 44:115--145, 2018.
-
-\bibitem{MiloMotifs2002}
-R.~Milo, S.~Shen-Orr, S.~Itzkovitz, N.~Kashtan, D.~Chklovskii,
-and U.~Alon,
-``Network motifs: simple building blocks of complex networks,''
-\emph{Science}, 298:824--827, 2002.
-
-\bibitem{KimWilhelm2008ComplexGraph}
-J. Kim and T. Wilhelm,
-``What is a complex graph?''
-\emph{Physica A: Statistical Mechanics and its Applications},
-387(11):2637--2652, 2008.
-
-\bibitem{PrzuljGraphlets2004}
-N.~Pr\v{z}ulj, D.~G. Corneil, and I.~Jurisica,
-``Modeling interactome: scale-free or geometric?''
-\emph{Bioinformatics}, 20:3508--3515, 2004.
-
-\bibitem{SpornsKotterMotifs2004}
-O.~Sporns and R.~K\"otter,
-``Motifs in brain networks,''
-\emph{PLoS Biology}, 2:e369, 2004.
-
-\bibitem{Farahani2019}
-F.~V.~Farahani, W.~Karwowski, and N.~R.~Lighthall,
-``Application of graph theory for identifying connectivity patterns in human brain networks: a systematic review,''
-\emph{Frontiers in Neuroscience}, 13:585, 2019.
+\bibitem{Song2007memb}
+C.~Song, L.~K.~Gallos, S.~Havlin, and H.~A.~Makse,
+``How to calculate the fractal dimension of a complex network: the box covering algorithm,''
+\emph{Journal of Statistical Mechanics}, 2007:P03006, 2007.
 
 \bibitem{MaslovSneppen2002}
 S.~Maslov and K.~Sneppen,
@@ -2079,7 +2026,7 @@ S.~Maslov and K.~Sneppen,
 \emph{Science}, 296(5569):910--913, 2002.
 
 \bibitem{VasaMisic2022}
-F.~Vasa and B.~Misic,
+F.~V\'a\v{s}a and B.~Mi\v{s}i\'c,
 ``Null models in network neuroscience,''
 \emph{Nature Reviews Neuroscience}, 23(8):493--504, 2022.
 
@@ -2129,6 +2076,11 @@ M.~P.~van~den Heuvel and O.~Sporns,
 ``Rich-club organization of the human connectome,''
 \emph{Journal of Neuroscience}, 31(44):15775--15786, 2011.
 
+\bibitem{BetzelBassett2017}
+R.~F.~Betzel and D.~S.~Bassett,
+``Multi-scale brain networks,''
+\emph{NeuroImage}, 160:73--83, 2017.
+
 \bibitem{Meila2007}
 M.~Meila,
 ``Comparing clusterings: an information based distance,''
@@ -2140,100 +2092,7 @@ R.~Gur, R.~Gur, R.~Roalf, T.~D.~Satterthwaite, and D.~S.~Bassett,
 ``The modular organization of human anatomical brain networks: accounting for the cost of wiring,''
 \emph{Network Neuroscience}, 1(1):42--68, 2017.
 
-\bibitem{Song2005}
-C.~Song, S.~Havlin, and H.~A.~Makse,
-``Self-similarity of complex networks,''
-\emph{Nature}, 433:392--395, 2005.
-
-\bibitem{Song2007memb}
-C.~Song, L.~K.~Gallos, S.~Havlin, and H.~A.~Makse,
-``How to calculate the fractal dimension of a complex network: the box covering algorithm,''
-\emph{Journal of Statistical Mechanics}, 2007:P03006, 2007.
-
-\bibitem{XueBogdan2017}
-Y.~Xue and P.~Bogdan,
-``Reliable multi-fractal characterization of weighted complex networks: algorithms and implications,''
-\emph{Scientific Reports}, 7:7487, 2017.
-
-\bibitem{Szalkai2018Lobes}
-B.~Szalkai, B.~Varga, and V.~Grolmusz,
-``Comparing advanced graph-theoretical parameters of the connectomes
-of the lobes of the human brain,''
-\emph{Cognitive Neurodynamics}, 12(6):549--559, 2018.
-
-\bibitem{Szalkai2021GraphMind}
-B.~Szalkai, B.~Varga, and V.~Grolmusz,
-``The graph of our mind,''
-\emph{Brain Sciences}, 11(3):342, 2021.
-
-\bibitem{Hoffman1970}
-A.~J.~Hoffman,
-``On eigenvalues and colorings of graphs,''
-in B.~Harris, editor,
-\emph{Graph Theory and its Applications},
-Academic Press, New York, pp.~79--91, 1970.
-
-\bibitem{Kirchhoff1847}
-G.~Kirchhoff,
-``Ueber die Aufl\"osung der Gleichungen, auf welche man bei der
-Untersuchung der linearen Vertheilung galvanischer Str\"ome gef\"uhrt
-wird,''
-\emph{Annalen der Physik und Chemie}, 72(12):497--508, 1847.
-
-\bibitem{Fiedler1973}
-M.~Fiedler,
-``Algebraic connectivity of graphs,''
-\emph{Czechoslovak Mathematical Journal}, 23(2):298--305, 1973.
-
-\bibitem{Edmonds1965}
-J.~Edmonds,
-``Paths, trees, and flowers,''
-\emph{Canadian Journal of Mathematics}, 17:449--467, 1965.
-
-\bibitem{Kruskal1956}
-J.~B.~Kruskal,
-``On the shortest spanning subtree of a graph and the traveling salesman
-problem,''
-\emph{Proceedings of the American Mathematical Society}, 7(1):48--50,
-1956.
-
-\bibitem{Estrada2000}
-E.~Estrada,
-``Characterization of 3D molecular structure,''
-\emph{Chemical Physics Letters}, 319:713--718, 2000.
-
-\bibitem{Gutman1978}
-I.~Gutman, ``The energy of a graph,''
-\emph{Ber.\ Math.-Statist.\ Sekt.\ Forschungsz.\ Graz}, 103:1--22, 1978.
-
-\bibitem{KleinRandic1993}
-D.~J.~Klein and M.~Randi\'{c},
-``Resistance distance,''
-\emph{Journal of Mathematical Chemistry}, 12:81--95, 1993.
-
-
-\bibitem{Claussen2007}
-J.~C.~Claussen,
-``Off-diagonal complexity: a computationally quick complexity measure
-for graphs and networks,''
-\emph{Physica A: Statistical Mechanics and its Applications},
-375(1):365--373, 2007.
-
-\bibitem{Gu2015Controllability}
-S.~Gu, F.~Pasqualetti, M.~Cieslak, Q.~K.~Telesford, A.~B.~Yu,
-A.~E.~Kahn, J.~D.~Medaglia, J.~M.~Vettel, M.~B.~Miller,
-S.~T.~Grafton, and D.~S.~Bassett,
-``Controllability of structural brain networks,''
-\emph{Nature Communications}, 6:8414, 2015.
-
-\bibitem{BetzelBassett2017}
-R.~F. Betzel and D.~S. Bassett,
-``Multi-scale brain networks,''
-\emph{NeuroImage},
-vol.~160, pp.~73--83, 2017.
-
 \end{thebibliography}
-
 
 
 \end{document}
