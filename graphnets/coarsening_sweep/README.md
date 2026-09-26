@@ -135,11 +135,12 @@ opposite sides.
 | T6 triangles | 0.1852 | 0.1842 | OFF, by 0.001 |
 | mean | **0.1744** | 0.2898 | chi=3 |
 
-The two spectral tests account for 0.69 of the 0.115 × 6 total.  Without the
-constraint the spectral gap goes to 68.97 against the reference's 7.51,
-destroying the near-degenerate leading pair, and T4 saturates at 1.0052 — the
-value every structureless baseline reaches.  The constraint loses density,
-clustering, effective diameter and hop plot.
+The two spectral tests account for 0.69 of the 0.115 × 6 total against the
+unconstrained arm.  **An earlier version of this README read that as the
+constraint's benefit being spectral.  Section 4 shows it is not** — the
+unconstrained arm does no thinning at all, and a rate-matched random null
+recovers a *better* spectral gap than the colour rule does.  The spectral
+improvement over `off` belongs to the thinning, not to colour.
 
 One detail worth keeping: the unconstrained arm gets the degree *spread* nearly
 right — sd 69.2 against the reference's 71.55, where chi=3 manages 46.0 — and
@@ -156,6 +157,96 @@ constrained arm survives slightly *less*.  Whatever the constraint does, it is
 not making individual edges likelier to survive coarsening.  The mechanism is
 currently unexplained.
 
+## 4. `chromatic_null_controls.py` — is it colour, or is it thinning?
+
+The chromatic filter also *thins*: measured here, it rejects **51.0%** of the
+closure candidates that survive the block filter (758,472 candidates, 371,941
+accepted, conditional acceptance rate p = 0.4904).  If rejecting a comparable
+fraction at random did the same thing, the effect would be about thinning rather
+than colour.  Four arms, each with its step-3 alpha bisected to the chromatic
+arm's parent size of 477,584 edges:
+
+| arm | extra condition on a candidate | accept rate |
+|---|---|---|
+| `chromatic` | `colour[nb1] != colour[nb2]` | 0.4904 |
+| `random` | `rng.random() < 0.4904` — ignores colour | 0.4898 |
+| `permuted` | same rule against a random permutation of the colour array (class sizes 2400/2400/3200 preserved) | 0.6612 |
+| `off` | none | 1.0000 |
+
+    python chromatic_null_controls.py
+
+Results: `chromatic_null_controls.json`.
+
+**resolution-only per block**
+
+| | chromatic | random | permuted | off |
+|---|---|---|---|---|
+| accept rate | 0.4904 | 0.4898 | 0.6612 | 1.0000 |
+| six-test mean | 0.1744 | **0.1549** | 0.2798 | 0.2904 |
+| density error | **−4.98%** | −10.43% | −4.71% | +17.33% |
+| spectral gap (target 7.51) | 15.27 | **12.29** | 58.36 | 69.15 |
+| T1 degree | **0.1251** | 0.1448 | 0.1067 | 0.2182 |
+| T4 scree | 0.5543 | **0.3566** | 1.0093 | 1.0035 |
+| T5 network value | **0.0640** | 0.0749 | 0.3005 | 0.2944 |
+| T6 triangles | **0.1852** | 0.2227 | 0.1685 | 0.1769 |
+
+**deposited merge_densest**
+
+| | chromatic | random | permuted | off |
+|---|---|---|---|---|
+| six-test mean | **0.2009** | 0.2228 | 0.3014 | 0.3724 |
+| density error | **−8.34%** | −24.58% | −22.30% | −31.56% |
+| spectral gap | 19.93 | **17.47** | 27.52 | 46.80 |
+| T1 degree | **0.0985** | 0.2414 | 0.2158 | 0.3064 |
+| T4 scree | 0.8304 | **0.6633** | 1.0285 | 1.1152 |
+| T5 network value | **0.0394** | 0.0512 | 0.2335 | 0.4039 |
+| T6 triangles | **0.1517** | 0.3369 | 0.3005 | 0.3803 |
+
+### Thinning, not colour, carries the six-test mean
+
+Random rejection at the same rate closes **87.3%** of the score gap under the
+deposited coarsening and **116.8%** under the per-block one — where it beats the
+colour rule outright, 0.1549 against 0.1744.  The six-test mean therefore has no
+consistent sign for colour: chromatic wins under one coarsening, random under the
+other.
+
+### A SECOND RETRACTED MECHANISM
+
+An earlier reading of section 3 held that the constraint's benefit was almost
+entirely spectral.  **That is backwards.**  At matched rejection rate the colour
+rule is *worse* on both spectral measures under both coarsenings: T4 scree 0.5543
+against 0.3566 and 0.8304 against 0.6633; spectral gap 15.27 against 12.29 and
+19.93 against 17.47.  The error was comparing against `off`, which does no
+thinning at all, so the gap moving from 15.27 to 69.15 was a thinning effect
+credited to colour.  The gap is in fact monotone in the accept rate — 12.29,
+15.27, 58.36, 69.15 at rates 0.49, 0.49, 0.66, 1.00 — essentially independent of
+which rule does the rejecting.
+
+### What the colour rule does buy, at matched rate
+
+Four measures, and these hold under **both** coarsenings, which the six-test mean
+does not:
+
+* density proximity: −4.98% vs −10.43%, and −8.34% vs −24.58%
+* T1 degree distribution: 0.1251 vs 0.1448, and 0.0985 vs 0.2414
+* T6 triangle participation: 0.1852 vs 0.2227, and 0.1517 vs 0.3369
+* T5 network value, narrowly: 0.0640 vs 0.0749, and 0.0394 vs 0.0512
+
+So the constraint is a degree-and-triangle effect and a density effect, not a
+spectral one.
+
+### The control that is still missing
+
+`permuted` reaches density −4.71% under the per-block cut, essentially matching
+chromatic's −4.98%, while rate-matched `random` reaches only −10.43%.  That hints
+the density effect comes from the *must-differ-on-a-three-class-partition*
+structure rather than from the specific identity of the colour classes.  But
+`permuted` rejects only 33.9% against chromatic's 51.0%, so rule and rate are
+confounded there and the hint is not a result.
+
+The decisive arm would be `permuted` **plus** additional random rejection tuned
+to p = 0.4904, making all arms rate-matched and size-matched.  Not run.
+
 ## Not established
 
 * No nine-criterion audit has been run on any quotient here.  This matters for
@@ -165,3 +256,9 @@ currently unexplained.
 * One seed graph, one RNG seed per arm.  Nothing here speaks to seed-class
   robustness.
 * Two coarsenings.  Claims should read "under both coarsenings tested".
+* The `permuted` arm is not rate-matched, so nothing there separates the rule's
+  structure from its rejection rate.
+* Nothing here explains WHY the colour rule improves density and the degree and
+  triangle distributions.  Two candidate mechanisms have now been tested and
+  refuted: edge survival under quotienting (section 3), and a spectral account
+  (section 4).  The mechanism is open.
