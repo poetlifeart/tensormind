@@ -60,5 +60,8 @@ That, together with Louvain version drift, is the likely source of the
 - **Pin `networkx==3.5`.** Every step here calls `louvain_communities`, which
   drifts across networkx versions even at fixed seed 42. An unpinned run gives a
   near-identical but not bit-identical graph.
-- The script has **hard-coded absolute paths** for its input parent and its two
-  outputs. Edit them for your machine.
+- Paths are resolved relative to the script, so it runs from any working
+  directory. (This bullet used to say the script had hard-coded absolute paths
+  needing editing; that was fixed before the repository was published, and the
+  absolute strings survive only as `# original (pre-tensormind):` comments.
+  Corrected 2026-09-25.)

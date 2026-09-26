@@ -75,11 +75,20 @@ def adj_from(perm, E, n):
 
 # ------------------------------------------------------------------ AI / AH
 
+def _sub(G):
+    """Subtitle derived from the graph, not typed in.  The counts used to be
+    literals ('1015 nodes, 64,760 edges'), which would have gone quietly wrong
+    the moment either graph changed.  Fixed 2026-09-25."""
+    return '%d nodes, %s edges' % (G.number_of_nodes(),
+                                   format(G.number_of_edges(), ','))
+
+
 def fig_AI():
     fig, axes = plt.subplots(1, 2, figsize=(20, 10.3))
+    _Q, _B = coarse(), budapest()
     for ax, (name, G, sub) in zip(axes, [
-            ('8k coarse quotient', coarse(), '1015 nodes, 64,760 edges'),
-            ('Budapest Connectome', budapest(), '1015 nodes, 70,654 edges')]):
+            ('8k coarse quotient', _Q, _sub(_Q)),
+            ('Budapest Connectome', _B, _sub(_B))]):
         perm, bounds, sizes, E, n, q, seed, _ = order_by_size(G)
         ax.imshow(adj_from(perm, E, n), cmap=BW, interpolation='none', aspect='equal')
         for b in bounds[:-1]:
@@ -101,9 +110,10 @@ def fig_AH():
     """As AI, but communities reordered so each hemisphere is contiguous,
     with the two hemispheric couplings and the empty blocks marked."""
     fig, axes = plt.subplots(1, 2, figsize=(20, 10.6))
+    _Q, _B = coarse(), budapest()
     for ax, (name, G, sub) in zip(axes, [
-            ('8k coarse quotient', coarse(), '1015 nodes, 64,760 edges'),
-            ('Budapest Connectome', budapest(), '1015 nodes, 70,654 edges')]):
+            ('8k coarse quotient', _Q, _sub(_Q)),
+            ('Budapest Connectome', _B, _sub(_B))]):
         q, cs, seed = best_partition(G)
         Dn, sz = block_density(G, cs)
         K = len(sz)
@@ -173,9 +183,10 @@ def fig_AB():
     Q = coarse(); B = budapest()
     wC = np.load(os.path.join(G_DIR, 'cnew_coarse_w.npy'))
     wB = None
+    # FIXED 2026-09-25: the second candidate was an absolute path on one
+    # machine.  Both are now repo-relative.
     for c in [os.path.join(HERE, 'reference', 'bud_w.npy'),
-              '/home/vahid/python_programs/tensormind/graphnets/construction/'
-              'finalgraph/inputs/bud_w.npy']:
+              os.path.join(HERE, '..', 'finalgraph', 'inputs', 'bud_w.npy')]:
         if os.path.exists(c):
             wB = np.load(c)
             wB = wB[0] if wB.ndim > 1 else wB
@@ -311,7 +322,7 @@ def fig_AA():
             % (P.number_of_nodes(), format(P.number_of_edges(), ',')),
             'its quotient (coarse)\n%d nodes, %s edges'
             % (Q.number_of_nodes(), format(Q.number_of_edges(), ',')),
-            'Budapest Connectome\n1015 nodes, 70,654 edges']):
+            'Budapest Connectome\n%s' % _sub(B)]):
         order, b0, b1, b2 = dq.hierarchical_order(G)
         ax.imshow(dq.make_adj(G, order), cmap=BW, interpolation='none', aspect='equal')
         for b in b0[:-1]:

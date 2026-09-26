@@ -16,7 +16,7 @@ attention changes nothing measurable; see *Results* below.
 ## What ships here
 
 ```
-graph_degmatch_parent_supernode.npz          16,807 nodes / 337,980 edges, 1,015 supernodes  <- REPORTED
+graph_degmatch_parent_supernode.npz          16,807 nodes / 337,980 edges, 1,015 supernodes  <- the DEFAULT here
 graph_brain_mild_v146_feeder_supernode.npz   16,807 nodes / 344,483 edges, 1,015 supernodes  (superseded)
 val_test_split_v1.json                       which 1,000 validation images are the reporting half
 celebahq.py                                   dataset resolution + optional download
@@ -26,6 +26,49 @@ eval_benchmark_v2.py                          PSNR / SSIM / LPIPS / L1 by mask c
 eval_fid_2026-08-31.py                        FID
 ```
 
+## The 8,000-node substrate — build it first
+
+`graph_8k_parent_supernode.npz` is **not shipped**: like every other graph in
+this repository it is regenerable, so `.gitignore` keeps it out. The two graphs
+listed above are the exceptions. Build the 8k one before using it:
+
+```bash
+cd ../graphnets/construction/bilateral
+python3 export_graphs.py                  # ~3 min, deterministic, needs ~3 GB
+cp graphs/cnew_parent_supernode.npz ../../../graphdynamics/graph_8k_parent_supernode.npz
+cd ../../../graphdynamics
+```
+
+`export_graphs.py` runs `construct.py`'s own `grow()` and `coarsen()` and writes
+the four files the repository reads — the parent, the parent with its supernode
+assignment, the 1,015-node quotient, and the quotient's bundle weights. It is
+deterministic from the hard-coded seed, so every run gives the same graph;
+`python3 export_graphs.py --check` verifies a rebuild against files already
+present, comparing array contents rather than file bytes (a `.npz` is a zip and
+timestamps every entry, so checksums of identical arrays never match).
+
+The same four files are what `bilateral/stats.py`, `bilateral/bundles/bundles.py`
+and `bilateral/make_figures.py` read, so build them before running those too.
+
+Then train or evaluate on that substrate by naming it explicitly — nothing in
+this directory defaults to it:
+
+```bash
+python3 v1003/train_v1003super.py      --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_v1003_s0 --seed 0
+python3 feeder1004/train_feeder1004.py --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_feeder_s0 --seed 0
+python3 eval_benchmark_v2.py --checkpoint CKPT.pt --v1003super --graph graph_8k_parent_supernode.npz --mask-dist training
+```
+
+The U-Net baseline takes no graph at all, so it is the same network on either
+substrate and needs nothing extra.
+
+**Which substrate the paper reports.** The main article's three-seed inpainting
+comparison is on this 8,000-node substrate; the `graph_degmatch_parent_supernode`
+results are the auxiliary experiment described in the supplementary notes. The
+defaults in this directory stay on `graph_degmatch_parent_supernode.npz` for
+continuity with the earlier runs, so reproducing the paper's numbers means
+passing `--graph graph_8k_parent_supernode.npz` as above.
+
 Both the graph and the split are defaults, so `--graph` and `--split-file` can be
 omitted. The commands below pass `--graph` anyway, to be explicit about which
 substrate each number belongs to.
@@ -34,6 +77,13 @@ substrate each number belongs to.
 `graphnets/construction/finalgraph/` — a compressed copy of its
 `parent_degmatch_masks.npz`, arrays identical, supernode map included.
 Rebuild it there if you want to check.
+
+It is the DEFAULT, not the substrate the article reports. It was marked
+"REPORTED" here until 2026-09-25, which predated the article being reorganised
+around the 8,000-node construction; the 16,807-node results are the auxiliary
+experiment the supplementary notes mark exploratory. The default stays here for
+continuity with the earlier runs — see the section above for how to build and use
+the 8k substrate.
 
 `graph_brain_mild_v146_feeder_supernode.npz` is the feeder lift the earlier runs
 used. It is kept only so those numbers stay reproducible; pass it explicitly to
@@ -171,12 +221,14 @@ behaviour. The training band's floor at 0.09 starves the 0-10% bucket
 bands populate properly, agree to within 0.01. Report the benchmark numbers as
 the headline and the training-band pass as a robustness check.
 
-**Seeds.** The paper reports **three seeds of the attention arm**; the table
+**Seeds.** Stale until 2026-09-25, when this paragraph still read "the table
 above is seed 0, with seeds 1 and 2 to be added. The no-attention arm is one
-seed, quoted only to establish that the attention makes no difference. Seed
-spread on this benchmark is ~0.003 in L1, so a single seed resolves nothing
-below ~0.006 — which is why the attention claim rests on the direction of the
-difference being unstable rather than on its size.
+seed." All three seeds of both arms have since been trained and benchmarked, on
+both substrates. Seed spread on this benchmark is ~0.003 in L1, so a single seed
+resolves nothing below ~0.006 — which is why the attention claim rests on the
+direction of the difference being unstable rather than on its size. The numbers
+in the two tables above are seed 0 on the degmatch substrate; the article's
+three-seed comparison is on the 8k substrate.
 
 
 ## Evaluate

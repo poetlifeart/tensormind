@@ -47,8 +47,12 @@ scales, so the comparison is one of shape, not of magnitude.
 
 ```
                      graph weights   total params
-  v1003 per-edge           806,551     74,911,834
+  v1003 per-edge           806,871     74,911,834
   v1004bundle              323,901     74,429,184
+
+(v1003's graph-weight count read 806,551 here until 2026-09-25. The model prints
+806,871, which is also what the supplementary notes give; both totals were and
+are correct.)
 ```
 
 2.5× fewer graph weights; the model as a whole is 0.65% smaller, since the

@@ -2,15 +2,23 @@
 """
 Display quotient graphs with two-level hierarchical ordering.
 
-Each graph gets its own Louvain community detection at two resolutions:
-  L1 (γ=1.0): large blocks → thick boundary lines
-  L2 (γ=3.0): sub-communities → thin boundary lines
-Within each L1 block, nodes are grouped by L2 sub-community,
-then sorted by degree descending.
+Each graph gets its own Louvain community detection at three nested levels:
+  L0 (γ=1.0): large blocks        → thick boundary lines
+  L1 (γ=1.0): mid communities     → medium boundary lines
+  L2 (γ=1.5): sub-communities     → thin boundary lines
+Within each L1 group, nodes are grouped by L2 sub-community, then sorted by
+degree descending.  (The docstring said two levels at γ=1.0 and γ=3.0 until
+2026-09-25; hierarchical_order() has always used three, at 1.0 / 1.0 / 1.5.)
 
 Usage:
-  python display_quotient.py                          # default 3-panel
+  python display_quotient.py                          # 8k quotient vs Budapest
   python display_quotient.py graph1.npz graph2.npz    # custom graphs
+  python display_quotient.py g1.npz g2.npz out.png    # custom output path
+
+The no-argument default used to read three absolute paths under ~/Desktop that
+are not in this repository, and wrote its output there too, so it only ran on one
+machine.  It now defaults to two graphs the repository ships or rebuilds:
+graphs/cnew_coarse.npz (run export_graphs.py first) and the Budapest reference.
 """
 
 import sys
@@ -123,9 +131,10 @@ def display_graphs(graphs, titles, outpath):
 
 
 if __name__ == '__main__':
-    BUDAPEST = '/home/vahid/Desktop/emergentgraph/graph_topology/validation_graphs/budapest_connectome.gml'
-    ORIGINAL = '/home/vahid/Desktop/emergentgraph/graph_topology/graph_cap30_fiedler_qonly_nocomp.npz'
-    V3 = '/home/vahid/Desktop/experiments/graph_heterogeneous_quotient_v3.npz'
+    import os
+    _HERE = os.path.dirname(os.path.abspath(__file__))
+    BUDAPEST = os.path.join(_HERE, '..', '..', 'Budapest', 'budapest_connectome.gml')
+    QUOTIENT = os.path.join(_HERE, 'graphs', 'cnew_coarse.npz')
 
     if len(sys.argv) > 1:
         # Last arg ending in .png is the output path; otherwise auto-generate
@@ -134,7 +143,8 @@ if __name__ == '__main__':
             outpath = args.pop()
         else:
             stems = [a.split('/')[-1].replace('.npz','').replace('.gml','') for a in args]
-            outpath = '/home/vahid/Desktop/experiments/connectivity_' + '_vs_'.join(stems) + '.png'
+            outpath = os.path.join(_HERE, 'figures',
+                                   'connectivity_' + '_vs_'.join(stems) + '.png')
         paths = args
         graphs, titles = [], []
         for p in paths:
@@ -147,13 +157,17 @@ if __name__ == '__main__':
             stem = p.split('/')[-1].replace('.npz', '').replace('.gml', '')
             titles.append(NICE_NAMES.get(stem, stem))
     else:
-        G_bud = nx.read_gml(BUDAPEST)
-        G_bud = nx.convert_node_labels_to_integers(G_bud)
-        G_orig = load_npz_graph(ORIGINAL)
-        G_v3 = load_npz_graph(V3)
-
-        graphs = [G_bud, G_orig, G_v3]
-        titles = ['Budapest Connectome', 'Original Quotient', 'Heterogeneous Quotient (v3)']
-        outpath = '/home/vahid/Desktop/experiments/connectivity_comparison.png'
+        for _p in (QUOTIENT, BUDAPEST):
+            if not os.path.exists(_p):
+                raise SystemExit(
+                    f"missing {_p}\n"
+                    "Run export_graphs.py in this directory first; graphs/ is "
+                    "regenerable and therefore .gitignored.")
+        G_q = load_npz_graph(QUOTIENT)
+        G_bud = nx.convert_node_labels_to_integers(nx.read_gml(BUDAPEST))
+        graphs = [G_q, G_bud]
+        titles = ['8k coarse quotient', 'Budapest Connectome']
+        outpath = os.path.join(_HERE, 'figures', 'connectivity_comparison.png')
+    os.makedirs(os.path.dirname(os.path.abspath(outpath)), exist_ok=True)
 
     display_graphs(graphs, titles, outpath)

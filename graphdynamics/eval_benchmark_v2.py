@@ -261,7 +261,8 @@ def compute_ssim(pred_np, gt_np):
 # ============================================================================
 
 def load_model(checkpoint_path, graph_path, device,
-               v1003super=False, unet=False, feeder1004=False, **_removed):
+               v1003super=False, unet=False, feeder1004=False,
+               v1004bundle=False, **_removed):
     """Load a model from a checkpoint."""
     # ---- ADDED 2026-08-16: the two arms currently training ----
     # Neither had a branch here. Running this script on either checkpoint fell
@@ -293,9 +294,22 @@ def load_model(checkpoint_path, graph_path, device,
         _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'v1003'))
         from model_v1003super import RecurrentBrainNetV7 as _V1003
         model = _V1003(graph_path, brain_channels=32, n_iters=5)
+    # ---- ADDED 2026-09-25: v1004bundle ----
+    # v1004bundle/README.md documented `--v1004bundle` from the day that model
+    # landed, but no flag or branch existed here, so the documented benchmark
+    # command exited on "Specify the architecture".
+    # Unlike v1003super and feeder1004, this model's class is NOT named
+    # RecurrentBrainNetV7 -- it is RecurrentBrainNetV1004Bundle, which is what
+    # train_v1004bundle.py imports.
+    elif v1004bundle:
+        import sys as _sys, os as _os
+        _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'v1004bundle'))
+        from model_v1004bundle import RecurrentBrainNetV1004Bundle as _V1004B
+        model = _V1004B(graph_path, brain_channels=32, n_iters=5)
     else:
         raise SystemExit(
-            "Specify the architecture: --unet, --v1003super, or --feeder1004.\n"
+            "Specify the architecture: --unet, --v1003super, --feeder1004 or "
+            "--v1004bundle.\n"
             "Older architectures were removed from this package on 2026-09-07.")
 
     ckpt = torch.load(checkpoint_path, map_location='cpu', weights_only=False)
@@ -609,7 +623,9 @@ def main():
     # to select best_ep*.pt. val_test_split_v1.json splits them 1000/1000 so the
     # reported metric is not the one that was optimised over.
     parser.add_argument('--v1003super', action='store_true',
-                        help='graph arm currently in training (75,982,503 params)')
+                        help='graph + supernode attention. Parameter count depends '
+                             'on the substrate: 74,911,834 on the 8,000-node graph, '
+                             '75,965,171 on the 16,807-node degmatch parent.')
     parser.add_argument('--unet', action='store_true',
                         help='UNet baseline arm (87,103,619 params)')
     parser.add_argument('--val-subset', type=str, default='test',
@@ -623,28 +639,17 @@ def main():
                         help="Minimum samples per mask-coverage bucket")
     parser.add_argument('--device', type=str, default=None,
                         help="Device (cuda / cpu). Auto-detect if omitted.")
-    parser.add_argument('--v2', action='store_true',
-                        help="Use RecurrentBrainNetV2 (multi-channel brain)")
-    parser.add_argument('--v5', action='store_true',
-                        help='Use V5 brain (LN before feedback)')
-    parser.add_argument('--v4', action='store_true',
-                        help="Use RecurrentBrainNetV4 (LN on a1, feedback init=1)")
-    parser.add_argument('--v6', action='store_true',
-                        help='Use V6 brain (short feedback layer_32)')
-    parser.add_argument('--v7', action='store_true',
-                        help='Use V7 brain (deep multi-scale, 5 iters)')
-    parser.add_argument('--loop3', action='store_true',
-                        help='Use V7 loop3 brain (3-layer recurrent)')
-    parser.add_argument('--v7f2000', action='store_true',
-                        help='Use V7feeder2000 (no-delay, no attention)')
-    parser.add_argument('--v10super', action='store_true',
-                        help='Use V10 supernode (no-delay, shared QKV attention)')
-    parser.add_argument('--v1001super', action='store_true',
-                        help='Use V1001 supernode (delay, classless attention)')
-    parser.add_argument('--v1000super', action='store_true',
-                        help='Use V1000 supernode (delay, size-class attention)')
     parser.add_argument('--feeder1004', action='store_true',
-                        help='Use feeder1004 (v1003 minus supernode attention)')
+                        help='graph without supernode attention (the ablation arm)')
+    parser.add_argument('--v1004bundle', action='store_true',
+                        help='graph with bundle-map message passing')
+    # ---- REMOVED 2026-09-25 ----
+    # --v2 --v4 --v5 --v6 --v7 --loop3 --v7f2000 --v10super --v1001super
+    # --v1000super were still advertised in --help, but the architectures they
+    # named were removed from this package on 2026-09-07 and load_model has no
+    # branch for any of them, so each one only reached the "Specify the
+    # architecture" exit. Listing flags that cannot work is worse than not
+    # listing them.
     args = parser.parse_args()
 
     # Resolve paths relative to script directory
@@ -673,7 +678,8 @@ def main():
     model = load_model(args.checkpoint, args.graph, device,
                        v1003super=getattr(args, 'v1003super', False),
                        unet=getattr(args, 'unet', False),
-                       feeder1004=getattr(args, 'feeder1004', False))
+                       feeder1004=getattr(args, 'feeder1004', False),
+                       v1004bundle=getattr(args, 'v1004bundle', False))
 
     # Optional: LPIPS model (VGG backbone, fp32 — known fp16 overflow issue)
     lpips_model = None

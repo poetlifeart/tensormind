@@ -1,15 +1,31 @@
 """
 feeder1004  =  V1003Super MINUS the supernode attention  (created 2026-08-26)
 
-ABLATION. Copied verbatim from model_v1003super.py (md5 86577e27153e6124
-e089576212bf1f37) and changed in exactly three places, all commented in situ
-and dated 2026-08-26:
+ABLATION. Copied verbatim from model_v1003super.py and changed in exactly three
+places, all commented in situ and dated 2026-08-26:
 
-  1. attn_1 / attn_2 / attn_3 are not constructed  (~line 679)
-  2. n_attn is hardcoded to 0 for the print          (~line 699)
-  3. the three attn calls in the recurrent loop are commented out (~line 761)
+  1. attn_1 / attn_2 / attn_3 are not constructed
+  2. n_attn is hardcoded to 0 for the print
+  3. the three attn calls in the recurrent loop are commented out
 
-Nothing else differs. The class is still named RecurrentBrainNetV7 so an
+Nothing else differs.
+
+  PROVENANCE.  The copy was taken from model_v1003super.py at md5
+  86577e27153e6124e089576212bf1f37.  Both files were then given the same
+  back-port on 2026-09-25 (the COLLECTOR_GRIDS / READOUT_GRIDS substrate-size
+  tables -- see the note in model_v1003super.py), so that md5 no longer matches
+  the file on disk; the current one is 8fe7e814a1c19a61b2d7067b89ce2e4a.  The
+  three-place relationship above still holds and is checkable:
+
+      diff <(sed 's/feeder1004/XX/g;s/V1004/XX/g' feeder1004/feeder1004.py) \
+           <(sed 's/V1003Super/XX/g' v1003/model_v1003super.py)
+
+  BACK-PORTED 2026-09-25, same change as v1003: before it, the collector and
+  readout blocks were hard-coded for colour classes 4,802 / 4,802 / 7,203 and
+  this model could not run a forward pass on the 8,000-node substrate.  The
+  4,802 / 7,203 path is unchanged bit for bit -- verified by a seeded forward on
+  graph_degmatch_parent_supernode.npz before and after: 75,952,307 params, recon
+  sha256 prefix c24222d71e721e57, recon sum 71933.6277874599 in both. The class is still named RecurrentBrainNetV7 so an
 existing trainer can import it by changing only the module name. The
 SupernodeLinearAttention class remains defined but is never instantiated.
 
@@ -323,6 +339,45 @@ class Decoder(nn.Module):
 # V7: Multi-scale brain ↔ UNet interface
 # ═══════════════════════════════════════════════════════════════════
 
+
+# ---------------------------------------------------------------------------
+# SUBSTRATE-SIZE TABLES  (added for tensor8k, 2026-09-16)
+#
+# The collector and readout partition the graph's colour classes into blocks
+# that carry encoder / decoder feature maps.  Those blocks were hard-coded for
+# the 7-vertex-seed lineage, whose colour classes are always
+#     16,807 x (2/7, 2/7, 3/7) = 4,802 / 4,802 / 7,203.
+# The 20-vertex-seed lineage gives 8,000 x (6/20, 6/20, 8/20) = 2,400 / 2,400 /
+# 3,200, so the fixed budgets (4,352 nodes before s0; 7,168 before the readout
+# remainder) no longer fit.  The tables below make the partition a function of
+# the colour-class size.
+#
+# The 4802 / 7203 entries ARE the deposited configuration and must not change:
+# they define every trained checkpoint.  Grids are (h, w) and their products
+# sum to exactly the class size (the 7203 readout leaves 35 nodes without a
+# spatial slot, as documented below; that is preserved).
+# ---------------------------------------------------------------------------
+COLLECTOR_GRIDS = {
+    # n1  : s3          s4         s5        s2          s1          s0
+    4802: dict(s3=(32, 32), s4=(16, 16), s5=(8, 8), s2=(32, 64), s1=(30, 32), s0=(18, 25)),
+    2400: dict(s3=(16, 32), s4=(8, 16),  s5=(4, 8), s2=(16, 64), s1=(15, 32), s0=(14, 16)),
+}
+READOUT_GRIDS = {
+    # n3  : t3          t2          t1          t0
+    7203: dict(t3=(32, 32), t2=(32, 64), t1=(32, 64), t0=(32, 64)),   # 7168 of 7203
+    3200: dict(t3=(16, 32), t2=(16, 56), t1=(16, 56), t0=(16, 56)),   # 3200 of 3200
+}
+
+
+def _grids(table, n, what):
+    if n not in table:
+        raise ValueError(
+            "%s: no block layout for a colour class of %d nodes. Known: %s. "
+            "Add an entry whose grid products sum to %d (and to no more than it)."
+            % (what, n, sorted(table), n))
+    return table[n]
+
+
 class BrainCollectorV7(nn.Module):
     """Maps ALL encoder levels to brain layer-1 nodes (4802 nodes, C channels).
 
@@ -351,12 +406,16 @@ class BrainCollectorV7(nn.Module):
         # s5 (8x8 = 64 nodes) added so the graph sees the encoder's full depth.
         # The 64 nodes come out of s1: 1024 -> 960, pooled (30,32) instead of (32,32).
         # was: n_s3 1024 | n_s4 256 | n_s2 2048 | n_s1 1024 | n_s0 = remainder (450)
-        self.n_s3 = 1024
-        self.n_s4 = 256
-        self.n_s5 = 64
-        self.n_s2 = 2048
-        self.n_s1 = 960
+        g = _grids(COLLECTOR_GRIDS, n1, 'BrainCollectorV7')
+        self.s3_pool, self.s4_pool, self.s5_pool = g['s3'], g['s4'], g['s5']
+        self.n_s3 = g['s3'][0] * g['s3'][1]
+        self.n_s4 = g['s4'][0] * g['s4'][1]
+        self.n_s5 = g['s5'][0] * g['s5'][1]
+        self.n_s2 = g['s2'][0] * g['s2'][1]
+        self.n_s1 = g['s1'][0] * g['s1'][1]
         self.n_s0 = n1 - self.n_s3 - self.n_s4 - self.n_s5 - self.n_s2 - self.n_s1
+        assert self.n_s0 == g['s0'][0] * g['s0'][1], (
+            'COLLECTOR_GRIDS[%d] grids must sum to n1' % n1)
 
         self.proj_s3 = nn.Conv2d(512, channels, 1)
         self.proj_s4 = nn.Conv2d(512, channels, 1)
@@ -365,17 +424,20 @@ class BrainCollectorV7(nn.Module):
         self.proj_s1 = nn.Conv2d(128, channels, 1)
         self.proj_s0 = nn.Conv2d(64, channels, 1)
 
-        self.s2_pool = (32, 64)
-        self.s1_pool = (30, 32)   # was (32,32)=1024; 64 nodes reallocated to s5
-        self.s0_pool = (18, 25)
+        self.s2_pool = g['s2']
+        self.s1_pool = g['s1']    # was (32,32)=1024; 64 nodes reallocated to s5
+        self.s0_pool = g['s0']
 
     def forward(self, s0, s1, s2, s3, s4, s5):
         with torch.amp.autocast('cuda', enabled=False):
             s0, s1, s2, s3, s4, s5 = s0.float(), s1.float(), s2.float(), s3.float(), s4.float(), s5.float()
 
-            h_s3 = self.proj_s3(s3).flatten(2).permute(0, 2, 1)
-            h_s4 = self.proj_s4(s4).flatten(2).permute(0, 2, 1)
-            h_s5 = self.proj_s5(s5).flatten(2).permute(0, 2, 1)
+            # adaptive_avg_pool2d to a level's native size is the identity, so at
+            # n1 = 4802 these three lines are numerically unchanged from the
+            # deposited model, which read s3/s4/s5 at full resolution.
+            h_s3 = self.proj_s3(F.adaptive_avg_pool2d(s3, self.s3_pool)).flatten(2).permute(0, 2, 1)
+            h_s4 = self.proj_s4(F.adaptive_avg_pool2d(s4, self.s4_pool)).flatten(2).permute(0, 2, 1)
+            h_s5 = self.proj_s5(F.adaptive_avg_pool2d(s5, self.s5_pool)).flatten(2).permute(0, 2, 1)
             h_s2 = self.proj_s2(F.adaptive_avg_pool2d(s2, self.s2_pool)).flatten(2).permute(0, 2, 1)
             h_s1 = self.proj_s1(F.adaptive_avg_pool2d(s1, self.s1_pool)).flatten(2).permute(0, 2, 1)
             h_s0 = self.proj_s0(F.adaptive_avg_pool2d(s0, self.s0_pool)).flatten(2).permute(0, 2, 1)
@@ -418,7 +480,7 @@ class BrainCollectorV7(nn.Module):
         # zero across the right two-thirds. v1001 had 22 pad in a 43-wide row.
         # 2048 on a 32x64 grid pads nothing. The 35 leftover nodes lose their
         # spatial slot but still reach the decoder via proj_t4 / proj_t5.
-#         self.n_t0 = 2048   # (inside the superseded BrainTwinPathV7 block; commented 2026-08-16 -- it had lost its leading # and was being parsed as the last statement of BrainCollectorV7.forward)
+#         self.n_t0 = rg['t0'][0] * rg['t0'][1]   # (inside the superseded BrainTwinPathV7 block; commented 2026-08-16 -- it had lost its leading # and was being parsed as the last statement of BrainCollectorV7.forward)
 #
 #         self.grid_t4 = (16, 16)        # produced by proj_t4, not sliced
 #         self.grid_t3 = (32, 32)
@@ -522,9 +584,10 @@ class BrainTwinPathV1003(nn.Module):
         self.n3 = n3
         self.channels = channels
 
-        self.n_t3 = 1024
-        self.n_t2 = 2048
-        self.n_t1 = 2048
+        rg = _grids(READOUT_GRIDS, n3, 'BrainTwinPathV1003')
+        self.n_t3 = rg['t3'][0] * rg['t3'][1]
+        self.n_t2 = rg['t2'][0] * rg['t2'][1]
+        self.n_t1 = rg['t1'][0] * rg['t1'][1]
         # ---- CHANGED 2026-08-16 ----
         # was: n_t0 = n3 - n_t3 - n_t2 - n_t1 = 2083, on a 46x46=2116 grid.
         # 2083 is prime, so no grid fits: the 33 pad slots all landed in the last
@@ -533,14 +596,18 @@ class BrainTwinPathV1003(nn.Module):
         # zero across the right two-thirds. v1001 had 22 pad in a 43-wide row.
         # 2048 on a 32x64 grid pads nothing. The 35 leftover nodes lose their
         # spatial slot but still reach the decoder via proj_t4 / proj_t5.
-        self.n_t0 = 2048
+        # FIXED 2026-09-25: was the literal 2048, correct only for n3 = 7203.
+        # Nothing reads this field -- the forward slices a3[:, i3:, :] and
+        # reshapes with grid_t0 -- but on the 8k substrate the real t0 block is
+        # 896 and the attribute said 2048.  Derived so it cannot mislead.
+        self.n_t0 = rg['t0'][0] * rg['t0'][1]
 
         self.grid_t5 = (8, 8)          # produced by proj_t5, not sliced
         self.grid_t4 = (16, 16)        # produced by proj_t4, not sliced
-        self.grid_t3 = (32, 32)
-        self.grid_t2 = (32, 64)
-        self.grid_t1 = (32, 64)
-        self.grid_t0 = (32, 64)             # 2048 exactly, pad 0
+        self.grid_t3 = rg['t3']
+        self.grid_t2 = rg['t2']
+        self.grid_t1 = rg['t1']
+        self.grid_t0 = rg['t0']             # sized to pad 0
 
         # linear projection over the node dimension: all n3 nodes -> 64 slots
         self.proj_t5 = nn.Linear(n3, self.grid_t5[0] * self.grid_t5[1])
@@ -584,6 +651,13 @@ class BrainTwinPathV1003(nn.Module):
         g_t4 = self.proj_t4(src_t4.transpose(1, 2)).reshape(-1, self.channels, h4, w4)
 
         g_t3 = self._to_grid(a3[:, i0:i1, :], *self.grid_t3)
+        # t3 feeds the decoder directly at 32x32 (no interpolation in the
+        # deposited model).  When the substrate is small enough that t3's block
+        # cannot be a full 32x32 grid, resample it here; at n3 = 7203 the grid
+        # already IS (32, 32) and this branch is not taken, so the deposited
+        # path is untouched.
+        if self.grid_t3 != (32, 32):
+            g_t3 = F.interpolate(g_t3, size=(32, 32), mode='bilinear', align_corners=False)
         g_t2 = self._to_grid(a3[:, i1:i2, :], *self.grid_t2)
         g_t1 = self._to_grid(a3[:, i2:i3, :], *self.grid_t1)
         g_t0 = self._to_grid(a3[:, i3:,   :], *self.grid_t0)

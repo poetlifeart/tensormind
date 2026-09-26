@@ -40,7 +40,12 @@ SEED   = np.array([[0,2],[0,5],[1,3],[1,4],[1,6],[2,5],[2,6],[3,4],[3,6]], dtype
 PRUNE_FRAC, ADD_FRAC, RES, TARGET = 0.10, 0.18, 40, 1015
 
 # expected record (from reproduce_champions.py, verified) -- what a correct build must give
-EXPECT = dict(parent_edges=277319, n=1015, density=0.130, std=68, dmin=3, dmax=502,
+# ADDED 2026-09-25: quotient_edges.  The check covered the parent edge count and
+# seven quotient statistics but not the quotient's own edge count, leaving
+# density 0.130 +- 0.004 as the only proxy -- which admits roughly 64,700 to
+# 68,800 edges.  67,094 is the recorded value for seed 42.
+EXPECT = dict(parent_edges=277319, n=1015, quotient_edges=67094,
+              density=0.130, std=68, dmin=3, dmax=502,
               ks=0.111, Q=0.52)
 
 # ---------------- construction primitives (inlined) ----------------
@@ -199,6 +204,8 @@ def main():
     def close(a,b,t): return abs(a-b)<=t
     checks=[('fine parent edges', len(edges)==EXPECT['parent_edges'], f"{len(edges)} vs {EXPECT['parent_edges']}"),
             ('end n',        nq==EXPECT['n'],                   f"{nq} vs {EXPECT['n']}"),
+            ('end edges',    Gq.number_of_edges()==EXPECT['quotient_edges'],
+             f"{Gq.number_of_edges()} vs {EXPECT['quotient_edges']}"),
             ('end density',  close(dens,EXPECT['density'],0.004), f"{dens:.3f} vs {EXPECT['density']}"),
             ('end std',      close(dg.std(),EXPECT['std'],2),   f"{dg.std():.1f} vs {EXPECT['std']}"),
             ('end min',      dg.min()==EXPECT['dmin'],          f"{dg.min()} vs {EXPECT['dmin']}"),
@@ -209,8 +216,12 @@ def main():
     for name,ok,detail in checks:
         print(f"  [{'PASS' if ok else 'FAIL'}] {name:18s} {detail}")
     print("="*46)
-    print("ALL PASS -- graph reproduced." if all(c[1] for c in checks) else "MISMATCH -- see above.")
+    _ok = all(c[1] for c in checks)
+    print("ALL PASS -- graph reproduced." if _ok else "MISMATCH -- see above.")
     print(f"total {time.time()-t0:.0f}s")
+    # ADDED 2026-09-25: exit nonzero on mismatch, so a failed reproduction is
+    # visible to a shell or CI and not only to a reader of the output.
+    return 0 if _ok else 1
 
 if __name__=='__main__':
-    main()
+    raise SystemExit(main() or 0)

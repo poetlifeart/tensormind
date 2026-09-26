@@ -68,6 +68,17 @@ All five pass every criterion, under the same protocol as the deposited run
 (100 degree-preserving nulls, 1,000 rich-club nulls). Audit JSONs are in this
 folder as `audit_quot_seed*.json`.
 
+> **These four cannot be regenerated from the current code, and that is by
+> design.** `build_seed_quotients.py` calls `chromatic_ablation.py`'s `grow()`,
+> which now permutes candidates before applying the quota. `rng.shuffle` consumes
+> draws, so the random stream moved: at `f = 0` seed 99 the quotient is now
+> 1,015 / 64,491, and the five f=0 seeds span 61,489–64,491 (which is what
+> `--control` asserts). The shipped `quot_seed*.npz` and their audits predate the
+> fix. Seed 99's 64,760 is still reproducible — that graph comes from
+> `construct.py`, which is untouched — but seeds 1–4 are not. Rerunning
+> `build_seed_quotients.py` gives four different, equally valid graphs that would
+> need re-auditing.
+
 The deposited run is the most favourable of the five — it has the largest
 quotient, which puts its density and mean degree closest to the reference.
 Reproducing under another seed should give about 63,000 quotient edges and the
@@ -134,62 +145,74 @@ Admitting a monochromatic closure with probability `f`, changing nothing else.
 Five random seeds per row. **Relations** means distinct supernode pairs joined
 by at least one parent edge, i.e. edges of the strict quotient.
 
-| f | monochromatic | parent edges | relations | relations per parent edge | vs Budapest (70,654) |
+> **CORRECTED 2026-09-25.** The table that stood here was the PRE-FIX sweep,
+> `results_chromatic_ablation.json` — the file this README's own file list
+> describes as "not used by the paper". It was never updated when the sampler bug
+> was found and the sweep rerun on 2026-09-23. Four conclusions drawn from it
+> were wrong; all four are corrected below, and the paper already carries the
+> corrected numbers. Regenerate this table with
+> `python3 aggregate_sweep.py results_chromatic_ablation_shuffled.json`.
+
+| f | monochromatic | parent edges | relations | full distance | shape distance |
 |---|---:|---:|---:|---:|---:|
-| 0.00 | 0 | 480,634 | 63,457 | 0.13203 | 89.8% |
-| 0.01 | 8,149 | 484,454 | 58,680 | 0.12112 | 83.1% |
-| 0.02 | 15,338 | 487,566 | 56,644 | 0.11619 | 80.2% |
-| 0.05 | 32,945 | 495,266 | 55,308 | 0.11170 | 78.3% |
-| 0.10 | 51,557 | 502,186 | 55,180 | 0.10988 | 78.1% |
-| 0.20 | 73,458 | 506,798 | 53,952 | 0.10646 | 76.4% |
-| 0.35 | 94,853 | 508,336 | 53,100 | 0.10445 | 75.2% |
-| 0.50 | 108,848 | 510,642 | 51,944 | 0.10172 | 73.5% |
-| 0.75 | 123,811 | 512,180 | 50,016 | 0.09765 | 70.8% |
-| 1.00 | 143,219 | 512,180 | 49,171 | 0.09600 | 69.6% |
+| 0.00 | 0 | 480,560 | 63,019 | 0.076 | 0.060 ± 0.004 |
+| 0.01 | 8,152 | 484,503 | 59,424 | 0.096 | 0.065 ± 0.004 |
+| 0.02 | 15,995 | 488,347 | 57,370 | 0.109 | 0.070 ± 0.004 |
+| 0.05 | 33,215 | 495,266 | 55,392 | 0.125 | 0.080 ± 0.005 |
+| 0.10 | 52,044 | 501,417 | **54,538** | 0.132 | 0.085 ± 0.005 |
+| 0.20 | 76,644 | 506,798 | 55,312 | 0.129 | 0.084 ± 0.002 |
+| 0.35 | 100,258 | 508,336 | 54,905 | 0.132 | 0.087 ± 0.004 |
+| 0.50 | 118,788 | 510,642 | 55,470 | 0.129 | 0.085 ± 0.004 |
+| 0.75 | 140,731 | 512,180 | 56,292 | 0.125 | 0.085 ± 0.004 |
+| 1.00 | 156,717 | 512,180 | 56,812 | 0.122 | 0.085 ± 0.006 |
 
-**Strictly decreasing at every one of the ten steps.** The separation is
-**18.6 standard deviations** between endpoints and **5.5 sd** for the first
-1% of violation — by a wide margin the largest effect in this sweep.
+**Not monotone.** The quotient reaches its minimum near `f = 0.10` (54,538) and
+then partly recovers, to 56,812 at `f = 1`. The previous claim — "strictly
+decreasing at every one of the ten steps", separating the endpoints by "18.6
+standard deviations" — was an artifact of the sampler bug and is withdrawn.
 
-**It is not a density effect, and the direction proves it.** Relaxing the
-constraint adds **+31,546 parent edges** and **loses
--14,286 relations**. A graph that grew cannot be sparser by accident. The
-extra edges are spent thickening coarse edges that already exist rather than
-opening new ones — 9.50 parent edges per relation against 6.88.
+**The loss is 9.8%, not 22%.** 63,019 relations constrained against 56,812 fully
+relaxed.
 
-**What the constraint is doing.** The chromatic filter is selective in a
-specific direction: the candidates it rejects are disproportionately ones that
-would have landed on a supernode pair *already represented*. Rejecting them
-forces closure onto pairs not yet joined. That explains three things at once:
+**It is still not a density effect, and the direction still proves it.**
+Relaxing the constraint ADDS 31,620 parent edges (480,560 → 512,180) while the
+quotient LOSES 6,207 relations. A graph that grew cannot be sparser by accident:
+the extra edges thicken coarse edges that already exist instead of opening new
+ones.
 
-* **Why shape statistics are unaffected.** Clustering, transitivity, modularity
-  and degree spread cannot see whether a relation is carried by 6.88 parent
-  edges or 9.50. Shape was never the quantity at risk — shape-only distance is
-  0.060 ± 0.005 constrained against 0.062 ± 0.004 unconstrained, about 0.3 sd.
-* **Why the effect saturates.** Efficiency falls fastest in the first few
-  percent because the easiest candidates to misplace are the already-covered
-  ones; once those are exhausted the marginal damage slows.
-* **Why the quotient sparsifies while the parent grows.** Concentration, not
-  absorption. Monochromatic edges are intra-supernode 9.76% of the time against
-  9.31% for the rest — essentially no difference, and the block filter applies
-  at every f anyway.
+**Shape agreement is better when constrained, by about four standard
+deviations.** 0.060 ± 0.004 constrained against 0.085 ± 0.006 fully relaxed, on
+the six non-density measures. Under the corrected sampler all five shape
+measures are closer to the reference when the constraint holds, including the
+two that previously looked like counterexamples: degree s.d. 60.92 → 53.88
+against a reference 71.58, and transitivity 0.5037 → 0.4990 against 0.5578 —
+both FARTHER without the constraint, not closer.
 
-**Why it matters.** Relation coverage is what the strict quotient is built to
-expose, and what a connectome comparison is about: the reference has 70,654
-distinct relations among 1,015 regions. Constrained recovers **89.8%** of them;
-unconstrained **69.6%**, from a larger parent.
+> **Three earlier readings of this data are withdrawn.**
+> (1) "Unconstrained closure is 1.9x further from the reference" — an artifact of
+> a distance counting edge count, density and mean degree as three measures when
+> at fixed n = 1,015 they are one.
+> (2) "On shape metrics the endpoints are indistinguishable, so the constraint
+> has no demonstrated topological payoff" — false under the corrected sampler;
+> the constraint HELPS shape, by ~4 sd.
+> (3) The monotonicity and the 18.6-sd separation, as above.
 
-> **Two earlier readings of this same data were wrong and are withdrawn.**
-> (1) "Unconstrained closure is 1.9x further from the reference" — an artifact
-> of a distance that counted edge count, density and mean degree as three
-> measures when at fixed n = 1,015 they are one. (2) "On shape metrics the
-> endpoints are indistinguishable, so the constraint has no demonstrated
-> topological payoff" — true, but measuring the wrong quantity.
+**What the sampler bug was.** `close_relaxed` ended each round with
+`np.unique(...)[:remaining]`. `np.unique` returns SORTED keys, the key is
+`min*n + max`, and in this construction both colour and block are read off the
+leading base-20 digit of the vertex index — so truncating to the quota kept the
+lowest-indexed endpoints and discarded whole high-index blocks, which are the
+monochromatic-rich ones by arithmetic. At `f = 0` the chromatic filter holds the
+pool at or under quota, so the truncation fires only on end-of-quota remainders
+worth 2–3 edges in 477,584; the overflow, and therefore the error, grows with
+`f`. The fix permutes the candidates before truncating. Files produced after it
+carry a `stage_closures` field, which is how to tell them apart.
 
 > **What this does not show.** Not that the constraint is necessary or
-> sufficient for connectome-like topology, and not that it improves
-> shape-level agreement. The paper's claim is compatibility: a graph held to
-> chi = 3 throughout growth can still sit under a connectome-like quotient.
+> sufficient for connectome-like topology. The paper's claim is compatibility
+> plus a measured association: a graph held to chi = 3 throughout growth, with
+> the constraint demonstrably active, can still sit under a connectome-like
+> quotient, and relaxing it costs coarse relations and shape agreement.
 
 ## How to run
 
@@ -220,7 +243,7 @@ python3 bind_rate.py
 **Run the ablation sweep** (50 runs, ~25 s each, ~21 min):
 
 ```bash
-python3 chromatic_ablation.py --out results_chromatic_ablation_shuffled.json   # full grid
+python3 chromatic_ablation.py            # full grid -> results_chromatic_ablation_shuffled.json
 python3 chromatic_ablation.py --f 0 0.05 1.0 --seeds 99 1   # a quick subset
 ```
 
@@ -253,7 +276,7 @@ not launch one casually.
 | `bind_rate.py` | instruments closure and counts colour rejections |
 | `build_seed_quotients.py` | builds `quot_seed*.npz` for auditing |
 | `results_chromatic_ablation_shuffled.json` | the 50-run sweep — **the source of the paper's ablation table** |
-| `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper |
+| `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper. `--out` no longer defaults to this path, and the script refuses to overwrite an existing output without `--force` |
 | `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits, all 9/9 |
 
 **On code duplication, stated plainly.** `build_seed_quotients.py` does exec

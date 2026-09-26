@@ -78,7 +78,20 @@ the same change here, and pin `networkx==3.5` for both runs.
 
 ## Also note
 
-- The script has hard-coded absolute paths for its input parent and output directory.
-- It does `from connectome_audit_gold import main as audit_main` (line 460). That
-  file lives in `graphnets/graphmetrics/`, so the import will fail from here until
-  the path is fixed.
+Two warnings that used to stand here are obsolete, corrected 2026-09-25. Both
+were fixed before the repository was published:
+
+- Paths are resolved relative to the script (`PARENT_PATH`, `OUT_DIR`), so it
+  runs from any working directory. The absolute strings survive only as
+  `# original (pre-tensormind):` comments.
+- The `from connectome_audit_gold import main as audit_main` near the end is
+  preceded by `sys.path.insert(0, os.path.join(HERE, '..','..','..','..',
+  'graphmetrics'))`, which resolves to `graphnets/graphmetrics/`. The import
+  works.
+
+The warning above it — that lines 44-216 duplicate the entire quotient pipeline
+with no shared module and no consistency check — **still stands**. Note also that
+five files independently reimplement the resolution-20 Louvain coarsening, not
+the two named above: `finalgraph/step1_match_bundles.py`,
+`finalgraph/step2_symmetric_swap_lift.py`, `finalgraph/step4_degree_match.py`,
+`../save_v146_npz.py` and this script.

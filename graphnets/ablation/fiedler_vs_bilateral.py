@@ -67,7 +67,7 @@ for _size in (n_q // 2, n_q // 2 + 1):
     if _best is None or _c < _best[0]:
         _best = (_c, _p)
 cutF, fied = _best
-print(f"|dF| Fiedler        = {cutF:,}  ({100*cutF/m:.2f}%)   paper: 2,568 (3.97%)")
+print(f"|dF| Fiedler        = {cutF:,}  ({100*cutF/m:.2f}%)   paper: 2,404 (3.71%)")
 print(f"lambda_2            = {lam2:.4f}                    paper: 6.90")
 
 print("\n--- MEMBERSHIP, NOT COST: do the two partitions pick the same vertices? ---")
@@ -78,4 +78,7 @@ print(f"  NMI(Fiedler, bilateral)           : {normalized_mutual_info_score(hemi
 h = hemi*2.0-1.0; h -= h.mean()
 corr = abs(float(v2 @ h)) / (np.linalg.norm(v2)*np.linalg.norm(h))
 print(f"  |<v2, h>| / (||v2|| ||h||)        : {corr:.4f}")
-np.savez('fiedler_check.npz', hemi=hemi, fied=fied, v2=v2, super_block=super_block)
+# FIXED 2026-09-25: was written to the CWD; every other script in this folder
+# resolves its paths relative to __file__.
+np.savez(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fiedler_check.npz'),
+         hemi=hemi, fied=fied, v2=v2, super_block=super_block)

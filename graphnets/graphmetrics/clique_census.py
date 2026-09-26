@@ -352,7 +352,10 @@ def main():
     parser.add_argument("--skip-nulls", action="store_true", help="Skip null model comparison")
     parser.add_argument("--json", type=str, default=None, help="Output JSON path")
     parser.add_argument("--density-threshold", type=float, default=None,
-                        help="Threshold to target density (remove weakest edges)")
+                        help="Thin to this density by removing UNIFORMLY RANDOM "
+                             "edges (seeded). These graphs are unweighted, so "
+                             "there is no 'weakest' edge to remove; the help text "
+                             "said otherwise until 2026-09-25.")
     args = parser.parse_args()
 
     print(f"Loading graph: {args.graph}")

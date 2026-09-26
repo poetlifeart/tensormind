@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-connectome_audit.py — Comprehensive brain-likeness topology audit.
+connectome_audit_gold.py — Comprehensive brain-likeness topology audit.
 
 Merges the best methods from two prior analyzers and adds literature-standard
 metrics for a thorough connectomics evaluation:
@@ -26,10 +26,9 @@ Newman & Girvan (2004), Guimera & Amaral (2005),
 Colizza et al. (2006), van den Heuvel & Sporns (2011),
 Betzel et al. (2017), Song et al. (2005, 2007).
 
-Usage:
-    python connectome_audit.py
-    python connectome_audit.py --graph graph_layers.npz --n-null 100
-    python connectome_audit.py --json audit.json
+Usage (--graph is required; there is no default):
+    python connectome_audit_gold.py --graph G.npz --json audit.json
+    python connectome_audit_gold.py --graph G.npz --n-null 100 --n-null-rc 1000
 """
 
 from __future__ import annotations
@@ -1180,7 +1179,10 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
     ce = float(real['global_eff'] / density) if density > 0 else float('nan')
 
     # ── Evidence scorecard ────────────────────────────────────────────
-    # Three-state: 'pass', 'near_pass' (within ~10% of threshold), 'fail'
+    # TWO states: 'pass' and 'fail'.  A third, 'near_pass', was described here
+    # and is still counted by print_report, but no verdict function can return
+    # it, so it never occurs. Left in the reporting path harmlessly; do not read
+    # the absence of near-passes as a measurement.
     def _sw_verdict_er():
         # H&G S^Delta > 1: transitivity ratio over path-length ratio, ER null.
         # This is the SCORED small-worldness criterion; _sw_verdict_dp below is

@@ -22,11 +22,26 @@ in `reference/`.
 cd graphnets/construction/bilateral
 
 python3 construct.py                 # build and verify the parent + quotient   (~3 min)
+python3 export_graphs.py             # write graphs/ -- REQUIRED BEFORE THE NEXT TWO
 python3 stats.py                     # recompute every quoted number            (~4 min)
 python3 make_figures.py              # regenerate all six figures               (~8 min)
 ```
 
-Nothing takes arguments to do the standard thing. `construct.py` grows the
+Nothing takes arguments to do the standard thing.
+
+**Run `export_graphs.py` before `stats.py` or `make_figures.py`.** `construct.py`
+prints its verification but writes nothing unless given `--out`, and then only
+CSVs. The four files in `graphs/` are `.gitignored` because they are
+regenerable, so a fresh checkout does not have them and anything that reads them
+fails. `export_graphs.py` calls `construct.py`'s own `grow()` and `coarsen()` and
+writes all four: the parent, the parent plus its supernode assignment, the
+1,015-node quotient, and the quotient's bundle weights. It is deterministic, and
+`--check` verifies a rebuild against files already present.
+
+`graphs/cnew_parent_supernode.npz` is also the substrate the recurrent
+inpainting models use; copy it to
+`graphdynamics/graph_8k_parent_supernode.npz` to run them on it. See
+`graphdynamics/README.md`. `construct.py` grows the
 graph from a hard-coded seed and prints its own verification; it does not read
 any file unless you ask it to.
 
@@ -48,6 +63,7 @@ No GPU. No compilation. Peak memory is about 3 GB, in the parent's adjacency.
 
 ```
 construct.py              the construction: seed -> parent -> quotient (1,015 nodes)
+export_graphs.py          writes graphs/ from construct.py; run it first
 stats.py                  recomputes every number quoted about this graph
 static_tests.py           the six static generative tests against Budapest
 display_quotient.py       community-ordered adjacency rendering

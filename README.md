@@ -27,16 +27,36 @@ Needs `tcolorbox` (Debian/Ubuntu: `sudo apt install texlive-latex-extra`).
 graphnets/                      build the graphs and measure them
   Budapest/                     budapest_connectome.gml   1,015 nodes / 70,654 edges
   construction/
-    global/                     the parent, and the earlier quotient/lift path
-    finalgraph/                 THE PAPER'S GRAPH: parent -> matched quotient
-    local/                      the local-repair construction
-  graphmetrics/                 six metric scripts
+    bilateral/                  THE 8,000-NODE SEED-ENCODED CONSTRUCTION
+                                  -- one of the two the main article emphasises
+      blockwise/                  the same parent, coarsened by Louvain alone
+      bundles/                    fibre-bundle post-processing
+    local/                      the local prune-repair construction
+                                  -- the other one the main article emphasises
+    global/                     the integrated parent, and the earlier
+                                  quotient/lift path
+    finalgraph/                 parent -> degree-matched quotient. The optional
+                                  fibre-bundle refinement; the supplementary
+                                  notes mark it exploratory
+  graphmetrics/                 seven metric scripts
+  ablation/                     does the chromatic constraint do anything?
+  expressiveness/               grammar sweep over seeds, chi and closure
 
 graphdynamics/                  the inpainting models
-  v1003/                        Graph+attn.  <- the reported arm
-  feeder1004/                   Graph  (v1003 minus supernode attention)
-  unet/                         U-Net baseline
+  v1003/                        Graph + supernode attention  <- the reported arm
+  feeder1004/                   Graph, attention removed (the ablation arm)
+  unet/                         U-Net baseline (takes no graph)
+  v1004bundle/                  Graph with bundle-map message passing
 ```
+
+**Which construction the article reports.** The main text emphasises the
+`local/` prune-repair construction and the `bilateral/` 8,000-node seed-encoded
+construction. The `finalgraph/` relocation pipeline is retained as an optional
+refinement, for the case where fibre-bundle multiplicity is targeted explicitly;
+the supplementary notes head those sections "Exploratory; not part of the main
+article's reported results". This README described `finalgraph/` as "THE PAPER'S
+GRAPH" and omitted `bilateral/`, `ablation/` and `expressiveness/` entirely until
+2026-09-25, having been written before the article was reorganised.
 
 The two halves are independent. `graphnets/` needs nothing but Python;
 `graphdynamics/` ships its graph already built and needs CelebA-HQ and a GPU.
@@ -131,6 +151,30 @@ now train on the final parent** — shipped as
 `graphdynamics/graph_degmatch_parent_supernode.npz`, identical to
 `finalgraph/parent_degmatch_masks.npz` with the supernode map attached.
 
+## Step 0. The 8,000-node construction  (independent of everything else)
+
+```bash
+cd graphnets/construction/bilateral
+python3 construct.py             # build and verify parent + quotient  (~3 min)
+python3 export_graphs.py         # write graphs/ -- needed by everything downstream
+```
+
+Self-contained: it reads no file, and grows both graphs from the 20-vertex seed
+in `construct.py`. `construct.py` verifies as it goes but writes nothing;
+`export_graphs.py` writes the four files that `stats.py`, `bundles/bundles.py`,
+`make_figures.py` and the inpainting models read. They are `.gitignored` because
+they are regenerable, so a fresh checkout must run this first.
+
+Outputs, in `bilateral/graphs/`:
+- `cnew_parent.npz` — **8,000 / 477,584**, three tripartite masks
+- `cnew_parent_supernode.npz` — the same plus the 1,015-supernode map. This is
+  the substrate the recurrent models use; copy it to
+  `graphdynamics/graph_8k_parent_supernode.npz`
+- `cnew_coarse.npz` + `cnew_coarse_w.npy` — **1,015 / 64,760** and its bundle
+  weights
+
+See `bilateral/README.md`.
+
 ## Step 4. The local construction  (independent of steps 1-3)
 
 ```bash
@@ -149,9 +193,12 @@ Needs nothing from the global pipeline. Can run first, last, or alongside.
 
 | graph | nodes | edges | built by | status |
 |---|---|---|---|---|
+| **8k parent** | **8,000** | **477,584** | `bilateral/construct.py` | **reported** |
+| **8k quotient** | **1,015** | **64,760** | `bilateral/construct.py` | **reported** |
+| block-wise quotient | 1,076 | 73,152 | `bilateral/blockwise/` | comparison |
 | global parent | 16,807 | 337,983 | step 1 | input to everything |
-| **final parent** | **16,807** | **337,980** | **step 2** | **reported** |
-| **final quotient** | **1,015** | **71,098** | **step 2** | **reported** |
+| final parent | 16,807 | 337,980 | step 2 | optional refinement |
+| final quotient | 1,015 | 71,098 | step 2 | optional refinement |
 | pre-swap quotient (v14) | 1,015 | 70,537 | step 3 | superseded |
 | post-swap quotient (v146) | 1,015 | 70,538 | step 3 | superseded |
 | feeder lift | 16,807 | 344,483 | step 3 | superseded |
@@ -163,7 +210,7 @@ Needs nothing from the global pipeline. Can run first, last, or alongside.
 
 # Part 2 — Measure them
 
-Six scripts, one interface: **one graph in, one JSON out.**
+Seven scripts, one interface: **one graph in, one JSON out.**
 
 ```bash
 python3 graphnets/graphmetrics/connectome_audit_gold.py \

@@ -47,13 +47,29 @@ def load_graph(path):
         else:                                   # tripartite colour-class masks
             n1, n2, n3 = int(d['n1']), int(d['n2']), int(d['n3'])
             G.add_nodes_from(range(n1 + n2 + n3))
-            for k, (ro, co) in (('mask_12', (0, n1)), ('mask_13', (0, n1 + n2)),
-                                ('mask_23', (n1, n1 + n2))):
+            # FIXED 2026-09-25.  The offsets were applied the wrong way round:
+            # this read (row + lower_offset, col + higher_offset), while every
+            # other loader in the repository reads (col + lower, row + higher)
+            # -- see connectome_audit_gold._graph_from_masks, run_complexity,
+            # run_controllability and combinatorial_metrics_npz, and the writers
+            # graph_sparsify_memb / graph_bridge_paper, which build mask_12 as
+            # (n2, n1) with mask_12[higher, lower] = 1.
+            #   Measured on the 8,000-node parent before the fix: 7,200 nodes
+            #   instead of 8,000 (800 fell out as isolates), only 233,906 of
+            #   477,584 edges correct, and 21,795 edges monochromatic under the
+            #   true colouring against 0 in the real graph.  mask_13 is (n3, n1),
+            #   so the swap did not merely transpose -- it used row indices up to
+            #   n3-1 as colour-1 vertex ids, which that class does not have.
+            # Only the mask branch was affected; 'edges' .npz and .gml were not.
+            for k, (r_off, c_off) in (('mask_12', (n1, 0)),
+                                      ('mask_13', (n1 + n2, 0)),
+                                      ('mask_23', (n1 + n2, n1))):
                 if k not in d:
                     continue
                 M = d[k]
                 r, c = (np.nonzero(M) if M.ndim == 2 else (M[:, 0], M[:, 1]))
-                G.add_edges_from(zip((r + ro).tolist(), (c + co).tolist()))
+                # row indexes the HIGHER colour class, col the LOWER
+                G.add_edges_from(zip((c + c_off).tolist(), (r + r_off).tolist()))
     else:
         raise SystemExit(f"unsupported graph file: {path}")
     G.remove_edges_from(nx.selfloop_edges(G))

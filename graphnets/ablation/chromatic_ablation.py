@@ -190,7 +190,14 @@ if __name__ == '__main__':
                     help='violation probabilities to sweep (default: 10 values)')
     ap.add_argument('--seeds', type=int, nargs='+', default=None,
                     help='random seeds (default: 99 1 2 3 4)')
-    ap.add_argument('--out', default='results_chromatic_ablation.json')
+    # ---- CHANGED 2026-09-25 ----
+    # The default used to be results_chromatic_ablation.json, which is the
+    # ARCHIVED PRE-FIX sweep the README keeps as a record and the paper does
+    # not use. A bare run therefore overwrote it. Defaults to the corrected
+    # file now, and refuses to clobber any existing output without --force.
+    ap.add_argument('--out', default='results_chromatic_ablation_shuffled.json')
+    ap.add_argument('--force', action='store_true',
+                    help='overwrite --out if it already exists')
     args = ap.parse_args()
 
     if args.control:
@@ -216,6 +223,12 @@ if __name__ == '__main__':
               f"-{F0_QUOTIENT_RANGE[1]:,}: {quotient_ok}")
         raise SystemExit(0 if (parent_ok and quotient_ok) else 1)
 
+    if os.path.exists(args.out) and not args.force:
+        raise SystemExit(
+            f"{args.out} already exists. This sweep takes ~21 minutes and would\n"
+            "replace it. Pass --out with a new path, or --force to overwrite.\n"
+            "Note that results_chromatic_ablation.json is the archived pre-fix\n"
+            "sweep and should not be regenerated over.")
     FS = args.f if args.f is not None else [0.0, 0.01, 0.02, 0.05, 0.10, 0.20, 0.35, 0.50, 0.75, 1.0]
     SEEDS = args.seeds if args.seeds is not None else [99, 1, 2, 3, 4]
     print("BUDAPEST reference:", {k: round(BUDSTAT[k], 4) for k in KEYS}, flush=True)

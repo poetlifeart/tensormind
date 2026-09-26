@@ -140,9 +140,10 @@ def sec_bundles():
           % (len(w), len(w2), np.array_equal(np.sort(w), np.sort(w2.astype(float)))))
     # Budapest fibre counts, if the source array is to hand
     bw = None
+    # FIXED 2026-09-25: the second candidate was an absolute path on one
+    # machine.  Both are now repo-relative.
     for c in [os.path.join(HERE, 'reference', 'bud_w.npy'),
-              '/home/vahid/python_programs/tensormind/graphnets/construction/'
-              'finalgraph/inputs/bud_w.npy']:
+              os.path.join(HERE, '..', 'finalgraph', 'inputs', 'bud_w.npy')]:
         if os.path.exists(c):
             bw = np.load(c)
             bw = bw[0] if bw.ndim > 1 else bw

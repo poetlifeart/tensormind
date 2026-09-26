@@ -10,10 +10,21 @@ No hand-written merge rule anywhere.
     PARENT     8,000 vertices, ~478k edges, properly 3-colourable
     QUOTIENT   ~1,076 supernodes, ~73k edges
 
-Of the three coarsenings tested, this scores best on the six graph tests
-(0.182, against 0.244 for a version that adds a local merge rule and 0.311 for
-a global resolution sweep).  The merge rule was costing accuracy rather than
-buying it; restricting Louvain to blocks is what does the work.
+Of the coarsenings tested, this scores best on the six graph tests: 0.182,
+against 0.311 for a global resolution sweep and 0.244 for a variant using a
+SMALLEST-FIRST local merge rule.  Restricting Louvain to blocks is what does the
+work.
+
+  CLARIFIED 2026-09-25.  The 0.244 above is NOT construct.py's rule.  That one
+  merges the globally densest adjacent pair, and its quotient -- the shipped
+  graphs/cnew_coarse.npz -- measures 0.2009, which is the 0.201 quoted in
+  ../README.md.  Reproduce with
+      python3 static_tests.py --graph graphs/cnew_coarse.npz \
+          --budapest reference/budapest_1015_70654.edgelist --label "8k quotient" \
+          --out /tmp/st.png
+  The smallest-first variant behind 0.244 is not shipped here, so that figure
+  cannot be reproduced from this repository; it is reported as history. The two
+  rules are easy to confuse -- see "The merge rule" in ../README.md.
 
 
 WHY THREE COLOURS

@@ -637,7 +637,11 @@ class BrainTwinPathV1003(nn.Module):
         # zero across the right two-thirds. v1001 had 22 pad in a 43-wide row.
         # 2048 on a 32x64 grid pads nothing. The 35 leftover nodes lose their
         # spatial slot but still reach the decoder via proj_t4 / proj_t5.
-        self.n_t0 = 2048
+        # FIXED 2026-09-25: was the literal 2048, correct only for n3 = 7203.
+        # Nothing reads this field -- the forward slices a3[:, i3:, :] and
+        # reshapes with grid_t0 -- but on the 8k substrate the real t0 block is
+        # 896 and the attribute said 2048.  Derived so it cannot mislead.
+        self.n_t0 = rg['t0'][0] * rg['t0'][1]
 
         self.grid_t5 = (8, 8)          # produced by proj_t5, not sliced
         self.grid_t4 = (16, 16)        # produced by proj_t4, not sliced

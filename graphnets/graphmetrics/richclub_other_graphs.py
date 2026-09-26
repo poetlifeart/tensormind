@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
-"""Rich-club rho(k) for the FOUR remaining paper graphs, at the SAME >=20-node floor
-used by richclub_rho_pub.png, so the counts match the paper convention.
+"""Rich-club rho(k) for ONE graph, at the >=20-node floor the paper reports.
+
+Rewritten to one-graph-per-run (--graph, --json both required).  The docstring
+below still described the original batch mode over four hard-coded graphs; the
+PAPER_GRAPHS list is kept only so the paper's set stays discoverable, and OUT is
+unused.  Corrected 2026-09-25.
 
 Null model is auto-selected by the audit's own loader, exactly as in the paper:
   edge-list graphs (the two 1015-node quotients) -> generic degree-preserving null
@@ -25,7 +29,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # connectome_aud
 from connectome_audit_gold import load_layered_graph, _generate_null, _use_generic_null
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT  = os.path.join(HERE, 'results', 'richclub_other_graphs.json')
+# unused: --json is required.  Kept so the historical default is visible.
+_OLD_DEFAULT_OUT = os.path.join(HERE, 'results', 'richclub_other_graphs.json')
 N_NULL   = 1000
 SEED     = 42
 NPROC    = 8

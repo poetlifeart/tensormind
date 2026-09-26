@@ -9,8 +9,13 @@ for the encoder):
   encoder  identical EXCEPT this baseline keeps `self.mid` (3x ResBlock(512,512)
            = 14,164,992 params), the bottleneck the graph replaces. Every other
            encoder module is identical in name, shape and count (26,108,928).
-  totals   baseline 87,103,619 vs graph 75,982,503. The baseline carries 14.6%
-           more parameters, so a graph win is conservative and a graph loss is
+  totals   baseline 87,103,619. The graph arm's total depends on its substrate:
+           74,911,834 on the 8,000-node parent (what the main article reports),
+           75,965,171 on the 16,807-node degmatch parent, 75,982,503 on the
+           older feeder lift. This line quoted the feeder figure until
+           2026-09-25, after the shipped default had moved off that graph.
+           On every one of the three the baseline carries 14-16% MORE
+           parameters, so a graph win is conservative and a graph loss is
            confounded with capacity.
 
 Decoder levels 4 and 3 take the encoder skips s4 and s3 directly, where the

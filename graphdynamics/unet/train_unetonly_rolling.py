@@ -347,12 +347,15 @@ def main():
     # That directory also already holds best_ep36.pt from an April run, so
     # writing into it would have mixed two runs together.
     # was: default='checkpoints_unetonly')
-    parser.add_argument('--save-dir', type=str,
-                        # ---- CHANGED 2026-08-16: new dir for the restarted run ----
-                        # Never reuse a save-dir. ckpt_unet_s0 holds the run
-                        # started 15:33 under the pre-photometric-fix pipeline.
-                        # was: default='/media/vahid/T7 Shield/ckpt_unet_s0')
-                        default='/media/vahid/T7 Shield/ckpt_unet_s0_r4')
+    # ---- CHANGED 2026-09-25: no default ----
+    # It used to default to an absolute path on one machine's external
+    # SSD, pointing at a directory holding a finished run. Required now.
+    parser.add_argument('--save-dir', type=str, required=True,
+                        help='directory for this run''s checkpoints. Must be '
+                             'fresh: never reuse one across runs.')
+    parser.add_argument('--allow-existing', action='store_true',
+                        help='write into a --save-dir that already holds '
+                             'checkpoints (refused by default).')
     args = parser.parse_args()
 
     import random as _random, numpy as _np
@@ -361,6 +364,27 @@ def main():
     torch.manual_seed(args.seed)
     torch.cuda.manual_seed_all(args.seed)
     print(f"Seed: {args.seed}  (torch.initial_seed={torch.initial_seed()})", flush=True)
+
+    # ---- ADDED 2026-09-25: refuse to overwrite an existing run ----
+    # --save-dir used to DEFAULT to an absolute path on the author's external
+    # SSD, and three of those directories hold finished runs behind published
+    # numbers (ckpt_v1003_s0_r4, ckpt_feeder1004_s0, ckpt_unet_s0_r4); the bundle
+    # trainer's default pointed at v1003's directory rather than its own. A bare
+    # invocation therefore overwrote a published run, on the author's machine,
+    # silently. The flag is now required, and a directory that already holds
+    # checkpoints is refused unless you are resuming or say --allow-existing.
+    if not args.resume and not getattr(args, 'allow_existing', False):
+        import glob as _glob
+        _hit = (_glob.glob(os.path.join(args.save_dir, 'rolling_ep*.pt'))
+                + _glob.glob(os.path.join(args.save_dir, 'best*.pt'))
+                + _glob.glob(os.path.join(args.save_dir, 'latest.pt')))
+        if _hit:
+            raise SystemExit(
+                f"--save-dir already holds {len(_hit)} checkpoint file(s):\n"
+                f"  {args.save_dir}\n"
+                "Refusing to start, because writing here would overwrite them.\n"
+                "Use a fresh directory, or --resume to continue that run, or "
+                "--allow-existing if you really mean to write alongside them.")
 
     os.makedirs(args.save_dir, exist_ok=True)
     device = torch.device(args.gpu if torch.cuda.is_available() else 'cpu')

@@ -686,7 +686,10 @@ def main():
         if coarse is not None:
             np.savetxt(f"{pre}_partition.csv", label, fmt="%d",
                        header="supernode", comments="")
-            arr = np.array([[int(k // 1015), int(k % 1015), w]
+            # n_super, not the literal 1015: build_coarse keyed `pairs` on
+            # sum(BLOCK_TARGETS), so a changed target would have decoded wrong.
+            n_super = sum(BLOCK_TARGETS)
+            arr = np.array([[int(k // n_super), int(k % n_super), w]
                             for k, w in zip(pairs, witness)])
             np.savetxt(f"{pre}_coarse_edges.csv", arr, fmt="%d", delimiter=",",
                        header="A,B,witness", comments="")
