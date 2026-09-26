@@ -83,3 +83,8 @@ Thumbs.db
 !graphnets/ablation/results_chromatic_ablation*.json
 !graphnets/ablation/results_stage_ablation*.json
 !graphnets/ablation/audit_quot_seed*.json
+
+# coarsening sweep: results are cited by the paper, so they are tracked
+!graphnets/coarsening_sweep/*.json
+!graphnets/coarsening_sweep/*.log
+graphnets/coarsening_sweep/*.out

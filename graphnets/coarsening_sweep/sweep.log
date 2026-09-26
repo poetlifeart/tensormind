@@ -1,0 +1,188 @@
+==============================================================================
+LOUVAIN-FAMILY COARSENING SWEEP
+target node count 1015 (Budapest); seed 42; 18 resolution evaluations per configuration
+==============================================================================
+
+rebuilding the parent from construct.py (rng 99, alpha 3/4/30, beta 1.5, 3 steps)
+  parent  n=8,000  m=477,584  blocks [2400, 2400, 1600, 1600]
+  deposited partition: 1015 supernodes (Louvain@30 per block + merge_densest)
+
+reference: Budapest
+  n=1,015  m=70,654  clustering 0.6696  modularity 0.5574  lambda1 178.95  gap 7.51
+
+--- reference row: the deposited coarsening ---
+    deposited (merge_densest)  n=1,015 m= 64,760  SCORE 0.2009   (16s)
+
+--- nx_louvain/global ---
+      gamma            1 ->     8 communities   (4.3s)
+      gamma            4 ->    19 communities   (3.9s)
+      gamma           16 ->   388 communities   (7.4s)
+      gamma           64 -> 3,380 communities   (10.4s)
+      gamma           32 -> 1,503 communities   (8.7s)
+      gamma       22.627 ->   822 communities   (7.8s)
+      gamma       26.909 -> 1,134 communities   (8.2s)
+      gamma       24.675 ->   965 communities   (8.1s)
+      gamma       25.768 -> 1,048 communities   (7.8s)
+      gamma       25.216 -> 1,004 communities   (7.4s)
+      gamma        25.49 -> 1,017 communities   (8.8s)
+      gamma       25.353 -> 1,018 communities   (8.0s)
+      gamma       25.284 -> 1,018 communities   (8.1s)
+      gamma        25.25 -> 1,009 communities   (7.4s)
+      gamma       25.267 -> 1,013 communities   (8.1s)
+      gamma       25.276 -> 1,020 communities   (8.4s)
+    chosen gamma 25.267 -> 1,013 communities (target 1015, off by -2) after 16 evaluations, 123s
+    nx_louvain/global          n=1,013 m= 83,208  SCORE 0.3139   (16s)
+
+--- nx_louvain/perblock ---
+      gamma            1 ->    16 communities   (4.4s)
+      gamma            4 ->   171 communities   (4.7s)
+      gamma           16 -> 3,237 communities   (8.9s)
+      gamma            8 -> 1,076 communities   (8.1s)
+      gamma       5.6569 ->   452 communities   (6.6s)
+      gamma       6.7272 ->   743 communities   (6.7s)
+      gamma        7.336 ->   904 communities   (7.0s)
+      gamma       7.6608 ->   988 communities   (7.5s)
+      gamma       7.8286 -> 1,034 communities   (7.8s)
+      gamma       7.7442 -> 1,015 communities   (7.4s)
+      gamma       7.7024 -> 1,004 communities   (7.7s)
+      gamma       7.7233 -> 1,006 communities   (7.5s)
+      gamma       7.7338 -> 1,000 communities   (7.6s)
+      gamma        7.739 -> 1,019 communities   (8.0s)
+      gamma       7.7364 -> 1,003 communities   (7.5s)
+    chosen gamma 7.74425 -> 1,015 communities (target 1015, off by +0) after 15 evaluations, 107s
+    nx_louvain/perblock        n=1,015 m= 67,133  SCORE 0.1744   (15s)
+
+--- pylouvain/global ---
+      gamma            1 ->     7 communities   (5.9s)
+      gamma            4 ->    20 communities   (5.6s)
+      gamma           16 ->   385 communities   (7.3s)
+      gamma           64 -> 3,349 communities   (9.5s)
+      gamma           32 -> 1,487 communities   (9.4s)
+      gamma       22.627 ->   815 communities   (8.0s)
+      gamma       26.909 -> 1,129 communities   (11.5s)
+      gamma       24.675 ->   966 communities   (7.1s)
+      gamma       25.768 -> 1,044 communities   (8.4s)
+      gamma       25.216 -> 1,008 communities   (8.8s)
+      gamma        25.49 -> 1,023 communities   (8.6s)
+      gamma       25.353 -> 1,014 communities   (8.9s)
+      gamma       25.421 -> 1,018 communities   (8.2s)
+      gamma       25.387 -> 1,010 communities   (9.9s)
+      gamma       25.404 -> 1,023 communities   (10.9s)
+      gamma       25.396 -> 1,016 communities   (9.0s)
+    chosen gamma 25.3526 -> 1,014 communities (target 1015, off by -1) after 16 evaluations, 137s
+    pylouvain/global           n=1,014 m= 83,108  SCORE 0.3120   (15s)
+
+--- pylouvain/perblock ---
+      gamma            1 ->    17 communities   (6.3s)
+      gamma            4 ->   167 communities   (5.3s)
+      gamma           16 -> 3,229 communities   (8.8s)
+      gamma            8 -> 1,069 communities   (7.4s)
+      gamma       5.6569 ->   460 communities   (6.2s)
+      gamma       6.7272 ->   732 communities   (8.9s)
+      gamma        7.336 ->   899 communities   (7.1s)
+      gamma       7.6608 ->   973 communities   (7.6s)
+      gamma       7.8286 -> 1,031 communities   (6.4s)
+      gamma       7.7442 -> 1,009 communities   (8.0s)
+      gamma       7.7863 -> 1,003 communities   (6.9s)
+      gamma       7.8074 -> 1,032 communities   (7.0s)
+      gamma       7.7968 -> 1,015 communities   (7.4s)
+      gamma       7.7916 -> 1,025 communities   (6.8s)
+      gamma       7.7889 -> 1,024 communities   (7.5s)
+    chosen gamma 7.79685 -> 1,015 communities (target 1015, off by +0) after 15 evaluations, 107s
+    pylouvain/perblock         n=1,015 m= 67,483  SCORE 0.1929   (16s)
+
+--- leiden_mod/global ---
+      gamma            1 ->     8 communities   (2.0s)
+      gamma            4 ->    19 communities   (2.0s)
+      gamma           16 ->   424 communities   (3.4s)
+      gamma           64 -> 3,433 communities   (5.5s)
+      gamma           32 -> 1,583 communities   (4.7s)
+      gamma       22.627 ->   888 communities   (4.2s)
+      gamma       26.909 -> 1,208 communities   (4.5s)
+      gamma       24.675 -> 1,024 communities   (4.2s)
+      gamma       23.629 ->   951 communities   (4.3s)
+      gamma       24.147 ->   995 communities   (4.0s)
+      gamma        24.41 -> 1,022 communities   (4.2s)
+      gamma       24.278 -> 1,001 communities   (4.1s)
+      gamma       24.344 -> 1,007 communities   (3.7s)
+      gamma       24.377 -> 1,021 communities   (3.8s)
+      gamma        24.36 -> 1,012 communities   (4.0s)
+      gamma       24.368 -> 1,006 communities   (3.8s)
+    chosen gamma 24.3601 -> 1,012 communities (target 1015, off by -3) after 16 evaluations, 62s
+    leiden_mod/global          n=1,012 m= 80,894  SCORE 0.2995   (19s)
+
+--- leiden_mod/perblock ---
+      gamma            1 ->    16 communities   (1.7s)
+      gamma            4 ->   197 communities   (2.3s)
+      gamma           16 -> 3,309 communities   (4.8s)
+      gamma            8 -> 1,166 communities   (3.9s)
+      gamma       5.6569 ->   505 communities   (2.9s)
+      gamma       6.7272 ->   802 communities   (3.7s)
+      gamma        7.336 ->   963 communities   (3.8s)
+      gamma       7.6608 -> 1,062 communities   (3.7s)
+      gamma       7.4967 -> 1,016 communities   (3.9s)
+      gamma       7.4159 ->   987 communities   (3.5s)
+      gamma       7.4562 -> 1,013 communities   (3.7s)
+      gamma       7.4764 -> 1,011 communities   (3.5s)
+      gamma       7.4865 -> 1,009 communities   (3.8s)
+      gamma       7.4916 -> 1,017 communities   (3.7s)
+      gamma       7.4891 ->   996 communities   (3.8s)
+    chosen gamma 7.49667 -> 1,016 communities (target 1015, off by +1) after 15 evaluations, 53s
+    leiden_mod/perblock        n=1,016 m= 64,832  SCORE 0.1750   (12s)
+
+--- leiden_cpm/global ---
+      gamma         0.01 ->    12 communities   (1.9s)
+      gamma         0.04 ->    91 communities   (1.9s)
+      gamma         0.16 ->   395 communities   (2.1s)
+      gamma         0.64 -> 2,237 communities   (4.1s)
+      gamma         0.32 ->   672 communities   (2.1s)
+      gamma      0.45255 -> 1,125 communities   (2.8s)
+      gamma      0.38055 ->   938 communities   (2.4s)
+      gamma      0.41499 -> 1,064 communities   (2.5s)
+      gamma      0.39739 ->   998 communities   (2.5s)
+      gamma       0.4061 -> 1,030 communities   (2.7s)
+      gamma      0.40172 -> 1,013 communities   (2.6s)
+      gamma       0.4039 -> 1,026 communities   (2.6s)
+      gamma      0.40281 -> 1,007 communities   (2.5s)
+      gamma      0.40336 -> 1,023 communities   (2.6s)
+      gamma      0.40308 -> 1,015 communities   (2.6s)
+      gamma      0.40295 -> 1,007 communities   (2.6s)
+    chosen gamma 0.403084 -> 1,015 communities (target 1015, off by +0) after 16 evaluations, 41s
+    leiden_cpm/global          n=1,015 m= 15,734  SCORE 0.4717   (16s)
+
+--- leiden_cpm/perblock ---
+      gamma         0.01 ->    12 communities   (1.6s)
+      gamma         0.04 ->    90 communities   (1.7s)
+      gamma         0.16 ->   385 communities   (1.9s)
+      gamma         0.64 -> 2,250 communities   (3.7s)
+      gamma         0.32 ->   655 communities   (2.2s)
+      gamma      0.45255 -> 1,124 communities   (2.6s)
+      gamma      0.38055 ->   956 communities   (2.2s)
+      gamma      0.41499 -> 1,041 communities   (2.4s)
+      gamma      0.39739 ->   985 communities   (2.2s)
+      gamma       0.4061 -> 1,017 communities   (2.3s)
+      gamma      0.40172 -> 1,012 communities   (2.4s)
+      gamma       0.4039 -> 1,013 communities   (2.3s)
+      gamma        0.405 -> 1,011 communities   (2.3s)
+      gamma      0.40555 -> 1,019 communities   (2.3s)
+      gamma      0.40527 -> 1,013 communities   (2.4s)
+      gamma      0.40541 -> 1,019 communities   (2.4s)
+    chosen gamma 0.403903 -> 1,013 communities (target 1015, off by -2) after 16 evaluations, 37s
+    leiden_cpm/perblock        n=1,013 m= 16,119  SCORE 0.4721   (8s)
+
+==============================================================================
+RESULT -- six-test mean against Budapest, lower is better
+==============================================================================
+configuration                   gamma      n        m   SCORE   clust     gap  ARIdep
+Budapest (reference)                   1,015   70,654  0.0000  0.6696    7.51        
+nx_louvain/perblock             7.744  1,015   67,133  0.1744  0.5488   15.27   0.179
+leiden_mod/perblock             7.497  1,016   64,832  0.1750  0.5458   14.49   0.173
+pylouvain/perblock              7.797  1,015   67,483  0.1929  0.5503   16.73   0.179
+deposited (merge_densest)          30  1,015   64,760  0.2009  0.6119   19.93   1.000
+leiden_mod/global               24.36  1,012   80,894  0.2995  0.5217   27.97   0.150
+pylouvain/global                25.35  1,014   83,108  0.3120  0.5341   27.03   0.151
+nx_louvain/global               25.27  1,013   83,208  0.3139  0.5357   25.47   0.151
+leiden_cpm/global              0.4031  1,015   15,734  0.4717  0.7070    8.83   0.156
+leiden_cpm/perblock            0.4039  1,013   16,119  0.4721  0.7000    9.48   0.156
+
+wrote sweep.csv  sweep.json  sweep.log
