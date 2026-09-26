@@ -243,10 +243,19 @@ def sec_sixtests():
 
 def sec_audit():
     print('\n=== NINE-CRITERION AUDIT (recorded) ===============================')
-    for f, what in [('audit_constructpy_parent_100.json', '8k parent'),
-                    ('audit_constructpy_coarse_100.json', 'coarse quotient')]:
+    # These two filenames are what audits/run_audits.sh writes.  An earlier
+    # version of this function looked for audit_constructpy_*.json, which no
+    # script has ever produced, and skipped silently when they were absent -- so
+    # this section printed only its footnote and nobody noticed that the parent
+    # had no audit file behind its 7/9.  Missing files are now an error.
+    missing = []
+    for f, what in [('audit_8k_parent_100.json', '8k parent'),
+                    ('audit_8k_quotient_100.json', 'coarse quotient')]:
         p = os.path.join(HERE, 'audits', f)
         if not os.path.exists(p):
+            missing.append(f)
+            print('  %-16s NO AUDIT FILE (%s); run audits/run_audits.sh'
+                  % (what, f))
             continue
         d = json.load(open(p))
         ev = d['evidence']
@@ -259,6 +268,10 @@ def sec_audit():
                  ', '.join(bad) or 'none'))
     print('  nulls are tripartite degree-preserving; p-floor is 1/(n_null+1),')
     print('  so 100 nulls is the minimum that can pass a p<0.05 criterion.')
+    if missing:
+        raise SystemExit('audit files missing: %s -- this section reports a '
+                         'scored result and must not print a partial table'
+                         % ', '.join(missing))
 
 
 SECTIONS = dict(basic=sec_basic, bundles=sec_bundles, community=sec_community,

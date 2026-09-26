@@ -617,11 +617,48 @@ def variation_of_information(labels_x, labels_y):
     return max(0.0, hx + hy - 2.0 * mutual_info)
 
 
+#: tolerance for treating two mean-VI values as equal when detecting a plateau.
+#: VI values of interest span 0.02-2.5, so this only ever merges values that are
+#: numerically identical (exact 0.0, or float noise such as 2.2e-16 around it).
+_VI_PLATEAU_TOL = 1e-12
+
+
 def _find_local_minima(xs, ys):
+    """Local minima of ys, treating a FLAT-BOTTOMED valley as a single minimum.
+
+    The strict two-sided test -- ys[i] < ys[i-1] and ys[i] < ys[i+1] -- misses a
+    plateau: a run of equal values lying below the points on either side.  That
+    is not a pathological case here.  Mean VI is exactly 0.0 when the partition
+    is perfectly reproducible across all repeats, which is MAXIMAL stability, and
+    several consecutive resolutions can share it.  The strict test scored such a
+    run as no minimum at all -- i.e. as unstable -- so on this criterion it could
+    only ever produce FALSE NEGATIVES, never false positives.
+
+    Observed: a degree-corrected SBM with mean VI exactly 0.0 at gamma =
+    1.0, 1.2, 1.5 and 2.0 was scored 0 stable scales and failed, while a graph
+    with a single noisy dip passed.
+
+    A plateau spanning indices [i..j] counts as one minimum when ys[i] lies
+    strictly below both ys[i-1] and ys[j+1]; the plateau's midpoint is reported.
+    A single-point valley (i == j) reduces to the original strict test exactly,
+    which is why this cannot change a verdict that did not involve a plateau --
+    verified against every audit in the repository by
+    test_find_local_minima.py.  Plateaus touching either end of the sweep are
+    still not minima: a comparison on both sides is required.
+    """
     out = []
-    for i in range(1, len(ys) - 1):
-        if ys[i] < ys[i - 1] and ys[i] < ys[i + 1]:
-            out.append((xs[i], ys[i]))
+    n = len(ys)
+    i = 1
+    while i < n - 1:
+        j = i
+        while j + 1 < n and abs(ys[j + 1] - ys[i]) <= _VI_PLATEAU_TOL:
+            j += 1
+        if (j + 1 < n
+                and ys[i] < ys[i - 1] - _VI_PLATEAU_TOL
+                and ys[i] < ys[j + 1] - _VI_PLATEAU_TOL):
+            k = (i + j) // 2
+            out.append((xs[k], ys[k]))
+        i = j + 1
     return out
 
 

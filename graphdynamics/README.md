@@ -54,8 +54,8 @@ Then train or evaluate on that substrate by naming it explicitly — nothing in
 this directory defaults to it:
 
 ```bash
-python3 v1003/train_v1003super.py      --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_v1003_s0 --seed 0
-python3 feeder1004/train_feeder1004.py --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_feeder_s0 --seed 0
+python3 v1003/train_v1003super.py      --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_v1003_s0 --seed 0 --from-scratch
+python3 feeder1004/train_feeder1004.py --graph graph_8k_parent_supernode.npz --save-dir ckpt_8k_feeder_s0 --seed 0 --from-scratch
 python3 eval_benchmark_v2.py --checkpoint CKPT.pt --v1003super --graph graph_8k_parent_supernode.npz --mask-dist training
 ```
 
@@ -98,17 +98,17 @@ script here fetches a pinned copy on first use and reuses it afterwards.
 
 ```bash
 # nothing to do -- downloads ~3 GB to ~/.cache/tensormind/celebahq256, once
-python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0 --from-scratch
 
 # or point at your own copy
 python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz \
-    --data /path/to/celebahq256 --save-dir ckpt_v1003_s0
+    --data /path/to/celebahq256 --save-dir ckpt_v1003_s0 --from-scratch
 
 # or set it once for every script
 export TENSORMIND_CELEBAHQ=/path/to/celebahq256
 
 # or refuse to download and fail loudly instead
-python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --no-download --save-dir ckpt_v1003_s0
+python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz --no-download --save-dir ckpt_v1003_s0 --from-scratch
 ```
 
 Resolution order: `--data` → `$TENSORMIND_CELEBAHQ` → `~/.cache/tensormind/celebahq256`
@@ -162,8 +162,8 @@ The last line is unnecessary if you pass `--data` and bring your own CelebA-HQ.
 One command per architecture. Each writes checkpoints to `--save-dir`.
 
 ```bash
-python3 v1003/train_v1003super.py      --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0
-python3 feeder1004/train_feeder1004.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_feeder1004_s0
+python3 v1003/train_v1003super.py      --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_v1003_s0 --from-scratch
+python3 feeder1004/train_feeder1004.py --graph graph_degmatch_parent_supernode.npz --save-dir ckpt_feeder1004_s0 --from-scratch
 python3 unet/train_unetonly_rolling.py --save-dir ckpt_unet_s0   # no graph
 ```
 
@@ -177,7 +177,7 @@ Seeds are set with `--seed`; use a matching `--save-dir`:
 
 ```bash
 python3 v1003/train_v1003super.py --graph graph_degmatch_parent_supernode.npz \
-    --seed 1 --save-dir ckpt_v1003_s1
+    --seed 1 --save-dir ckpt_v1003_s1 --from-scratch
 ```
 
 Batch 2, 50 epochs, cosine LR. There is no early stopping: every run trains the full 50 epochs. The reported

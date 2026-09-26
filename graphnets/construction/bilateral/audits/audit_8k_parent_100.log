@@ -1,0 +1,375 @@
+========================================================================
+CONNECTOME AUDIT
+========================================================================
+  Nodes:   8,000
+  Edges:   477,584
+  Density: 0.0149264
+  Connected: True
+  GCC:     8,000 nodes
+  Layers:  2,400 / 2,400 / 3,200
+
+[1/8] Degree distribution
+[2/8] Core metrics (real)
+  Computing exact APL (all-pairs on GCC)...
+  Computing exact global efficiency (all-pairs)...
+  Computing exact local efficiency (all nodes)...
+
+Processing 100 null graphs in 1 batches of 100 (tripartite_degree_preserving)...
+
+  Batch 1/1: nulls 1-100
+    null    1/100: connected=True  GCC=8,000
+    null    2/100: connected=True  GCC=8,000
+    null    3/100: connected=True  GCC=8,000
+    null    4/100: connected=True  GCC=8,000
+    null    5/100: connected=True  GCC=8,000
+    null    6/100: connected=True  GCC=8,000
+    null    7/100: connected=True  GCC=8,000
+    null    8/100: connected=True  GCC=8,000
+    null    9/100: connected=True  GCC=8,000
+    null   10/100: connected=True  GCC=8,000
+    null   11/100: connected=True  GCC=8,000
+    null   12/100: connected=True  GCC=8,000
+    null   13/100: connected=True  GCC=8,000
+    null   14/100: connected=True  GCC=8,000
+    null   15/100: connected=True  GCC=8,000
+    null   16/100: connected=True  GCC=8,000
+    null   17/100: connected=True  GCC=8,000
+    null   18/100: connected=True  GCC=8,000
+    null   19/100: connected=True  GCC=8,000
+    null   20/100: connected=True  GCC=8,000
+    null   21/100: connected=True  GCC=8,000
+    null   22/100: connected=True  GCC=8,000
+    null   23/100: connected=True  GCC=8,000
+    null   24/100: connected=True  GCC=8,000
+    null   25/100: connected=True  GCC=8,000
+    null   26/100: connected=True  GCC=8,000
+    null   27/100: connected=True  GCC=8,000
+    null   28/100: connected=True  GCC=8,000
+    null   29/100: connected=True  GCC=8,000
+    null   30/100: connected=True  GCC=8,000
+    null   31/100: connected=True  GCC=8,000
+    null   32/100: connected=True  GCC=8,000
+    null   33/100: connected=True  GCC=8,000
+    null   34/100: connected=True  GCC=8,000
+    null   35/100: connected=True  GCC=8,000
+    null   36/100: connected=True  GCC=8,000
+    null   37/100: connected=True  GCC=8,000
+    null   38/100: connected=True  GCC=8,000
+    null   39/100: connected=True  GCC=8,000
+    null   40/100: connected=True  GCC=8,000
+    null   41/100: connected=True  GCC=8,000
+    null   42/100: connected=True  GCC=8,000
+    null   43/100: connected=True  GCC=8,000
+    null   44/100: connected=True  GCC=8,000
+    null   45/100: connected=True  GCC=8,000
+    null   46/100: connected=True  GCC=8,000
+    null   47/100: connected=True  GCC=8,000
+    null   48/100: connected=True  GCC=8,000
+    null   49/100: connected=True  GCC=8,000
+    null   50/100: connected=True  GCC=8,000
+    null   51/100: connected=True  GCC=8,000
+    null   52/100: connected=True  GCC=8,000
+    null   53/100: connected=True  GCC=8,000
+    null   54/100: connected=True  GCC=8,000
+    null   55/100: connected=True  GCC=8,000
+    null   56/100: connected=True  GCC=8,000
+    null   57/100: connected=True  GCC=8,000
+    null   58/100: connected=True  GCC=8,000
+    null   59/100: connected=True  GCC=8,000
+    null   60/100: connected=True  GCC=8,000
+    null   61/100: connected=True  GCC=8,000
+    null   62/100: connected=True  GCC=8,000
+    null   63/100: connected=True  GCC=8,000
+    null   64/100: connected=True  GCC=8,000
+    null   65/100: connected=True  GCC=8,000
+    null   66/100: connected=True  GCC=8,000
+    null   67/100: connected=True  GCC=8,000
+    null   68/100: connected=True  GCC=8,000
+    null   69/100: connected=True  GCC=8,000
+    null   70/100: connected=True  GCC=8,000
+    null   71/100: connected=True  GCC=8,000
+    null   72/100: connected=True  GCC=8,000
+    null   73/100: connected=True  GCC=8,000
+    null   74/100: connected=True  GCC=8,000
+    null   75/100: connected=True  GCC=8,000
+    null   76/100: connected=True  GCC=8,000
+    null   77/100: connected=True  GCC=8,000
+    null   78/100: connected=True  GCC=8,000
+    null   79/100: connected=True  GCC=8,000
+    null   80/100: connected=True  GCC=8,000
+    null   81/100: connected=True  GCC=8,000
+    null   82/100: connected=True  GCC=8,000
+    null   83/100: connected=True  GCC=8,000
+    null   84/100: connected=True  GCC=8,000
+    null   85/100: connected=True  GCC=8,000
+    null   86/100: connected=True  GCC=8,000
+    null   87/100: connected=True  GCC=8,000
+    null   88/100: connected=True  GCC=8,000
+    null   89/100: connected=True  GCC=8,000
+    null   90/100: connected=True  GCC=8,000
+    null   91/100: connected=True  GCC=8,000
+    null   92/100: connected=True  GCC=8,000
+    null   93/100: connected=True  GCC=8,000
+    null   94/100: connected=True  GCC=8,000
+    null   95/100: connected=True  GCC=8,000
+    null   96/100: connected=True  GCC=8,000
+    null   97/100: connected=True  GCC=8,000
+    null   98/100: connected=True  GCC=8,000
+    null   99/100: connected=True  GCC=8,000
+    null  100/100: connected=True  GCC=8,000
+    metrics    1/100 done (5927.7s)
+    metrics    2/100 done (5979.7s)
+    metrics    3/100 done (6037.6s)
+    metrics    4/100 done (6052.3s)
+    metrics    5/100 done (6064.7s)
+    metrics    6/100 done (6093.2s)
+    metrics    7/100 done (6098.9s)
+    metrics    8/100 done (6112.3s)
+    metrics    9/100 done (6193.7s)
+    metrics   10/100 done (6245.7s)
+    metrics   11/100 done (6248.4s)
+    metrics   12/100 done (6249.8s)
+    metrics   13/100 done (6261.5s)
+    metrics   14/100 done (6290.6s)
+    metrics   15/100 done (5900.7s)
+    metrics   16/100 done (5982.0s)
+    metrics   17/100 done (5817.3s)
+    metrics   18/100 done (5838.5s)
+    metrics   19/100 done (5899.6s)
+    metrics   20/100 done (5764.0s)
+    metrics   21/100 done (5922.5s)
+    metrics   22/100 done (6104.4s)
+    metrics   23/100 done (5893.6s)
+    metrics   24/100 done (6185.6s)
+    metrics   25/100 done (6127.3s)
+    metrics   26/100 done (6044.7s)
+    metrics   27/100 done (6118.7s)
+    metrics   28/100 done (6147.8s)
+    metrics   29/100 done (5902.4s)
+    metrics   30/100 done (5941.4s)
+    metrics   31/100 done (5892.4s)
+    metrics   32/100 done (6077.7s)
+    metrics   33/100 done (6246.7s)
+    metrics   34/100 done (5987.4s)
+    metrics   35/100 done (6265.3s)
+    metrics   36/100 done (5944.1s)
+    metrics   37/100 done (6018.4s)
+    metrics   38/100 done (6108.8s)
+    metrics   39/100 done (5885.4s)
+    metrics   40/100 done (6119.0s)
+    metrics   41/100 done (6171.3s)
+    metrics   42/100 done (6138.0s)
+    metrics   43/100 done (5805.8s)
+    metrics   44/100 done (5931.9s)
+    metrics   45/100 done (5888.2s)
+    metrics   46/100 done (5659.1s)
+    metrics   47/100 done (5847.0s)
+    metrics   48/100 done (5603.9s)
+    metrics   49/100 done (5729.2s)
+    metrics   50/100 done (5815.4s)
+    metrics   51/100 done (5886.5s)
+    metrics   52/100 done (5818.6s)
+    metrics   53/100 done (5967.7s)
+    metrics   54/100 done (5976.5s)
+    metrics   55/100 done (5809.2s)
+    metrics   56/100 done (6049.3s)
+    metrics   57/100 done (5138.4s)
+    metrics   58/100 done (5236.5s)
+    metrics   59/100 done (5173.7s)
+    metrics   60/100 done (5144.0s)
+    metrics   61/100 done (5219.4s)
+    metrics   62/100 done (5476.0s)
+    metrics   63/100 done (5401.9s)
+    metrics   64/100 done (5369.6s)
+    metrics   65/100 done (5123.7s)
+    metrics   66/100 done (5106.7s)
+    metrics   67/100 done (5123.9s)
+    metrics   68/100 done (5438.7s)
+    metrics   69/100 done (5136.4s)
+    metrics   70/100 done (5302.0s)
+    metrics   71/100 done (4738.6s)
+    metrics   72/100 done (4896.8s)
+    metrics   73/100 done (5136.1s)
+    metrics   74/100 done (4900.2s)
+    metrics   75/100 done (5282.8s)
+    metrics   76/100 done (5245.1s)
+    metrics   77/100 done (4917.3s)
+    metrics   78/100 done (5232.4s)
+    metrics   79/100 done (5005.3s)
+    metrics   80/100 done (5321.7s)
+    metrics   81/100 done (5235.1s)
+    metrics   82/100 done (5790.0s)
+    metrics   83/100 done (5485.6s)
+    metrics   84/100 done (5910.6s)
+    metrics   85/100 done (5866.0s)
+    metrics   86/100 done (6001.7s)
+    metrics   87/100 done (5938.4s)
+    metrics   88/100 done (5849.1s)
+    metrics   89/100 done (5776.0s)
+    metrics   90/100 done (6119.2s)
+    metrics   91/100 done (6035.4s)
+    metrics   92/100 done (5729.9s)
+    metrics   93/100 done (6131.9s)
+    metrics   94/100 done (6034.9s)
+    metrics   95/100 done (5883.0s)
+    metrics   96/100 done (5847.5s)
+    metrics   97/100 done (5822.3s)
+    metrics   98/100 done (5916.1s)
+    metrics   99/100 done (4133.4s)
+    metrics  100/100 done (4327.3s)
+
+Null ensemble complete (49512.2s)
+  null_model_type: tripartite_degree_preserving
+  null_connectivity_policy: gcc_only
+  Computing ER G(n,m) sigma (Humphries-Gurney 2008 original)...
+  sigma_dp=5.8813 (degree-preserving)  sigma_er=7.3267 (ER, H&G original)
+[4/8] Community structure & hubs
+[5/8] Rich-club — 100 curves from batched nulls
+  Generating 900 additional null graphs (1000 total, vdH 2011 null-ensemble scale)
+  rc null   50/900 (1397s)
+  rc null  100/900 (2755s)
+  rc null  150/900 (4112s)
+  rc null  200/900 (5481s)
+  rc null  250/900 (6877s)
+  rc null  300/900 (8271s)
+  rc null  350/900 (9672s)
+  rc null  400/900 (11087s)
+  rc null  450/900 (12499s)
+  rc null  500/900 (13911s)
+  rc null  550/900 (15312s)
+  rc null  600/900 (16739s)
+  rc null  650/900 (18160s)
+  rc null  700/900 (19585s)
+  rc null  750/900 (21020s)
+  rc null  800/900 (22455s)
+  rc null  850/900 (23911s)
+  rc null  900/900 (25303s)
+  Rich-club null ensemble: 1000 curves
+[6/8] Betweenness centrality
+[7/8] Multi-scale VI stability (propermulti)
+    gamma=0.50  mean_VI=0.0807  Q=0.8321  n_comm=6.0  (82.7s)
+    gamma=0.60  mean_VI=0.0998  Q=0.8137  n_comm=6.0  (82.0s)
+    gamma=0.70  mean_VI=0.1253  Q=0.7955  n_comm=6.0  (84.5s)
+    gamma=0.80  mean_VI=0.1770  Q=0.7800  n_comm=7.7  (83.3s)
+    gamma=0.90  mean_VI=0.0537  Q=0.7673  n_comm=8.0  (84.4s)
+    gamma=1.00  mean_VI=0.2063  Q=0.7500  n_comm=7.6  (85.9s)
+    gamma=1.20  mean_VI=0.1198  Q=0.7236  n_comm=9.6  (81.5s)
+    gamma=1.50  mean_VI=0.2581  Q=0.6917  n_comm=11.4  (84.1s)
+    gamma=2.00  mean_VI=0.1357  Q=0.6523  n_comm=12.0  (85.2s)
+    gamma=2.50  mean_VI=0.1360  Q=0.6120  n_comm=13.6  (87.0s)
+    gamma=3.00  mean_VI=0.1692  Q=0.5713  n_comm=15.5  (83.1s)
+  VI local minimum at gamma=0.9: VI=0.0537, Q=0.7673
+  VI local minimum at gamma=1.2: VI=0.1198, Q=0.7236
+  VI local minimum at gamma=2.0: VI=0.1357, Q=0.6523
+  Stable scales with Q>0.3: 3
+[8/8] Fractal dimension (MEMB box-counting)
+  Computing all-pairs shortest paths...
+  APSP done (39.3s, 128 MB)
+    l_B= 2 (r_B=1): N_B=133 (0.1s)
+    l_B= 4 (r_B=2): N_B=9 (0.1s)
+    l_B= 6 (r_B=3): N_B=2 (0.1s)
+
+========================================================================
+CORE METRICS VS NULL ENSEMBLE
+========================================================================
+      transitivity │ real=0.173428  null=0.0193445±3.58e-05  ratio=8.965  z=4.31e+03  p=0.0099
+        clustering │ real=0.214311  null=0.0196357±3.93e-05  ratio=10.91  z=4.95e+03  p=0.0099
+               apl │ real=3.41051  null=2.23733±0.000272  ratio=1.524  z=4.32e+03  p=0.0099
+        global_eff │ real=0.332331  null=0.465421±4.53e-05  ratio=0.714  z=-2.94e+03  p=0.0099
+         local_eff │ real=0.525135  null=0.152343±0.000287  ratio=3.447  z=1.3e+03  p=0.0099
+     assortativity │ real=0.140423  null=-0.0126955±0.00147  z=104  p=0.0099
+        modularity │ real=0.753328  null=0.0753103±0.00126  ratio=10  z=537  p=0.0099
+        sigma (dp) │ 5.881
+        sigma (ER) │ 7.327
+
+  Note: n_null=100, p-value resolution = 1/101 = 0.0099
+        n_null_rc=1000, rich-club p resolution = 1/1001 = 0.0010 (vdH 2011: 1000 nulls)
+
+========================================================================
+DEGREE DISTRIBUTION
+========================================================================
+               min: 4
+               max: 509
+              mean: 119.396
+            median: 106
+               std: 69.2729
+                cv: 0.580195
+              gini: 0.313934
+        dispersion: 40.1918
+               p90: 213
+               p99: 334
+     max_over_mean: 4.26312
+         hill_tail: 6.89503
+
+========================================================================
+COMMUNITY STRUCTURE
+========================================================================
+                 Q: 0.7533
+     n_communities: 8
+           largest: 1200
+           PC mean: 0.1432
+         PC median: 0.1203
+    connector_hubs: 50
+
+========================================================================
+RICH-CLUB (ENSEMBLE-NORMALIZED)
+========================================================================
+         mean_norm: 1.4059
+          max_norm: 1.9933
+
+   eff_per_density: 22.3  (global_eff / density)
+
+========================================================================
+MULTI-SCALE VI STABILITY (propermulti, Betzel 2017)
+========================================================================
+   gamma   mean_VI         Q    n_comm
+  --------------------------------------
+    0.50    0.0807    0.8321       6.0
+    0.60    0.0998    0.8137       6.0
+    0.70    0.1253    0.7955       6.0
+    0.80    0.1770    0.7800       7.7
+    0.90    0.0537    0.7673       8.0
+    1.00    0.2063    0.7500       7.6
+    1.20    0.1198    0.7236       9.6
+    1.50    0.2581    0.6917      11.4
+    2.00    0.1357    0.6523      12.0
+    2.50    0.1360    0.6120      13.6
+    3.00    0.1692    0.5713      15.5
+  VI minimum at gamma=0.9: Q=0.7673 ✓
+  VI minimum at gamma=1.2: Q=0.7236 ✓
+  VI minimum at gamma=2.0: Q=0.6523 ✓
+  Stable scales with Q>0.3: 3 → PASS
+
+========================================================================
+FRACTAL DIMENSION (MEMB)
+========================================================================
+            method: MEMB_Song2007
+             nodes: 8,000
+         diameters: [2, 4, 6]
+        box_counts: [133, 9, 2]
+               d_B: 3.8274
+                R²: 0.9999
+        d_B 95% CI: [3.24, 4.41]
+        fit points: 3
+            exp R²: 0.9739
+        better fit: power-law
+
+========================================================================
+EVIDENCE SCORECARD (9 scored criteria)
+========================================================================
+  [PASS] clustering_enriched
+  [FAIL] path_near_random
+  [PASS] small_world_sigma_er
+  [PASS] modularity_enriched
+  [FAIL] global_eff_near_random
+  [PASS] local_eff_enriched
+  [PASS] connector_hubs
+  [PASS] rich_club
+  [PASS] propermulti_vi_stability
+
+  Score: 7/9 pass, 2 fail
+
+  Descriptive (not scored):
+  [PASS] fractal_scaling
+
+Wrote JSON to audit_constructpy_parent_100.json

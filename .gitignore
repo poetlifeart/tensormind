@@ -88,3 +88,8 @@ Thumbs.db
 !graphnets/coarsening_sweep/*.json
 !graphnets/coarsening_sweep/*.log
 graphnets/coarsening_sweep/*.out
+
+# the 8k audits are the evidence behind the paper 7/9 and 9/9, and stats.py
+# --section audit now fails without them, so they are tracked
+!graphnets/construction/bilateral/audits/*.json
+!graphnets/construction/bilateral/audits/*.log
