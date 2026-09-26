@@ -114,8 +114,27 @@ def _stage_fs(f, n_steps):
     return fs
 
 
-def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
+def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3, quotas=None):
+    """quotas, ADDED 2026-09-25: explicit closure quota per stage, overriding
+    int(alphas[k] * n).  None means use alphas, i.e. the published behaviour.
+
+    WHY.  Relaxing the colour filter at the SEED stage does not merely change
+    which closures are made, it changes HOW MANY: the 20-vertex seed admits only
+    six legal closures against a quota of alphas[0]*n = 60, so f1 = 0 accepts
+    5-6 while f1 = 1 accepts all 14 of the widened pool.  Each seed-stage closure
+    is worth 62**2 = 3,844 parent edges, so f1 = 1 adds ~30,752 edges by
+    construction and the scaffold condition can never be parent-matched to the
+    baseline.  Measured in results_stage_ablation.json: zero of five seed pairs
+    matched for 100 vs 000.
+
+    Capping the seed-stage quota at the legal count makes f1 change WHICH seed
+    closures are made without changing how many, which holds parent m fixed and
+    turns the scaffold comparison into a placement comparison at the seed scale.
+    """
     fs = _stage_fs(f, n_steps)
+    qs = (None,) * n_steps if quotas is None else tuple(quotas)
+    if len(qs) != n_steps:
+        raise ValueError(f"quotas must be {n_steps} values, got {len(qs)}")
     se = cc.build_seed()
     su = np.array([a for a, b in se] + [b for a, b in se], np.int64)
     sv = np.array([b for a, b in se] + [a for a, b in se], np.int64)
@@ -123,7 +142,8 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
     n = SEED_N; colour, block = COLOURS.copy(), BLOCKS.copy()
     LAST_STAGE_CLOSURES.clear()
     _before = len(u)
-    u, v = close_relaxed(u, v, n, colour, block, int(alphas[0] * n), rng, beta, fs[0])
+    _q0 = int(alphas[0] * n) if qs[0] is None else int(qs[0])
+    u, v = close_relaxed(u, v, n, colour, block, _q0, rng, beta, fs[0])
     LAST_STAGE_CLOSURES.append(len(u) - _before)
     for step in range(2, n_steps + 1):
         u = (u[:, None] * SEED_N + su[None, :]).ravel()
@@ -135,7 +155,9 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
         digit = (np.arange(n) // (SEED_N ** (step - 1))) % SEED_N
         colour, block = COLOURS[digit], BLOCKS[digit]
         _before = len(u)
-        u, v = close_relaxed(u, v, n, colour, block, int(alphas[step - 1] * n), rng, beta, fs[step - 1])
+        _q = (int(alphas[step - 1] * n) if qs[step - 1] is None
+              else int(qs[step - 1]))
+        u, v = close_relaxed(u, v, n, colour, block, _q, rng, beta, fs[step - 1])
         LAST_STAGE_CLOSURES.append(len(u) - _before)
     return u.astype(np.int32), v.astype(np.int32), colour, block
 
@@ -180,10 +202,10 @@ def shape_distance_to_budapest(s):
     return _mard(s, SHAPE_KEYS)
 
 
-def run(f, seed):
+def run(f, seed, quotas=None):
     t0 = time.time()
     rng = np.random.default_rng(seed)
-    u, v, colour, block = grow(f, rng)
+    u, v, colour, block = grow(f, rng, quotas=quotas)
     mono = int((colour[u] == colour[v]).sum())
     P = nx.Graph(); P.add_nodes_from(range(len(block)))
     P.add_edges_from(zip(u.tolist(), v.tolist()))
@@ -195,6 +217,7 @@ def run(f, seed):
     s.update(stage_closures=list(LAST_STAGE_CLOSURES),
              f=(fs[0] if len(set(fs)) == 1 else list(fs)),   # scalar stays scalar
              f_stages=list(fs),                              # always the triple
+             quotas=(list(quotas) if quotas is not None else None),
              seed=seed, parent_m=P.number_of_edges(), mono_parent=mono,
              mono_frac=mono / P.number_of_edges(),
              dist=distance_to_budapest(s),
@@ -223,6 +246,12 @@ if __name__ == '__main__':
                          'Repeat for several conditions. Mutually exclusive with --f.')
     ap.add_argument('--cube', action='store_true',
                     help='shorthand for the eight corners of the (f1,f2,f3) cube')
+    ap.add_argument('--seed-quota', type=int, default=None,
+                    help='cap the SEED-STAGE closure quota at this many instead of '
+                         'alphas[0]*n = 60. Use 6, the number of legal closures the '
+                         '20-vertex seed admits, to make f1 change which seed '
+                         'closures are made without changing how many -- which '
+                         'holds parent edge count fixed across f1.')
     # ---- CHANGED 2026-09-25 ----
     # The default used to be results_chromatic_ablation.json, which is the
     # ARCHIVED PRE-FIX sweep the README keeps as a record and the paper does
@@ -280,7 +309,8 @@ if __name__ == '__main__':
     rows = []
     for f in FS:
         for sd in SEEDS:
-            r = run(f, sd); rows.append(r)
+            _qs = None if args.seed_quota is None else (args.seed_quota, None, None)
+            r = run(f, sd, quotas=_qs); rows.append(r)
             _flab = (f"{f:5.2f}" if isinstance(f, (int, float))
                      else "".join(str(int(x)) for x in f).rjust(5))
             print(f"{_flab} {sd:5d} {r['mono_parent']:8,} {100*r['mono_frac']:5.1f}% "
