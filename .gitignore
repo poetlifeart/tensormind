@@ -81,4 +81,5 @@ Thumbs.db
 !graphnets/construction/bilateral/reference/budapest_1015_70654.edgelist
 !graphnets/construction/bilateral/reference/bud_w.npy
 !graphnets/ablation/results_chromatic_ablation*.json
+!graphnets/ablation/results_stage_ablation*.json
 !graphnets/ablation/audit_quot_seed*.json

@@ -214,6 +214,60 @@ carry a `stage_closures` field, which is how to tell them apart.
 > the constraint demonstrably active, can still sit under a connectome-like
 > quotient, and relaxing it costs coarse relations and shape agreement.
 
+### Stage-specific ablation: which scale carries the effect
+
+`f` is a per-stage triple `(f1, f2, f3)` — seed stage, scale 2, scale 3. A scalar
+broadcasts, so the published scalar sweep is unchanged and `--control` still
+asserts the deposited parent.
+
+```bash
+python3 chromatic_ablation.py --cube --seeds 99 1 2 3 4 \
+    --seed-quota 6 --out results_stage_ablation_capped.json     # ~16 min
+python3 aggregate_stage.py results_stage_ablation_capped.json
+```
+
+**Why `--seed-quota 6`.** The seed stage's quota is `alpha[0] * n = 60`, but the
+20-vertex seed admits only six legal closures, so `f1 = 0` accepts 5–6 while
+`f1 = 1` accepts all fourteen of the widened pool — and each seed-stage closure is
+worth 62² = 3,844 parent edges. Relaxing the seed stage therefore adds ~30,752
+edges *by construction*, and the scaffold comparison can never be parent-matched:
+measured, zero of five seed pairs matched. Capping the quota at six makes `f1`
+change *which* seed closures are made without changing *how many*, which holds
+parent size fixed. With the cap, `k1 = 6` in all 40 runs and parent m spans
+481,056–481,428 against 477,584–512,180 uncapped.
+
+Percent change in coarse relations, paired within RNG seed, parent-matched:
+
+| relaxed at | change | |
+|---|---:|---|
+| scale 2 only | **−11.48%** | 6.2 sd |
+| scales 2 and 3 | **−11.00%** | 3.2 sd |
+| scale 3 only | **−9.42%** | 4.3 sd |
+| all three stages | **−12.98%** | 3.0 sd |
+| scales 2+3, seed relaxed | −6.14% | 1.6 sd |
+| seed stage only | −5.31% | 0.9 sd |
+
+At matched parent size the constraint shapes coarse-relation coverage at **every**
+stage, in the same direction, with the two later scales carrying roughly twice the
+seed stage's effect.
+
+**The effects are strongly sub-additive.** Scale 2 alone plus scale 3 alone
+predicts −20.90 pp; both together give −11.00 pp — an interaction of **+9.90 pp**.
+Relaxing scale 3 as well *recovers* most of what relaxing scale 2 costs, even
+though the both-scales corner carries 140,193 monochromatic edges against scale
+2's 51,162. This is the same non-monotonicity the scalar sweep shows as a minimum
+at f = 0.10, now localised to an interaction between scales.
+
+**Read the last two rows as direction only.** They rest on three parent-matched
+pairs each; pairs are lost when scale-2 quotas fall a few closures short of 1,600,
+which moves parent m by 62 edges per closure and correctly disqualifies the pair.
+Twenty seeds, about an hour, would put them on the same footing as the rest.
+
+> Matched size does **not** follow from sharing `f1`. It follows from sharing `f1`
+> *and* the RNG seed, and only when the later quotas fill. `aggregate_stage.py`
+> checks parent-size equality for every pair and excludes mismatches rather than
+> averaging them in.
+
 ## How to run
 
 Requires the same environment as `construct.py` (numpy, scipy, networkx).
@@ -276,6 +330,9 @@ not launch one casually.
 | `bind_rate.py` | instruments closure and counts colour rejections |
 | `build_seed_quotients.py` | builds `quot_seed*.npz` for auditing |
 | `results_chromatic_ablation_shuffled.json` | the 50-run sweep — **the source of the paper's ablation table** |
+| `aggregate_stage.py` | the stage ablation's analysis: per-corner means, and the key comparisons PAIRED BY RNG SEED with parent-size equality verified per pair rather than assumed |
+| `results_stage_ablation.json` | the 8-corner (f1,f2,f3) cube x 5 seeds, seed-stage quota at its default 60. Shows the scaffold comparison is not parent-matchable: relaxing the seed stage adds ~30,752 edges by construction |
+| `results_stage_ablation_capped.json` | the same cube with `--seed-quota 6`, capping the seed stage at the number of closures the seed legally admits. Holds k1 = 6 in all 40 runs, so every comparison is parent-matched. **This is the one to read** |
 | `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper. `--out` no longer defaults to this path, and the script refuses to overwrite an existing output without `--force` |
 | `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits, all 9/9 |
 
