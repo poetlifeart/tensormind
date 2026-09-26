@@ -35,7 +35,8 @@ SEED_N, COLOURS, BLOCKS, TARGETS = cc.SEED_N, cc.COLOURS, cc.BLOCKS, cc.BLOCK_TA
 BUD = nx.read_edgelist(os.path.join(B, 'reference/budapest_1015_70654.edgelist'), nodetype=int)
 
 
-def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f):
+def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f,
+                  draw_hint=None):
     """construct.py's close_triangles, with the colour filter relaxed.
 
     A candidate whose endpoints share a colour is normally rejected.  Here it
@@ -54,9 +55,22 @@ def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f):
         return u_arr, v_arr
     weight = degree[eligible].astype(float) ** beta; weight /= weight.sum()
     accepted, remaining = [], quota
+    # ADDED 2026-09-25.  The per-round candidate count was derived from
+    # `remaining`, so lowering the quota also shrank the draw, and a round that
+    # happened to yield no valid candidate hits the `break` below and abandons
+    # the whole retry loop.  Measured: capping the seed-stage quota at 6 dropped
+    # the draw from 190 to 28 and produced ZERO accepted closures instead of six.
+    # draw_hint keeps the draw at the uncapped size so a cap limits how many
+    # closures are ACCEPTED without starving the search for them.  None = the
+    # published behaviour exactly.
     for _ in range(24):
         if remaining <= 0: break
-        draw = int(remaining * 3) + 10
+        # draw_hint is None on every published call, and then this is EXACTLY the
+        # original expression -- the draw shrinks with `remaining`, which is what
+        # the deposited random stream depends on.  Only a capped call takes the
+        # other branch.
+        draw = (int(remaining * 3) + 10 if draw_hint is None
+                else int(max(remaining, int(draw_hint)) * 3) + 10)
         centre = rng.choice(eligible, size=draw, p=weight)
         deg_c = degree[centre]
         nb1 = indices[indptr[centre] + (rng.random(draw) * deg_c).astype(int)]
@@ -142,8 +156,10 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3, quotas=None):
     n = SEED_N; colour, block = COLOURS.copy(), BLOCKS.copy()
     LAST_STAGE_CLOSURES.clear()
     _before = len(u)
-    _q0 = int(alphas[0] * n) if qs[0] is None else int(qs[0])
-    u, v = close_relaxed(u, v, n, colour, block, _q0, rng, beta, fs[0])
+    _q0_full = int(alphas[0] * n)
+    _q0 = _q0_full if qs[0] is None else int(qs[0])
+    u, v = close_relaxed(u, v, n, colour, block, _q0, rng, beta, fs[0],
+                         draw_hint=(None if qs[0] is None else _q0_full))
     LAST_STAGE_CLOSURES.append(len(u) - _before)
     for step in range(2, n_steps + 1):
         u = (u[:, None] * SEED_N + su[None, :]).ravel()
@@ -155,9 +171,10 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3, quotas=None):
         digit = (np.arange(n) // (SEED_N ** (step - 1))) % SEED_N
         colour, block = COLOURS[digit], BLOCKS[digit]
         _before = len(u)
-        _q = (int(alphas[step - 1] * n) if qs[step - 1] is None
-              else int(qs[step - 1]))
-        u, v = close_relaxed(u, v, n, colour, block, _q, rng, beta, fs[step - 1])
+        _q_full = int(alphas[step - 1] * n)
+        _q = _q_full if qs[step - 1] is None else int(qs[step - 1])
+        u, v = close_relaxed(u, v, n, colour, block, _q, rng, beta, fs[step - 1],
+                             draw_hint=(None if qs[step - 1] is None else _q_full))
         LAST_STAGE_CLOSURES.append(len(u) - _before)
     return u.astype(np.int32), v.astype(np.int32), colour, block
 
