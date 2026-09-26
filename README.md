@@ -79,7 +79,34 @@ Reference environment: python 3.13.5, numpy 2.3.4, networkx 3.5, scipy 1.16.2.
 
 # Part 1 — Build the graphs
 
-## Step 1. The global parent  (required first)
+## Step 1. The 8,000-node construction  (independent of everything else)
+
+This is one of the two constructions the main article emphasises, and it
+needs nothing from the other steps. Start here if that is what you want.
+
+```bash
+cd graphnets/construction/bilateral
+python3 construct.py             # build and verify parent + quotient  (~3 min)
+python3 export_graphs.py         # write graphs/ -- needed by everything downstream
+```
+
+Self-contained: it reads no file, and grows both graphs from the 20-vertex seed
+in `construct.py`. `construct.py` verifies as it goes but writes nothing;
+`export_graphs.py` writes the four files that `stats.py`, `bundles/bundles.py`,
+`make_figures.py` and the inpainting models read. They are `.gitignored` because
+they are regenerable, so a fresh checkout must run this first.
+
+Outputs, in `bilateral/graphs/`:
+- `cnew_parent.npz` — **8,000 / 477,584**, three tripartite masks
+- `cnew_parent_supernode.npz` — the same plus the 1,015-supernode map. This is
+  the substrate the recurrent models use; copy it to
+  `graphdynamics/graph_8k_parent_supernode.npz`
+- `cnew_coarse.npz` + `cnew_coarse_w.npy` — **1,015 / 64,760** and its bundle
+  weights
+
+See `bilateral/README.md`.
+
+## Step 2. The global parent  (required first for steps 3 and 4)
 
 ```bash
 cd graphnets/construction/global
@@ -102,7 +129,7 @@ defaults to 0.3, `--add` to 10000); running them bare gives a different graph.
 
 See `construction/global/README.md` for the full stage-by-stage description.
 
-## Step 2. The final graph pair  (required — this is what the paper reports)
+## Step 3. The final graph pair  (the optional fibre-bundle refinement)
 
 ```bash
 cd graphnets/construction/finalgraph
@@ -124,9 +151,9 @@ never authored. Full description, endpoint rules, results and caveats in
 (There is no `step3`; the numbering is historical. A bridge-protected variant
 occupied that slot and was dropped — see `finalgraph/README.md`.)
 
-## Step 3. The earlier coarsening  (no longer how the quotient is obtained)
+## Step 4. The earlier coarsening  (no longer how the quotient is obtained)
 
-**The global parent is still required — it is the input to step 2 — but it is no
+**The global parent is still required — it is the input to step 3 — but it is no
 longer coarsened to Budapest this way.** These scripts applied a tiered selection
 that displayed 70,538 of the 143,679 supernode pairs holding at least one parent
 edge. That is what `finalgraph/` replaces: not showing a pair means deleting its
@@ -151,31 +178,7 @@ now train on the final parent** — shipped as
 `graphdynamics/graph_degmatch_parent_supernode.npz`, identical to
 `finalgraph/parent_degmatch_masks.npz` with the supernode map attached.
 
-## Step 0. The 8,000-node construction  (independent of everything else)
-
-```bash
-cd graphnets/construction/bilateral
-python3 construct.py             # build and verify parent + quotient  (~3 min)
-python3 export_graphs.py         # write graphs/ -- needed by everything downstream
-```
-
-Self-contained: it reads no file, and grows both graphs from the 20-vertex seed
-in `construct.py`. `construct.py` verifies as it goes but writes nothing;
-`export_graphs.py` writes the four files that `stats.py`, `bundles/bundles.py`,
-`make_figures.py` and the inpainting models read. They are `.gitignored` because
-they are regenerable, so a fresh checkout must run this first.
-
-Outputs, in `bilateral/graphs/`:
-- `cnew_parent.npz` — **8,000 / 477,584**, three tripartite masks
-- `cnew_parent_supernode.npz` — the same plus the 1,015-supernode map. This is
-  the substrate the recurrent models use; copy it to
-  `graphdynamics/graph_8k_parent_supernode.npz`
-- `cnew_coarse.npz` + `cnew_coarse_w.npy` — **1,015 / 64,760** and its bundle
-  weights
-
-See `bilateral/README.md`.
-
-## Step 4. The local construction  (independent of steps 1-3)
+## Step 5. The local construction  (independent of steps 2-4)
 
 ```bash
 python3 graphnets/construction/local/emergence_localrepair_standalone.py
@@ -193,17 +196,17 @@ Needs nothing from the global pipeline. Can run first, last, or alongside.
 
 | graph | nodes | edges | built by | status |
 |---|---|---|---|---|
-| **8k parent** | **8,000** | **477,584** | `bilateral/construct.py` | **reported** |
-| **8k quotient** | **1,015** | **64,760** | `bilateral/construct.py` | **reported** |
-| block-wise quotient | 1,076 | 73,152 | `bilateral/blockwise/` | comparison |
-| global parent | 16,807 | 337,983 | step 1 | input to everything |
-| final parent | 16,807 | 337,980 | step 2 | optional refinement |
-| final quotient | 1,015 | 71,098 | step 2 | optional refinement |
-| pre-swap quotient (v14) | 1,015 | 70,537 | step 3 | superseded |
-| post-swap quotient (v146) | 1,015 | 70,538 | step 3 | superseded |
-| feeder lift | 16,807 | 344,483 | step 3 | superseded |
-| local parent | 16,807 | 277,319 | step 4 | comparison |
-| local quotient | 1,015 | 67,094 | step 4 | comparison |
+| **8k parent** | **8,000** | **477,584** | step 1 | **reported** |
+| **8k quotient** | **1,015** | **64,760** | step 1 | **reported** |
+| block-wise quotient | 1,076 | 73,152 | step 1, blockwise/ | comparison |
+| global parent | 16,807 | 337,983 | step 2 | input to steps 3 and 4 |
+| final parent | 16,807 | 337,980 | step 3 | optional refinement |
+| final quotient | 1,015 | 71,098 | step 3 | optional refinement |
+| pre-swap quotient (v14) | 1,015 | 70,537 | step 4 | superseded |
+| post-swap quotient (v146) | 1,015 | 70,538 | step 4 | superseded |
+| feeder lift | 16,807 | 344,483 | step 4 | superseded |
+| local parent | 16,807 | 277,319 | step 5 | comparison |
+| local quotient | 1,015 | 67,094 | step 5 | comparison |
 | Budapest (shipped) | 1,015 | 70,654 | — | reference |
 
 ---
