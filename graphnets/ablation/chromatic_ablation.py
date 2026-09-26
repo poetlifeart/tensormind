@@ -94,7 +94,28 @@ def close_relaxed(u_arr, v_arr, n, colour, block, quota, rng, beta, f):
 LAST_STAGE_CLOSURES = []
 
 
+def _stage_fs(f, n_steps):
+    """Per-stage relaxation probabilities.  A scalar broadcasts to every stage,
+    so every pre-existing call -- and the whole published scalar sweep -- behaves
+    exactly as before.  A sequence gives one probability per stage:
+    fs[0] at the seed stage, fs[1] at scale 2, fs[2] at scale 3.
+
+    ADDED 2026-09-25 for the stage-specific ablation.  The published sweep
+    relaxes one knob at every scale at once, which confounds WHERE closures land
+    (placement) with the seed-stage pool widening from six legal pairs to
+    fourteen and then being multiplied by 62**2 = 3,844 through the two later
+    expansions (scaffold).  A per-stage triple separates them.
+    """
+    if isinstance(f, (int, float)):
+        return (float(f),) * n_steps
+    fs = tuple(float(x) for x in f)
+    if len(fs) != n_steps:
+        raise ValueError(f"f must be a scalar or {n_steps} values, got {len(fs)}")
+    return fs
+
+
 def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
+    fs = _stage_fs(f, n_steps)
     se = cc.build_seed()
     su = np.array([a for a, b in se] + [b for a, b in se], np.int64)
     sv = np.array([b for a, b in se] + [a for a, b in se], np.int64)
@@ -102,7 +123,7 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
     n = SEED_N; colour, block = COLOURS.copy(), BLOCKS.copy()
     LAST_STAGE_CLOSURES.clear()
     _before = len(u)
-    u, v = close_relaxed(u, v, n, colour, block, int(alphas[0] * n), rng, beta, f)
+    u, v = close_relaxed(u, v, n, colour, block, int(alphas[0] * n), rng, beta, fs[0])
     LAST_STAGE_CLOSURES.append(len(u) - _before)
     for step in range(2, n_steps + 1):
         u = (u[:, None] * SEED_N + su[None, :]).ravel()
@@ -114,7 +135,7 @@ def grow(f, rng, alphas=(3, 4, 30), beta=1.5, n_steps=3):
         digit = (np.arange(n) // (SEED_N ** (step - 1))) % SEED_N
         colour, block = COLOURS[digit], BLOCKS[digit]
         _before = len(u)
-        u, v = close_relaxed(u, v, n, colour, block, int(alphas[step - 1] * n), rng, beta, f)
+        u, v = close_relaxed(u, v, n, colour, block, int(alphas[step - 1] * n), rng, beta, fs[step - 1])
         LAST_STAGE_CLOSURES.append(len(u) - _before)
     return u.astype(np.int32), v.astype(np.int32), colour, block
 
@@ -170,8 +191,11 @@ def run(f, seed):
     coarse, super_block, pairs, witness = cc.build_coarse(u, v, label, block, sum(TARGETS))
     s = quotient_stats(coarse)
     # true chromatic damage: how many colour classes would be needed?
+    fs = _stage_fs(f, 3)
     s.update(stage_closures=list(LAST_STAGE_CLOSURES),
-             f=f, seed=seed, parent_m=P.number_of_edges(), mono_parent=mono,
+             f=(fs[0] if len(set(fs)) == 1 else list(fs)),   # scalar stays scalar
+             f_stages=list(fs),                              # always the triple
+             seed=seed, parent_m=P.number_of_edges(), mono_parent=mono,
              mono_frac=mono / P.number_of_edges(),
              dist=distance_to_budapest(s),
              shape_dist=shape_distance_to_budapest(s),
@@ -190,6 +214,15 @@ if __name__ == '__main__':
                     help='violation probabilities to sweep (default: 10 values)')
     ap.add_argument('--seeds', type=int, nargs='+', default=None,
                     help='random seeds (default: 99 1 2 3 4)')
+    # ---- ADDED 2026-09-25: the stage-specific ablation ----
+    # Repeatable per-stage triple. --f3 0 0 0 --f3 0 1 1 ... runs those
+    # conditions instead of the scalar --f grid.  --f3 cube expands to all
+    # eight corners.  See STAGE_ABLATION_PLAN_FOR_GPT.txt.
+    ap.add_argument('--f3', action='append', nargs=3, metavar=('F1', 'F2', 'F3'),
+                    help='per-stage relaxation (seed stage, scale 2, scale 3). '
+                         'Repeat for several conditions. Mutually exclusive with --f.')
+    ap.add_argument('--cube', action='store_true',
+                    help='shorthand for the eight corners of the (f1,f2,f3) cube')
     # ---- CHANGED 2026-09-25 ----
     # The default used to be results_chromatic_ablation.json, which is the
     # ARCHIVED PRE-FIX sweep the README keeps as a record and the paper does
@@ -229,7 +262,16 @@ if __name__ == '__main__':
             "replace it. Pass --out with a new path, or --force to overwrite.\n"
             "Note that results_chromatic_ablation.json is the archived pre-fix\n"
             "sweep and should not be regenerated over.")
-    FS = args.f if args.f is not None else [0.0, 0.01, 0.02, 0.05, 0.10, 0.20, 0.35, 0.50, 0.75, 1.0]
+    # ---- stage-specific mode ----
+    if args.cube or args.f3:
+        if args.f is not None:
+            raise SystemExit('--f is for the scalar sweep; use --f3 / --cube alone.')
+        if args.cube:
+            FS = [(a, b, c) for a in (0.0, 1.0) for b in (0.0, 1.0) for c in (0.0, 1.0)]
+        else:
+            FS = [tuple(float(x) for x in t) for t in args.f3]
+    else:
+        FS = args.f if args.f is not None else [0.0, 0.01, 0.02, 0.05, 0.10, 0.20, 0.35, 0.50, 0.75, 1.0]
     SEEDS = args.seeds if args.seeds is not None else [99, 1, 2, 3, 4]
     print("BUDAPEST reference:", {k: round(BUDSTAT[k], 4) for k in KEYS}, flush=True)
     print(f"\n{'f':>5s} {'seed':>5s} {'mono':>8s} {'mono%':>6s} {'parent m':>9s} "
@@ -239,7 +281,9 @@ if __name__ == '__main__':
     for f in FS:
         for sd in SEEDS:
             r = run(f, sd); rows.append(r)
-            print(f"{f:5.2f} {sd:5d} {r['mono_parent']:8,} {100*r['mono_frac']:5.1f}% "
+            _flab = (f"{f:5.2f}" if isinstance(f, (int, float))
+                     else "".join(str(int(x)) for x in f).rjust(5))
+            print(f"{_flab} {sd:5d} {r['mono_parent']:8,} {100*r['mono_frac']:5.1f}% "
                   f"{r['parent_m']:9,} {r['m']:7,} {r['clust']:6.4f} {r['trans']:6.4f} "
                   f"{r['Q']:6.4f} {r['apl']:6.4f} {r['diam']:4d} {r['dist']:7.4f} "
                   f"{r['shape_dist']:7.4f} {r['secs']:5.0f}",
