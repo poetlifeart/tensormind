@@ -50,7 +50,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # Irregular mask generation (adapted from data_256.py)
 # ============================================================================
 
-# ---- SUPERSEDED 2026-08-15 ----------------------------------------------
+# ---- SUPERSEDED 2026-08-15 -------------------------------------------------
 # Original generator: fixed 1-4 rects + 3-8 thick strokes, no coverage control.
 # Over 3000 seeds it produced min 16.5% coverage and exactly 1 sample in the
 # 10-20% bucket, so the reported '0-20%' column was 20 forced outliers at 17.9%
