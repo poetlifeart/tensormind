@@ -228,3 +228,137 @@ Null ensemble complete (4051.4s)
 [5/8] Rich-club — 100 curves from batched nulls
   Generating 900 additional null graphs (1000 total, vdH 2011 null-ensemble scale)
   rc null   50/900 (335s)
+  rc null  100/900 (666s)
+  rc null  150/900 (1013s)
+  rc null  200/900 (1338s)
+  rc null  250/900 (1676s)
+  rc null  300/900 (1994s)
+  rc null  350/900 (2311s)
+  rc null  400/900 (2626s)
+  rc null  450/900 (2938s)
+  rc null  500/900 (3254s)
+  rc null  550/900 (3582s)
+  rc null  600/900 (3902s)
+  rc null  650/900 (4214s)
+  rc null  700/900 (4527s)
+  rc null  750/900 (4840s)
+  rc null  800/900 (5174s)
+  rc null  850/900 (5507s)
+  rc null  900/900 (5842s)
+  Rich-club null ensemble: 1000 curves
+[6/8] Betweenness centrality
+[7/8] Multi-scale VI stability (propermulti)
+    gamma=0.50  mean_VI=0.0958  Q=0.7393  n_comm=3.9  (7.8s)
+    gamma=0.60  mean_VI=0.0589  Q=0.7089  n_comm=3.9  (8.2s)
+    gamma=0.70  mean_VI=0.0972  Q=0.6747  n_comm=3.9  (8.4s)
+    gamma=0.80  mean_VI=0.0533  Q=0.6464  n_comm=4.0  (8.4s)
+    gamma=0.90  mean_VI=0.0532  Q=0.6159  n_comm=4.0  (8.5s)
+    gamma=1.00  mean_VI=0.0523  Q=0.5855  n_comm=4.0  (8.2s)
+    gamma=1.20  mean_VI=0.0508  Q=0.5403  n_comm=6.0  (8.0s)
+    gamma=1.50  mean_VI=0.0234  Q=0.4890  n_comm=6.0  (8.5s)
+    gamma=2.00  mean_VI=0.0166  Q=0.4039  n_comm=6.0  (8.4s)
+    gamma=2.50  mean_VI=0.1811  Q=0.3175  n_comm=7.0  (8.8s)
+    gamma=3.00  mean_VI=0.2757  Q=0.2494  n_comm=12.9  (9.2s)
+  VI local minimum at gamma=0.6: VI=0.0589, Q=0.7089
+  VI local minimum at gamma=2.0: VI=0.0166, Q=0.4039
+  Stable scales with Q>0.3: 2
+[8/8] Fractal dimension (MEMB box-counting)
+  Computing all-pairs shortest paths...
+  APSP done (0.7s, 2 MB)
+    l_B= 2 (r_B=1): N_B=12 (0.0s)
+    l_B= 4 (r_B=2): N_B=2 (0.0s)
+
+========================================================================
+CORE METRICS VS NULL ENSEMBLE
+========================================================================
+      transitivity │ real=0.50369  null=0.157261±0.000228  ratio=3.203  z=1.52e+03  p=0.0099
+        clustering │ real=0.544473  null=0.158715±0.000178  ratio=3.431  z=2.17e+03  p=0.0099
+               apl │ real=2.33992  null=1.87366±1.62e-05  ratio=1.249  z=2.88e+04  p=0.0099
+        global_eff │ real=0.491489  null=0.563217±2.69e-06  ratio=0.8726  z=-2.66e+04  p=0.0099
+         local_eff │ real=0.771833  null=0.567364±0.000229  ratio=1.36  z=894  p=0.0099
+     assortativity │ real=0.213564  null=-0.0219647±0.00328  z=71.7  p=0.0099
+        modularity │ real=0.586729  null=0.0653861±0.0013  ratio=8.973  z=402  p=0.0099
+        sigma (dp) │ 2.565
+        sigma (ER) │ 3.189
+
+  Note: n_null=100, p-value resolution = 1/101 = 0.0099
+        n_null_rc=1000, rich-club p resolution = 1/1001 = 0.0010 (vdH 2011: 1000 nulls)
+
+========================================================================
+DEGREE DISTRIBUTION
+========================================================================
+               min: 42
+               max: 287
+              mean: 135.97
+            median: 129
+               std: 48.0399
+                cv: 0.353312
+              gini: 0.197031
+        dispersion: 16.9731
+               p90: 206
+               p99: 264
+     max_over_mean: 2.11076
+         hill_tail: 7.83206
+
+========================================================================
+COMMUNITY STRUCTURE
+========================================================================
+                 Q: 0.5867
+     n_communities: 4
+           largest: 361
+           PC mean: 0.1705
+         PC median: 0.1881
+    connector_hubs: 1
+
+========================================================================
+RICH-CLUB (ENSEMBLE-NORMALIZED)
+========================================================================
+         mean_norm: 1.3071
+          max_norm: 2.0747
+
+   eff_per_density: 3.9  (global_eff / density)
+
+========================================================================
+MULTI-SCALE VI STABILITY (propermulti, Betzel 2017)
+========================================================================
+   gamma   mean_VI         Q    n_comm
+  --------------------------------------
+    0.50    0.0958    0.7393       3.9
+    0.60    0.0589    0.7089       3.9
+    0.70    0.0972    0.6747       3.9
+    0.80    0.0533    0.6464       4.0
+    0.90    0.0532    0.6159       4.0
+    1.00    0.0523    0.5855       4.0
+    1.20    0.0508    0.5403       6.0
+    1.50    0.0234    0.4890       6.0
+    2.00    0.0166    0.4039       6.0
+    2.50    0.1811    0.3175       7.0
+    3.00    0.2757    0.2494      12.9
+  VI minimum at gamma=0.6: Q=0.7089 ✓
+  VI minimum at gamma=2.0: Q=0.4039 ✓
+  Stable scales with Q>0.3: 2 → PASS
+
+========================================================================
+FRACTAL DIMENSION (MEMB)
+========================================================================
+  unavailable: insufficient_scaling_range
+
+========================================================================
+EVIDENCE SCORECARD (9 scored criteria)
+========================================================================
+  [PASS] clustering_enriched
+  [PASS] path_near_random
+  [PASS] small_world_sigma_er
+  [PASS] modularity_enriched
+  [PASS] global_eff_near_random
+  [PASS] local_eff_enriched
+  [PASS] connector_hubs
+  [PASS] rich_club
+  [PASS] propermulti_vi_stability
+
+  Score: 9/9 pass
+
+  Descriptive (not scored):
+  [FAIL] fractal_scaling
+
+Wrote JSON to ../coarsening_sweep/audits/audit_P_paper_louvain_perblock.json
