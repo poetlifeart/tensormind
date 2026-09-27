@@ -1,0 +1,62 @@
+{
+  "A deposited": {
+    "n": 1015,
+    "m": 64760,
+    "Q": 0.5317802683619969,
+    "n_comm": 5,
+    "connector_hubs": 9,
+    "kinless_hubs": 0,
+    "participation_mean": 0.29869776224677536,
+    "n_z_above_2p5": 10,
+    "max_z": 3.4713376147708486,
+    "max_P_among_z": 0.6145300122966055,
+    "deg_mean": 127.60591133004927,
+    "deg_sd": 61.34879979259691,
+    "deg_max": 383
+  },
+  "C own proportions": {
+    "n": 1015,
+    "m": 64541,
+    "Q": 0.5571486540956915,
+    "n_comm": 4,
+    "connector_hubs": 10,
+    "kinless_hubs": 0,
+    "participation_mean": 0.22440105653151313,
+    "n_z_above_2p5": 14,
+    "max_z": 3.5225854614233887,
+    "max_P_among_z": 0.48782065565051136,
+    "deg_mean": 127.17438423645321,
+    "deg_sd": 61.22683443689301,
+    "deg_max": 382
+  },
+  "B shared gamma": {
+    "n": 1015,
+    "m": 67133,
+    "Q": 0.5861659559242424,
+    "n_comm": 5,
+    "connector_hubs": 0,
+    "kinless_hubs": 0,
+    "participation_mean": 0.25857229229113293,
+    "n_z_above_2p5": 3,
+    "max_z": 3.235924833823948,
+    "max_P_among_z": 0.2505668934240364,
+    "deg_mean": 132.28177339901478,
+    "deg_sd": 46.02887734416749,
+    "deg_max": 288
+  },
+  "PAPER per-block gamma (1076)": {
+    "n": 1076,
+    "m": 73152,
+    "Q": 0.5867290739542658,
+    "n_comm": 4,
+    "connector_hubs": 1,
+    "kinless_hubs": 0,
+    "participation_mean": 0.17050353620774808,
+    "n_z_above_2p5": 2,
+    "max_z": 2.616760405204328,
+    "max_P_among_z": 0.3270710728836579,
+    "deg_mean": 135.9702602230483,
+    "deg_sd": 48.0399176522647,
+    "deg_max": 287
+  }
+}

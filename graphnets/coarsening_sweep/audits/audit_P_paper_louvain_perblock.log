@@ -1,0 +1,120 @@
+  [Loaded from edge list: 73152 edges]
+========================================================================
+CONNECTOME AUDIT
+========================================================================
+  Nodes:   1,076
+  Edges:   73,152
+  Density: 0.126484
+  Connected: True
+  GCC:     1,076 nodes
+  Layers:  358 / 358 / 360
+
+[1/8] Degree distribution
+[2/8] Core metrics (real)
+  Computing exact APL (all-pairs on GCC)...
+  Computing exact global efficiency (all-pairs)...
+  Computing exact local efficiency (all nodes)...
+
+Processing 100 null graphs in 1 batches of 100 (generic_degree_preserving)...
+
+  Batch 1/1: nulls 1-100
+    null    1/100: connected=True  GCC=1,076
+    null    2/100: connected=True  GCC=1,076
+    null    3/100: connected=True  GCC=1,076
+    null    4/100: connected=True  GCC=1,076
+    null    5/100: connected=True  GCC=1,076
+    null    6/100: connected=True  GCC=1,076
+    null    7/100: connected=True  GCC=1,076
+    null    8/100: connected=True  GCC=1,076
+    null    9/100: connected=True  GCC=1,076
+    null   10/100: connected=True  GCC=1,076
+    null   11/100: connected=True  GCC=1,076
+    null   12/100: connected=True  GCC=1,076
+    null   13/100: connected=True  GCC=1,076
+    null   14/100: connected=True  GCC=1,076
+    null   15/100: connected=True  GCC=1,076
+    null   16/100: connected=True  GCC=1,076
+    null   17/100: connected=True  GCC=1,076
+    null   18/100: connected=True  GCC=1,076
+    null   19/100: connected=True  GCC=1,076
+    null   20/100: connected=True  GCC=1,076
+    null   21/100: connected=True  GCC=1,076
+    null   22/100: connected=True  GCC=1,076
+    null   23/100: connected=True  GCC=1,076
+    null   24/100: connected=True  GCC=1,076
+    null   25/100: connected=True  GCC=1,076
+    null   26/100: connected=True  GCC=1,076
+    null   27/100: connected=True  GCC=1,076
+    null   28/100: connected=True  GCC=1,076
+    null   29/100: connected=True  GCC=1,076
+    null   30/100: connected=True  GCC=1,076
+    null   31/100: connected=True  GCC=1,076
+    null   32/100: connected=True  GCC=1,076
+    null   33/100: connected=True  GCC=1,076
+    null   34/100: connected=True  GCC=1,076
+    null   35/100: connected=True  GCC=1,076
+    null   36/100: connected=True  GCC=1,076
+    null   37/100: connected=True  GCC=1,076
+    null   38/100: connected=True  GCC=1,076
+    null   39/100: connected=True  GCC=1,076
+    null   40/100: connected=True  GCC=1,076
+    null   41/100: connected=True  GCC=1,076
+    null   42/100: connected=True  GCC=1,076
+    null   43/100: connected=True  GCC=1,076
+    null   44/100: connected=True  GCC=1,076
+    null   45/100: connected=True  GCC=1,076
+    null   46/100: connected=True  GCC=1,076
+    null   47/100: connected=True  GCC=1,076
+    null   48/100: connected=True  GCC=1,076
+    null   49/100: connected=True  GCC=1,076
+    null   50/100: connected=True  GCC=1,076
+    null   51/100: connected=True  GCC=1,076
+    null   52/100: connected=True  GCC=1,076
+    null   53/100: connected=True  GCC=1,076
+    null   54/100: connected=True  GCC=1,076
+    null   55/100: connected=True  GCC=1,076
+    null   56/100: connected=True  GCC=1,076
+    null   57/100: connected=True  GCC=1,076
+    null   58/100: connected=True  GCC=1,076
+    null   59/100: connected=True  GCC=1,076
+    null   60/100: connected=True  GCC=1,076
+    null   61/100: connected=True  GCC=1,076
+    null   62/100: connected=True  GCC=1,076
+    null   63/100: connected=True  GCC=1,076
+    null   64/100: connected=True  GCC=1,076
+    null   65/100: connected=True  GCC=1,076
+    null   66/100: connected=True  GCC=1,076
+    null   67/100: connected=True  GCC=1,076
+    null   68/100: connected=True  GCC=1,076
+    null   69/100: connected=True  GCC=1,076
+    null   70/100: connected=True  GCC=1,076
+    null   71/100: connected=True  GCC=1,076
+    null   72/100: connected=True  GCC=1,076
+    null   73/100: connected=True  GCC=1,076
+    null   74/100: connected=True  GCC=1,076
+    null   75/100: connected=True  GCC=1,076
+    null   76/100: connected=True  GCC=1,076
+    null   77/100: connected=True  GCC=1,076
+    null   78/100: connected=True  GCC=1,076
+    null   79/100: connected=True  GCC=1,076
+    null   80/100: connected=True  GCC=1,076
+    null   81/100: connected=True  GCC=1,076
+    null   82/100: connected=True  GCC=1,076
+    null   83/100: connected=True  GCC=1,076
+    null   84/100: connected=True  GCC=1,076
+    null   85/100: connected=True  GCC=1,076
+    null   86/100: connected=True  GCC=1,076
+    null   87/100: connected=True  GCC=1,076
+    null   88/100: connected=True  GCC=1,076
+    null   89/100: connected=True  GCC=1,076
+    null   90/100: connected=True  GCC=1,076
+    null   91/100: connected=True  GCC=1,076
+    null   92/100: connected=True  GCC=1,076
+    null   93/100: connected=True  GCC=1,076
+    null   94/100: connected=True  GCC=1,076
+    null   95/100: connected=True  GCC=1,076
+    null   96/100: connected=True  GCC=1,076
+    null   97/100: connected=True  GCC=1,076
+    null   98/100: connected=True  GCC=1,076
+    null   99/100: connected=True  GCC=1,076
+    null  100/100: connected=True  GCC=1,076
