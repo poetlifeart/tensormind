@@ -93,3 +93,10 @@ graphnets/coarsening_sweep/*.out
 # --section audit now fails without them, so they are tracked
 !graphnets/construction/bilateral/audits/*.json
 !graphnets/construction/bilateral/audits/*.log
+
+# B and C audits: the evidence for adopting C over B; the paper cites them
+!graphnets/coarsening_sweep/audits/*.json
+!graphnets/coarsening_sweep/audits/*.log
+!graphnets/coarsening_sweep/graphs/*.npz
+!graphnets/ablation/seed_swap_schedules/*.json
+!graphnets/ablation/seed_swap_schedules/*.csv

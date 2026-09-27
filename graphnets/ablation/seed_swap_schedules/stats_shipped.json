@@ -1,0 +1,31 @@
+{
+ "seed_vertices": 7,
+ "steps": 5,
+ "alpha": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  3.5
+ ],
+ "beta": 1.5,
+ "rng_seed": 99,
+ "parent_n": 16807,
+ "parent_m": 1003608,
+ "parent_meandeg": 119.4273814482061,
+ "monochromatic": 0,
+ "quot_n": 1015,
+ "quot_m": 142111,
+ "quot_density": 0.27615549790616106,
+ "quot_meandeg": 280.02167487684727,
+ "quot_degsd": 86.21915749692751,
+ "quot_dmin": 122,
+ "quot_dmax": 638,
+ "quot_clust": 0.45275583938522074,
+ "quot_trans": 0.42968166270494684,
+ "quot_Q": 0.2047491186555055,
+ "quot_ncomm": 4,
+ "quot_apl": 1.7238464453318565,
+ "quot_diam": 3,
+ "secs": 76.7
+}
