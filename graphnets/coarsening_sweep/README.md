@@ -11,6 +11,18 @@ alpha = (3,4,30), beta = 1.5, three steps).  Harness check: the rebuilt parent
 reproduces the deposited 1,015 / 64,760 quotient exactly, and the deposited row
 reproduces its published six-test score of 0.2009 exactly.
 
+> **CORRECTED 2026-10-06 — read sections 5 and 6 before 3 and 4.** Sections 3
+> and 4 were written before commit b04671b found a sampler truncation bug that
+> corrupted every arm with candidates to spare: 100% of the closure edges in the
+> unconstrained `off` arm, and 239,804 edges of the `permuted` arm. Their
+> conclusions — that thinning rather than colour carries the effect, that the
+> spectral gap is monotone in the accept rate, and that a rate-matched permuted
+> control had not been run — do not survive the repair. Section 5 gives the
+> repaired results, which are the ones the main paper reports. Section 6 adds
+> the nine-criterion audits and the connector-hub seed sweep that were run
+> afterwards. Sections 1–4 are kept as the record of what was measured at the
+> time.
+
 ## 1. `louvain_family_sweep.py` — does the merge rule carry the result?
 
 The deposited coarsening fixes its node count by fiat: Louvain at resolution 30
@@ -96,6 +108,12 @@ Results: `chromatic_vs_coarsening.json`.
 
 ## 3. `chromatic_matched_control.py` — the matched comparison
 
+> **Superseded by section 5.** The OFF rows below come from the unrepaired
+> sampler, whose truncation step kept the lowest-indexed candidates; in the
+> unconstrained arm that cut applied to every closure edge. The direction claim
+> ("32.7% more under one cut, 22.7% fewer under the other") does not hold after
+> the repair: the constraint gives MORE coarse relations under both coarsenings.
+
 The relaxed arm's step-3 alpha is bisected down to 25.6641, giving a parent of
 477,492 edges against the enforced arm's 477,584 — a 0.02% difference.  27.9% of
 the relaxed arm's parent edges are monochromatic.  Both parents are then
@@ -158,6 +176,13 @@ not making individual edges likelier to survive coarsening.  The mechanism is
 currently unexplained.
 
 ## 4. `chromatic_null_controls.py` — is it colour, or is it thinning?
+
+> **Superseded by section 5.** The `off` and `permuted` arms here were corrupted
+> by the truncation bug (207,029 and 239,804 truncated edges). Three readings
+> below are withdrawn: "thinning, not colour" (the corrupted `off` arm was what
+> made thinning look sufficient), "the gap is monotone in the accept rate" (the
+> repaired `off` arm, at rate 1.0, has gap 12.36 against chromatic's 16.08), and
+> "the control that is still missing" (it was run; see section 5).
 
 The chromatic filter also *thins*: measured here, it rejects **51.0%** of the
 closure candidates that survive the block filter (758,472 candidates, 371,941
