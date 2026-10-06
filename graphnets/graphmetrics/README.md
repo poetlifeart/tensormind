@@ -59,9 +59,10 @@ and different ratios.** Use the `_audit` file for auditing the local quotient.
 
 ## Rich club: which script gives the published numbers
 
-> **In one line:** the paper reports the **floored** counts; the audit reports
-> **unfloored** ones as an internal diagnostic; for the numbers as published, run
-> `richclub_other_graphs.py`.
+> **In one line:** the supplementary notes report **floored** counts from
+> `richclub_other_graphs.py`; the main article's 8,000-node quotient table reports
+> the audit's **unfloored** count (241). Know which one a number is before
+> comparing it.
 
 **The floor.** A degree threshold *k* is only counted if at least 20 nodes still
 have degree > *k*. Past that point the "rich club" is a handful of nodes — eleven
@@ -73,9 +74,20 @@ degree >k, with significance assessed at p<0.05."*
 Flooring can only remove thresholds, so the published counts are the smaller,
 more conservative ones — 294 where 330 was available, 288 where 295 was.
 
-**Every rich-club count printed in the paper is a floored value from
-`richclub_other_graphs.py`** (`n_sig_floor` / `run_floor`), verified across all
-six sites:
+**Which counts are floored** (checked against the 2026-10-06 Overleaf export):
+
+| where | graph | prints | source |
+|---|---|---|---|
+| main article, 8k quotient audit table | 8,000-node quotient | "significant over 241 degree thresholds" | audit `n_k_significant`, **unfloored** (`../construction/bilateral/audits/audit_8k_quotient_100.json`; its run is 235) |
+| supplementary notes, local quotient table | local-repair quotient | 294 / run 177 | `richclub_other_graphs.py`, floored |
+| supplementary notes, local quotient table | Budapest | 212 / run 212 | `richclub_other_graphs.py`, floored |
+
+This README used to say that every rich-club count in the paper is floored. That
+was true of the earlier draft the table below was verified against; it is not
+true of the current main article's 8k row. Every rich-club *verdict* is
+unaffected, since the scored quantity is the run.
+
+The five sites verified against the earlier draft:
 
 | graph | paper prints | unfloored | floored |
 |---|---|---|---|
@@ -91,8 +103,9 @@ scripts (199, 288, 289, 177, 212, 248). So `connectome_audit_gold.py` reproduces
 all nine PASS/FAIL verdicts and every continuous metric on its own. Only the
 threshold **counts** need the standalone.
 
-Do not compare the audit's `n_k_significant` to the paper — it is unfloored and
-will not match. The two scripts also differ slightly even before flooring (289 vs
+Do not compare the audit's `n_k_significant` to a floored count in the paper —
+it is unfloored and will not match. (It is, however, exactly what the main
+article prints for the 8k quotient.) The two scripts also differ slightly even before flooring (289 vs
 279 on the post-swap quotient). They use the same significance test (rho > 1,
 permutation p < 0.05) but build their k-grids differently: the audit tests only
 thresholds present in the real graph AND in *every* null curve, while the

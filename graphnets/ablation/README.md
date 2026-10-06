@@ -242,14 +242,20 @@ paired difference over its standard deviation across matched pairs — Cohen's
 *d_z*, **not** a *t* statistic, which would be √n larger, and not the spread of
 either arm. `wrong sign` counts matched pairs moving the other way.
 
-| relaxed at | change | d_z | n | wrong sign |
-|---|---:|---:|---:|---:|
-| scale 2 only | **−11.25%** | **9.0** | 14 | 0 |
-| scales 2 and 3 | **−10.55%** | **4.5** | 14 | 0 |
-| scale 3 only | **−8.06%** | **4.6** | 19 | 0 |
-| all three stages | **−12.08%** | **4.0** | 12 | 0 |
-| scales 2+3, seed relaxed | −6.24% | 1.6 | 15 | 1 |
-| seed stage only | −4.35% | 1.0 | 9 | **3** |
+`d_z` here is computed on each pair's **percent** change (sample standard
+deviation). `aggregate_stage.py` prints the same statistic on the **raw**
+change in relation count, as `|mean|/sd`; that is the right-hand column. The two
+differ because pairs start from slightly different relation counts; neither is
+wrong, and the main article quotes neither.
+
+| relaxed at | change | d_z (% change) | `aggregate_stage.py` (count) | n | wrong sign |
+|---|---:|---:|---:|---:|---:|
+| scale 2 only | **−11.25%** | **9.0** | 7.9 | 14 | 0 |
+| scales 2 and 3 | **−10.55%** | **4.5** | 4.2 | 14 | 0 |
+| scale 3 only | **−8.06%** | **4.6** | 4.2 | 19 | 0 |
+| all three stages | **−12.08%** | **4.0** | 3.7 | 12 | 0 |
+| scales 2+3, seed relaxed | −6.24% | 1.6 | 1.5 | 15 | 1 |
+| seed stage only | −4.35% | 1.0 | 1.0 | 9 | **3** |
 
 Four of the six are unanimous in sign at d_z ≥ 4.0. The five-seed run
 (`results_stage_ablation_capped.json`) gives the same ordering and the same

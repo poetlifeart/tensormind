@@ -244,9 +244,10 @@ Two things to know before running the audit, both in
 - Audit the local quotient with **`localrepair_quotient_audit.npz`**, not
   `localrepair_quotient.npz`. The audit picks its null model from the file, and
   the `_audit` file is the one with colourless layers.
-- The paper's rich-club **counts** come from `richclub_other_graphs.py` (floored).
-  The audit's own rich-club count is unfloored and will not match. The audit's
-  PASS/FAIL verdicts are correct and reproducible on their own.
+- Rich-club **counts** come in two kinds. The supplementary notes print floored
+  counts from `richclub_other_graphs.py`; the main article's 8,000-node quotient
+  table prints the audit's own unfloored count (241). The audit's PASS/FAIL
+  verdicts are correct and reproducible on their own.
 
 ## Runtimes
 

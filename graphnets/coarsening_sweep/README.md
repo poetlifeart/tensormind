@@ -270,20 +270,141 @@ structure rather than from the specific identity of the colour classes.  But
 confounded there and the hint is not a result.
 
 The decisive arm would be `permuted` **plus** additional random rejection tuned
-to p = 0.4904, making all arms rate-matched and size-matched.  Not run.
+to p = 0.4904, making all arms rate-matched and size-matched.  (Since run: see
+section 5.)
+
+## 5. `sampler_diagnostic.py`, `r1_permuted_rate_matched.py`, `r2_truncation_fix.py` — the repaired controls
+
+**These are the results the main paper reports.**
+
+**The bug.** `close_triangles`, copied here from `construct.py`, accepts
+candidates as `np.unique(...)[:remaining]`. `np.unique` sorts, so whenever a
+round yields more candidates than the remaining quota, the cut keeps the
+lowest-keyed ones — a deterministic bias toward low vertex indices, which carry
+both colour and block in their leading base-20 digit. `sampler_diagnostic.py`
+found it. It barely touches the constrained arm, which never has candidates to
+spare, but it decided every closure in the unconstrained arm:
+
+| arm | closure edges from a truncated round |
+|---|---|
+| chromatic | 3 of 241,605 |
+| random | 14 of 207,043 |
+| off | 207,029 of 207,043 |
+
+`graphnets/ablation/chromatic_ablation.py` already shuffled before truncating, so
+the paper's ablation table and the stage ablation were never affected. These
+scripts had copied the unshuffled version.
+
+**The repair** (`r2_truncation_fix.py`) takes a uniform random subset from a
+separate generator (`TRUNC_SEED = 20260926`), so the growth stream is never
+advanced and `construct.py` stays untouched. An arm that never truncates is
+therefore bit-identical with and without the fix, which is the built-in control.
+
+**R1** (`r1_permuted_rate_matched.py`) is the control section 4 said was missing:
+the must-differ rule on a random relabelling of the colours (class sizes
+2400/2400/3200 kept), plus extra random rejection so that its accept rate
+matches chromatic's.
+
+    python r2_truncation_fix.py        # -> r2_truncation_fix.json
+
+All four arms parent-matched at ~477,600 edges, repaired sampler:
+
+**deposited merge_densest**
+
+| | chromatic | random | permuted, rate-matched | off |
+|---|---|---|---|---|
+| accept rate | 0.4904 | 0.4899 | 0.4908 | 1.0000 |
+| quotient relations | **64,766** | 51,896 | 53,607 | 55,719 |
+| density error | **−8.33%** | −26.55% | −24.13% | −21.14% |
+| spectral gap (target 7.51) | 19.93 | **16.01** | 26.32 | 16.43 |
+| T1 degree | **0.0995** | 0.2690 | 0.2552 | 0.2158 |
+| T4 scree | 0.8302 | **0.5684** | 1.0173 | 0.5957 |
+| T5 network value | **0.0384** | 0.0552 | 0.2453 | 0.0493 |
+| T6 triangles | **0.1537** | 0.3695 | 0.3537 | 0.3084 |
+| six-test mean | 0.2012 | 0.2216 | 0.3196 | **0.1977** |
+
+**resolution-only per block**
+
+| | chromatic | random | permuted, rate-matched | off |
+|---|---|---|---|---|
+| quotient relations | **66,916** | 62,324 | 65,013 | 64,797 |
+| density error | **−5.29%** | −11.79% | −7.98% | −8.29% |
+| spectral gap | 16.08 | **11.79** | 42.88 | 12.36 |
+| T1 degree | 0.1222 | 0.1507 | 0.1507 | **0.1192** |
+| T4 scree | 0.6040 | **0.3229** | 1.0040 | 0.3610 |
+| T5 network value | 0.0808 | **0.0768** | 0.3320 | 0.0975 |
+| T6 triangles | **0.1833** | 0.2335 | 0.2108 | 0.1970 |
+| six-test mean | 0.1855 | 0.1532 | 0.3137 | **0.1490** |
+
+**What holds under both coarsenings, against every null:**
+
+* **More coarse relations.** Chromatic over random +24.8% / +7.4%, over
+  rate-matched permuted +20.8% / +2.9%, over off +16.2% / +3.3%
+  (merge / per-block). The "about 10% more coarse relations" reading is not
+  dead; the sign flip claimed in section 3 came from the corrupted `off` arm.
+* **Density closer to the reference**: −8.33% and −5.29%, against −26.55% and
+  −11.79% for random, −24.13% and −7.98% for permuted, −21.14% and −8.29% for off.
+* **T6 triangle participation**: chromatic is best of the four under both.
+
+**It is this colouring, not any three-class rule.** At matched rate the
+relabelled rule loses to chromatic on density, T1 and T6 under both
+coarsenings. The apparent tie in section 4 came from its lower rejection rate
+(33.9% against 51.0%) plus its own truncation contamination.
+
+**What does not hold.** The six-test mean favours the unconstrained arm under
+both coarsenings, and random rejection under the per-block one. The spectral
+gap and T4 scree favour random and off under both. T1 is chromatic's under
+merge_densest but off's by 0.003 under per-block; T5 is chromatic's under
+merge_densest but random's by 0.004 under per-block.
+
+**Noise floor for the per-block pipeline.** Three parent edges out of 477,584
+(the chromatic arm with and without the repair) move the per-block six-test
+mean by 0.0111, because the pipeline re-sweeps resolution and Louvain flips.
+Per-block differences below ~0.011 are not meaningful, which is why off against
+random (0.0042) reads as zero.
+
+## 6. `three_coarsenings.py`, the audits, and the connector-hub seed sweep
+
+Four coarsenings of the deposited parent:
+
+| | coarsening | nodes / edges | audit | connector hubs | Q |
+|---|---|---|---|---|---|
+| A | density merge, Budapest's 307/306/201/201 (deposited) | 1,015 / 64,760 | 9/9 | 9 | 0.5318 |
+| C | density merge, the parent's own 305/304/203/203 | 1,015 / 64,541 | 9/9 | 10 | 0.5571 |
+| P | per-block resolution sweep, no merge (the paper's Louvain-only) | 1,076 / 73,152 | 9/9 | 1 | 0.5867 |
+| B | one shared resolution, no merge | 1,015 / 67,133 | 8/9 | 0 | 0.5862 |
+
+100 degree-preserving nulls, 1,000 rich-club nulls, seed 42. A's audit is
+`../construction/bilateral/audits/audit_8k_quotient_100.json`; B, C and P are in
+`audits/`. Only B fails, on connector hubs, and B is not in the paper.
+
+`hub_seed_sweep.py` repeats the hub count over 20 Louvain seeds
+(`hub_seed_sweep.json`):
+
+| | criterion passes | hubs per seed | max participation among high-z nodes |
+|---|---|---|---|
+| A | 20/20 | 7–10 | 0.487–0.624 |
+| C | 20/20 | 5–10 | 0.488–0.628 |
+| P | 19/20 | 0–1 | 0.289–0.327 |
+| B | 0/20 | 0 | 0.251 every seed |
+
+P clears the criterion on a single hub whose participation straddles the 0.30
+threshold, and fails at one seed (seed 3). Without the merge step the
+connector-hub result is fragile in both resolution and Louvain seed; with it,
+robust in both. B and P are the same coarsening at two nearby resolutions (all
+four blocks select gamma = 8.0 in P) and share the same flat degree
+distribution — sd 46.0 and 48.0, maximum degree 288 and 287 — against A and
+C's 61.3 / 383 and 61.2 / 382.
 
 ## Not established
 
-* No nine-criterion audit has been run on any quotient here.  This matters for
-  the resolution-only variant in particular: it wins the six static tests but has
-  clustering 0.5488 against the deposited 0.6119, and clustering enrichment is a
-  scored audit criterion the six static tests do not cover.
 * One seed graph, one RNG seed per arm.  Nothing here speaks to seed-class
   robustness.
-* Two coarsenings.  Claims should read "under both coarsenings tested".
-* The `permuted` arm is not rate-matched, so nothing there separates the rule's
-  structure from its rejection rate.
-* Nothing here explains WHY the colour rule improves density and the degree and
-  triangle distributions.  Two candidate mechanisms have now been tested and
-  refuted: edge survival under quotienting (section 3), and a spectral account
-  (section 4).  The mechanism is open.
+* Two coarsenings for the chromatic controls.  Claims should read "under both
+  coarsenings tested".
+* Nothing here explains WHY the colour rule improves coarse-relation count,
+  density and triangle participation.  Two candidate mechanisms have been tested
+  and refuted: edge survival under quotienting (section 3; the repaired survival
+  rates are 93.4% against 90.4% for random under merge_densest and 81.7% against
+  81.8% under per-block), and a spectral account (section 4).  The mechanism is
+  open.
