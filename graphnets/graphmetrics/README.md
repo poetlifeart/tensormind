@@ -46,9 +46,11 @@ metrics at the top level, so the numbers match but the nesting differs.
 
 `connectome_audit_gold.py` does not need to be told which null ensemble to use.
 `_use_generic_null()` decides from the graph itself — its docstring: *"Decide null
-model based on graph semantics, not file format."* A graph carrying real
-tripartite masks gets tripartite-aware rewiring; an edge-list graph, or one whose
-masks are placeholders, gets generic degree-preserving rewiring.
+model based on graph semantics, not file format."* A graph whose tripartite masks
+rebuild exactly its edge set gets tripartite-aware rewiring, whether the file holds
+the masks alone or an edge list next to them; a graph with no masks, placeholder
+masks, or masks that do not match its edges gets generic degree-preserving
+rewiring.
 
 This is why `construction/local/` writes a third file,
 `localrepair_quotient_audit.npz`, with `n1=nq, n2=0, n3=0` — colourless layers, so

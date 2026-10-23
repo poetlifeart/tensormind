@@ -204,14 +204,29 @@ def _generate_null_edgelist(G_real: nx.Graph, rng: np.random.Generator,
 def _use_generic_null(layered: LayeredGraph) -> bool:
     """Decide null model based on graph semantics, not file format.
     Use tripartite-aware rewiring only if masks carry real structure
-    (non-trivial, matching the graph's edges). Otherwise use generic."""
-    if layered.has_edge_list:
-        return True
+    (non-trivial, matching the graph's edges). Otherwise use generic.
+
+    FIX: previously returned True for every edge-list file, so the SAME graph
+    got a different null (and different verdicts) depending on file format.
+    The mask/edge match promised above is now actually checked (once, cached)."""
+    cached = getattr(layered, '_generic_null', None)
+    if cached is not None:
+        return cached
+    generic = False
     # Check if masks are trivially small (placeholder)
     for m in layered.masks.values():
         if m.shape[0] <= 1 or m.shape[1] <= 1:
-            return True
-    return False
+            generic = True
+    if not generic:
+        n1, n2, n3 = layered.sizes
+        Gm = _graph_from_masks(n1, n2, n3, layered.masks['12'],
+                               layered.masks['13'], layered.masks['23'])
+        same = (Gm.number_of_nodes() == layered.G.number_of_nodes() and
+                {frozenset(e) for e in Gm.edges()} ==
+                {frozenset(e) for e in layered.G.edges()})
+        generic = not same
+    layered._generic_null = generic
+    return generic
 
 
 def _generate_null(layered: LayeredGraph, seed: int, retries: int = 8) -> nx.Graph:
@@ -667,17 +682,18 @@ def _propermulti(G: nx.Graph, seed: int = 42, repeats: int = 20) -> Dict[str, ob
     from networkx.algorithms.community import louvain_communities
     nodes = list(G.nodes())
     gammas = [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.2, 1.5, 2.0, 2.5, 3.0]
-    mean_vis, std_vis, all_Q, all_ncomm = [], [], [], []
+    mean_vis, std_vis, all_Q, all_Q1, all_ncomm = [], [], [], [], []
 
     for gi, gamma in enumerate(gammas):
         t0 = time.time()
-        labelings, qs, ncomms = [], [], []
+        labelings, qs, q1s, ncomms = [], [], [], []
         for r in range(repeats):
             comms = list(louvain_communities(G, resolution=float(gamma),
                                             seed=seed + 1000 * gi + r))
             labels = _partition_to_labels(nodes, comms)
             labelings.append(labels)
             qs.append(float(nx.community.modularity(G, comms, resolution=float(gamma))))
+            q1s.append(float(nx.community.modularity(G, comms)))  # standard Q (gamma=1)
             ncomms.append(len(comms))
 
         n_rep = len(labelings)
@@ -690,6 +706,7 @@ def _propermulti(G: nx.Graph, seed: int = 42, repeats: int = 20) -> Dict[str, ob
         mean_vis.append(mv)
         std_vis.append(sv)
         all_Q.append(qs)
+        all_Q1.append(q1s)
         all_ncomm.append(ncomms)
         print(f"    gamma={gamma:.2f}  mean_VI={mv:.4f}  Q={np.mean(qs):.4f}  "
               f"n_comm={np.mean(ncomms):.1f}  ({time.time()-t0:.1f}s)")
@@ -698,7 +715,11 @@ def _propermulti(G: nx.Graph, seed: int = 42, repeats: int = 20) -> Dict[str, ob
     Q_at_minima = []
     for g_min, _ in minima:
         idx = gammas.index(g_min)
-        Q_at_minima.append(float(np.mean(all_Q[idx])))
+        # FIX: the Q > 0.3 threshold (Newman & Girvan 2004) is for STANDARD
+        # modularity.  Q_gamma rises as gamma falls (one community gives
+        # Q_gamma = 1 - gamma), so thresholding Q_gamma passed weak partitions
+        # at low gamma.  Threshold the standard Q of the same partitions.
+        Q_at_minima.append(float(np.mean(all_Q1[idx])))
 
     n_stable_modular = sum(1 for q in Q_at_minima if q > 0.3)
 
@@ -966,7 +987,11 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
             _BATCH_GCCS = null_gccs
             batch_nv = {k: [None] * batch_n for k in real}
 
-            with mp.Pool(n_workers) as pool:
+            # FIX: workers read _BATCH_GCCS, which only a FORKED child inherits.
+            # Under 'spawn' (macOS, Windows) or 'forkserver' (Linux default from
+            # Python 3.14) it is None in the worker and the audit crashes with
+            # TypeError.  Request the fork context explicitly.
+            with mp.get_context('fork').Pool(n_workers) as pool:
                 it = pool.imap_unordered(_compute_null_metrics, range(batch_n))
                 for _ in range(batch_n):
                     try:
@@ -1058,7 +1083,11 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
         # Erdos-Renyi estimates for random graph with same n, m
         p = 2.0 * m / (n * (n - 1))
         c_rand = p  # expected clustering of ER graph
-        l_rand = np.log(n) / np.log(n * p) if n * p > 1 else float('inf')
+        # FIX: ln n / ln<k> omits the Euler-constant and +1/2 terms and runs
+        # ~13% low at n=343, <k>=17 (2.06 vs measured ER 2.36), which failed
+        # path_near_random in no-null mode only.  Fronczak, Fronczak & Holyst
+        # (2004, PRE 70:056110): l = (ln n - 0.5772)/ln<k> + 1/2.
+        l_rand = ((np.log(n) - 0.5772) / np.log(n * p) + 0.5) if n * p > 1 else float('inf')
         e_rand = 1.0 / l_rand if l_rand > 0 and np.isfinite(l_rand) else p
 
         comp = {}
@@ -1079,7 +1108,10 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
             ratio = float(real[name] / null_est) if null_est != 0 else float('nan')
             comp[name] = {
                 'real': real[name], 'null_mean': null_est, 'null_std': 0.0,
-                'ratio': ratio, 'z': float('nan'), 'p': 0.05,
+                # FIX: was p = 0.05, a sentinel that made every 'p < 0.05'
+                # criterion FAIL in no-null mode whatever the graph.  No null,
+                # no p-value: these criteria are now reported 'not_tested'.
+                'ratio': ratio, 'z': float('nan'), 'p': float('nan'),
             }
 
         c_r = comp['transitivity']['ratio']
@@ -1093,15 +1125,21 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
     if null_Qs:
         mu_q, sd_q = _mean_std(null_Qs)
     else:
-        # ER modularity estimate
-        mu_q = 1.0 / np.sqrt(2.0 * m) if m > 0 else 0.01
+        # ER modularity estimate.
+        # FIX: was 1/sqrt(2m), which shrinks with graph size; Louvain Q of a
+        # sparse ER graph does not (about 0.26-0.28 at mean degree 10 for
+        # n = 2,000-20,000).  Use Louvain on three matched ER graphs.
+        n_g, m_g = Gcc.number_of_nodes(), Gcc.number_of_edges()
+        er_qs = [_louvain(_gcc(nx.gnm_random_graph(n_g, m_g, seed=seed + 9000 + i)),
+                          seed=seed)[0] for i in range(3)]
+        mu_q = float(np.mean(er_qs))
         sd_q = 0.0
         null_Qs = [mu_q]
     comp['modularity'] = {
         'real': Q, 'null_mean': mu_q, 'null_std': sd_q,
         'ratio': float(Q / mu_q) if mu_q != 0 else float('nan'),
         'z': _z(Q, null_Qs) if len(null_Qs) > 1 else float('nan'),
-        'p': _pval(Q, null_Qs, higher=True) if len(null_Qs) > 1 else 0.05,
+        'p': _pval(Q, null_Qs, higher=True) if len(null_Qs) > 1 else float('nan'),
     }
 
     pcs = _participation(Gcc, partition)
@@ -1272,27 +1310,29 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
             return 'pass'
         return 'fail'
 
+    def _p_verdict(p, extra=True):
+        # FIX: a missing p-value (no-null mode) is 'not_tested', not 'fail'.
+        if not np.isfinite(p):
+            return 'not_tested'
+        return 'pass' if (p < 0.05 and extra) else 'fail'
+
     evidence = {
         # ── Scored (9 criteria) ──
-        'clustering_enriched': 'pass' if (
-            comp['clustering']['p'] < 0.05
-        ) else 'fail',
+        'clustering_enriched': _p_verdict(comp['clustering']['p']),
         'path_near_random': 'pass' if (
             comp['apl']['ratio'] <= 1.25
         ) else 'fail',
         'small_world_sigma_er': _sw_verdict_er(),
-        'modularity_enriched': 'pass' if (
-            comp['modularity']['p'] < 0.05 and comp['modularity']['real'] > 0.3
-        ) else 'fail',
+        'modularity_enriched': _p_verdict(comp['modularity']['p'],
+                                          comp['modularity']['real'] > 0.3),
         'global_eff_near_random': _geff_verdict(),
-        'local_eff_enriched': 'pass' if (
-            comp['local_eff']['p'] < 0.05
-        ) else 'fail',
+        'local_eff_enriched': _p_verdict(comp['local_eff']['p']),
         'connector_hubs': 'pass' if connector_hubs > 0 else 'fail',
-        'rich_club': 'pass' if (
-            rc.get('available', False) and
-            rc.get('longest_consecutive_run', 0) >= 3
-        ) else 'fail',
+        'rich_club': 'not_tested' if rc.get('n_null_rc', 0) == 0 else (
+            'pass' if (
+                rc.get('available', False) and
+                rc.get('longest_consecutive_run', 0) >= 3
+            ) else 'fail'),
         'propermulti_vi_stability': _propermulti_verdict(),
         # ── Descriptive (not scored) ──
         'fractal_scaling': _fractal_verdict(),
@@ -1448,19 +1488,22 @@ def print_report(res: Dict[str, object]) -> None:
     n_pass = sum(1 for k in scored_criteria if ev[k] == 'pass')
     n_near = sum(1 for k in scored_criteria if ev[k] == 'near_pass')
     n_fail = sum(1 for k in scored_criteria if ev[k] == 'fail')
+    n_nt = sum(1 for k in scored_criteria if ev[k] == 'not_tested')
+    tags = {'pass': 'PASS', 'near_pass': 'NEAR', 'fail': 'FAIL', 'not_tested': 'N/T'}
 
     print("\n" + "=" * 72)
     print("EVIDENCE SCORECARD (9 scored criteria)")
     print("=" * 72)
     for k in scored_criteria:
-        tag = {'pass': 'PASS', 'near_pass': 'NEAR', 'fail': 'FAIL'}[ev[k]]
+        tag = tags[ev[k]]
         print(f"  [{tag:4s}] {k}")
     print(f"\n  Score: {n_pass}/{len(scored_criteria)} pass"
           + (f", {n_near} near-pass" if n_near else "")
-          + (f", {n_fail} fail" if n_fail else ""))
+          + (f", {n_fail} fail" if n_fail else "")
+          + (f", {n_nt} not tested (no null ensemble)" if n_nt else ""))
     print("\n  Descriptive (not scored):")
     for k in descriptive:
-        tag = {'pass': 'PASS', 'near_pass': 'NEAR', 'fail': 'FAIL'}[ev[k]]
+        tag = tags[ev[k]]
         print(f"  [{tag:4s}] {k}")
 
 
