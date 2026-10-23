@@ -169,8 +169,8 @@
       ]
     ],
     "Q_at_minima": [
-      0.6414292535200934,
-      0.5406565317038505
+      0.5796538229440893,
+      0.5861659559242424
     ],
     "n_stable_modular": 2,
     "Q_per_gamma": {
@@ -267,7 +267,8 @@
     },
     "repeats": 20,
     "seed": 42,
-    "pass": true
+    "pass": true,
+    "provenance": "2026-10-22: Q_at_minima, n_stable_modular and pass recomputed with connectome_audit_gold.py md5 62c3d1ed (Q at a VI minimum is now standard modularity, gamma=1, of the partitions found at that gamma; it was Q_gamma). The sweep reproduced the stored mean_vi, std_vi, local_minima, Q_per_gamma and ncomm_per_gamma exactly. All other fields in this file are from the original run."
   },
   "hierarchical": {
     "sweep": [
