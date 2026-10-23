@@ -545,9 +545,15 @@ def _hierarchical_modularity(G: nx.Graph, seed: int = 42, n_seeds: int = 10) -> 
         sweep = []
         for g in gammas:
             Q, comms, part = _louvain(G, seed=s, resolution=g)
-            sweep.append({'gamma': g, 'Q': Q, 'n_comm': len(comms)})
+            # FIX 2026-10-23, same as in _propermulti: the Q > 0.3 threshold is
+            # for STANDARD modularity, but _louvain returns Q_gamma here (or
+            # standard Q under the python-louvain fallback), which rises as gamma
+            # falls.  Threshold the standard Q of the same partition; 'Q' stays
+            # Q_gamma so earlier JSONs remain comparable.
+            Q1 = float(nx.community.modularity(G, comms))
+            sweep.append({'gamma': g, 'Q': Q, 'Q_standard': Q1, 'n_comm': len(comms)})
             partitions.append(part)
-        n_mod = sum(1 for r in sweep if r['Q'] > 0.3)
+        n_mod = sum(1 for r in sweep if r['Q_standard'] > 0.3)
         nesting_scores = []
         for i in range(len(gammas) - 1):
             coarse = partitions[i]

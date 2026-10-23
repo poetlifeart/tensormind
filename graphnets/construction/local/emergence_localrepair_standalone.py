@@ -2,8 +2,9 @@
 """
 emergence_localrepair_standalone.py
 -----------------------------------
-ONE self-contained file that builds the LOCAL-REPAIR graph end to end and
-verifies it. No imports from any other project file. It:
+ONE file that builds the LOCAL-REPAIR graph end to end and verifies it. Its
+only project import is ../odd_cycle_witness.py, the odd-cycle invariant shared
+with the global construction. It:
 
   1. builds the FINE graph  (16,807-node parent, tensor -> delete -> add, 4 steps)
   2. coarsens to the END graph (1,015-node quotient, Louvain + density-merge)

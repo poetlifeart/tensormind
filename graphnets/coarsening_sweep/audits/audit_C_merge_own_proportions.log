@@ -262,6 +262,9 @@ Null ensemble complete (3826.4s)
   VI local minimum at gamma=0.7: VI=0.1965, Q=0.6396
   VI local minimum at gamma=1.5: VI=0.0430, Q=0.4585
   Stable scales with Q>0.3: 2
+  [NOTE 2026-10-23] The Q at the VI minima above is Q_gamma, from the audit before the
+  [NOTE 2026-10-23] 2026-10-22 fix. Standard Q of the same minima, now in the JSON: gamma=0.7 0.5413, gamma=1.5 0.5428.
+  [NOTE 2026-10-23] The stable-scale count (2) is unchanged.
 [8/8] Fractal dimension (MEMB box-counting)
   Computing all-pairs shortest paths...
   APSP done (0.5s, 2 MB)
@@ -337,6 +340,9 @@ MULTI-SCALE VI STABILITY (propermulti, Betzel 2017)
   VI minimum at gamma=0.7: Q=0.6396 ✓
   VI minimum at gamma=1.5: Q=0.4585 ✓
   Stable scales with Q>0.3: 2 → PASS
+  [NOTE 2026-10-23] The Q at the VI minima above is Q_gamma, from the audit before the
+  [NOTE 2026-10-23] 2026-10-22 fix. Standard Q of the same minima, now in the JSON: gamma=0.7 0.5413, gamma=1.5 0.5428.
+  [NOTE 2026-10-23] The stable-scale count (2) is unchanged.
 
 ========================================================================
 FRACTAL DIMENSION (MEMB)

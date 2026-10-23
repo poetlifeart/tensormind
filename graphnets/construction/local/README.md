@@ -1,8 +1,9 @@
 # The local-repair construction
 
 `emergence_localrepair_standalone.py` builds the paper's *local* graph end to end
-in a single file — fine graph, coarsening, and self-verification. Its own header
-says: "No imports from any other project file."
+in a single file — fine graph, coarsening, and self-verification. Its only
+project import is `../odd_cycle_witness.py`, the odd-cycle invariant shared with
+the global construction.
 
 | output | nodes | edges |
 |---|---|---|
@@ -31,7 +32,7 @@ invocation, so running it bare reproduces the paper's graph.
 
 **None.** The graph is grown from a hard-coded seed; nothing is read to build it.
 
-`../../Budapest/budapest_connectome.gml` is read once, at line 174, *after* the
+`../../Budapest/budapest_connectome.gml` is read once, in `main()`, *after* the
 graph is complete, solely to compute the Kolmogorov-Smirnov distance between the
 quotient's degree distribution and Budapest's. That value appears only in the
 console summary — none of the three saved `.npz` files depend on it. Remove those
