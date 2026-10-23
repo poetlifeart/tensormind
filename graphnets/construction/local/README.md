@@ -6,7 +6,7 @@ says: "No imports from any other project file."
 
 | output | nodes | edges |
 |---|---|---|
-| `localrepair_parent.npz` | 16,807 | fine parent |
+| `localrepair_parent.npz` | 16,807 | 277,319, with its three colour masks, so the audit uses the colour-respecting null |
 | `localrepair_quotient.npz` | 1,015 | 67,094 |
 | `localrepair_quotient_audit.npz` | 1,015 | same, colourless layers, ready for the audit |
 

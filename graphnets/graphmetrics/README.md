@@ -52,11 +52,15 @@ the masks alone or an edge list next to them; a graph with no masks, placeholder
 masks, or masks that do not match its edges gets generic degree-preserving
 rewiring.
 
-This is why `construction/local/` writes a third file,
-`localrepair_quotient_audit.npz`, with `n1=nq, n2=0, n3=0` — colourless layers, so
-the audit selects the generic null. **Feed the audit
-`localrepair_quotient.npz` instead and you silently get a different null model
-and different ratios.** Use the `_audit` file for auditing the local quotient.
+`construction/local/` also writes `localrepair_quotient_audit.npz`, the same
+quotient with `n1=nq, n2=0, n3=0` (colourless layers). It makes no difference
+which of the two quotient files you audit: neither carries colour masks, so both
+get the generic null and give the same audit. The only difference is the `layers`
+field the audit records — 1015 / 0 / 0 for the `_audit` file, an arbitrary
+338 / 338 / 339 split for `localrepair_quotient.npz` — which the audit uses for
+nothing else. (Checked 2026-10-23: every other field of the two JSONs is
+identical.) `localrepair_parent.npz` does carry its colour masks, so the local
+parent gets the colour-respecting null, as the paper's fine parents do.
 
 
 ## Rich club: which script gives the published numbers

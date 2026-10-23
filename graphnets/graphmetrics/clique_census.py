@@ -222,7 +222,7 @@ def histogram_analysis(h):
 # Null model comparison (degree-preserving randomization)
 # ═══════════════════════════════════════════════════════════════════
 
-def null_clique_census(G, n_null=10, timeout_per=60, verbose=True):
+def null_clique_census(G, n_null=10, timeout_per=60, verbose=True, seed=42):
     """Run clique census on degree-preserving random rewirings.
 
     Uses nx.double_edge_swap to create degree-preserving nulls.
@@ -244,7 +244,11 @@ def null_clique_census(G, n_null=10, timeout_per=60, verbose=True):
             print(f"  Null {i+1}/{n_null}...", end=" ", flush=True)
         G_null = G.copy()
         try:
-            nx.double_edge_swap(G_null, nswap=n_swaps, max_tries=n_swaps * 10)
+            # CHANGED 2026-10-23: seeded, so null i is reproducible.  The paper's
+            # 9.4 +- 0.7 came from an unseeded run; its ten values are recorded
+            # in the archived JSON's null.omega_all.
+            nx.double_edge_swap(G_null, nswap=n_swaps, max_tries=n_swaps * 10,
+                                seed=seed + i)
         except nx.NetworkXAlgorithmError:
             pass  # couldn't complete all swaps
 
@@ -349,6 +353,8 @@ def main():
     parser.add_argument("--timeout", type=float, default=None, help="Timeout for clique enumeration (seconds)")
     parser.add_argument("--n-null", type=int, default=10, help="Number of degree-preserving nulls")
     parser.add_argument("--null-timeout", type=float, default=60, help="Timeout per null model")
+    parser.add_argument("--null-seed", type=int, default=42,
+                        help="Base seed for the degree-preserving nulls; null i uses seed + i")
     parser.add_argument("--skip-nulls", action="store_true", help="Skip null model comparison")
     parser.add_argument("--json", type=str, default=None, help="Output JSON path")
     parser.add_argument("--density-threshold", type=float, default=None,
@@ -431,7 +437,8 @@ def main():
         print(f"NULL MODEL COMPARISON ({args.n_null} degree-preserving rewirings)")
         print(f"{'='*60}")
         null_results = null_clique_census(G, n_null=args.n_null,
-                                          timeout_per=args.null_timeout, verbose=True)
+                                          timeout_per=args.null_timeout, verbose=True,
+                                          seed=args.null_seed)
         print(f"\n  Null omega: {null_results['null_omega_mean']:.1f} +/- {null_results['null_omega_std']:.1f}")
         print(f"  Real omega: {census['omega']}")
 
@@ -470,6 +477,7 @@ def main():
                 'omega_mean': null_results['null_omega_mean'],
                 'omega_std': null_results['null_omega_std'],
                 'omega_all': null_results['null_omega_all'],
+                'seed': args.null_seed,
             }
         if enrich:
             output['enrichment'] = enrich

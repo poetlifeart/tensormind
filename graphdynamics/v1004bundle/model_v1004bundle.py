@@ -1,4 +1,12 @@
 """
+RecurrentBrainNet V1004Bundle -- V1003Super with bundle-map message passing.
+
+Same architecture as V1003Super in every respect but one (see README.md): signal
+crosses the graph through BundleSparseLinear -- converge, one learnable weight
+per axon, fan out along the bundle map -- instead of MultiChannelSparseLinear,
+one weight per fine edge.  The notes below are V1003Super's, which this model
+inherits unchanged.
+
 RecurrentBrainNet V1003Super  (created 2026-08-15, revised 2026-08-16)
 
 Variant of V1001Super. Changes relative to v1001, as the code now stands:

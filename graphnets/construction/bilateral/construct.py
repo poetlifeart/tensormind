@@ -264,6 +264,12 @@ def close_triangles(u_arr, v_arr, n, colour, block, quota, rng, beta):
 
         keys = np.unique(np.minimum(nb1, nb2).astype(np.int64) * n
                          + np.maximum(nb1, nb2).astype(np.int64))
+        # When a round yields more new pairs than `remaining`, this keeps the
+        # lowest-keyed ones (np.unique sorts), not a random subset.  Left as is so
+        # the deposited graph reproduces exactly: in the deposited run only 3 of
+        # the 241,605 closure edges come from a round where this cut applied.
+        # chromatic_ablation.py shuffles before truncating, so the ablation is
+        # unaffected; see r2_truncation_fix.py.
         keys = np.array([k for k in keys if k not in seen], np.int64)[:remaining]
         if not len(keys):
             break

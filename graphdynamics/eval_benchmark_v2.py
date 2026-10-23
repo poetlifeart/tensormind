@@ -2,13 +2,15 @@
 """
 Benchmark evaluation for RecurrentBrainNet 256x256 on CelebA-HQ.
 
-Generates irregular masks in 6 coverage buckets (Liu et al. 2018 convention),
-computes L1 (%), PSNR, SSIM, LPIPS per bucket, and compares against published
-baselines (PConv, EdgeConnect, RFR, LaMa, MAT).
+Generates irregular masks in 6 coverage buckets (Liu et al. 2018 convention) and
+computes L1 (%), PSNR, SSIM, LPIPS per bucket.  It used to print a comparison
+against published baselines (PConv, EdgeConnect, RFR, LaMa, MAT); that table was
+emptied on 2026-08-15 (BASELINES = [], see the superseded block below), so the
+comparison table now lists only this model's own row.
 
-Usage:
-    CUDA_VISIBLE_DEVICES=1 python3 eval_benchmark.py --checkpoint checkpoints_256/best_ep3.pt
-    python3 eval_benchmark.py --checkpoint checkpoints_256/latest.pt --save results_latest.json
+Usage (name the architecture; see README.md for the full commands):
+    python3 eval_benchmark_v2.py --checkpoint CKPT.pt --v1003super --graph graph_8k_parent_supernode.npz --mask-dist training
+    python3 eval_benchmark_v2.py --checkpoint CKPT.pt --unet --save results.json
 """
 
 import argparse

@@ -17,8 +17,9 @@ identical across arms -- same reals, same masks -- so the comparison stands
 while the absolute values should not be read against published numbers.
 
 The 1,000 applies to the pooled row only.  Each BAND draws its reference set
-from just the images that received a mask in that coverage range: 828, 861 and
-849 on the published run, so the per-band rows are more rank-deficient still,
+from just the images that received a mask in that coverage range: 821, 991 and
+841 with the training masks the paper uses (828, 861 and 849 with the wider
+benchmark band), so the per-band rows are more rank-deficient still,
 and the three bands do not share a reference set with each other.  Comparisons
 BETWEEN ARMS within a band remain exact -- identical reals, identical masks.
 `n_real` in the output records the per-band counts (it used to record 1,000
@@ -122,9 +123,10 @@ def main():
     # ---- FIXED 2026-09-09 ----
     # was: n_real=len(val_files) -- recorded 1,000 for every band, but only the
     # pooled row actually draws on all 1,000. Each band's reference set is just
-    # the images that received a mask in its coverage range (828-861 measured on
-    # the published run), so the per-band rows are more rank-deficient than the
-    # figure suggested, and the paper's caveat inherited the wrong number.
+    # the images that received a mask in its coverage range (821-991 with the
+    # paper's training masks, 828-861 with the benchmark band), so the per-band
+    # rows are more rank-deficient than the figure suggested, and the paper's
+    # caveat inherited the wrong number.
     rec = dict(checkpoint=a.checkpoint, fid=fids, n_real=n_reals,
                n_test_images=len(val_files), mask_dist=a.mask_dist)
     if a.save:

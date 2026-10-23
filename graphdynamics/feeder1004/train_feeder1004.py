@@ -546,6 +546,8 @@ def main():
             continue
         top = name.split('.')[0]
         # ---- ADDED 2026-08-16: the t4/t5 projections go in the 1x group ----
+        # (The sizes below are for the 16,807-node graph, n3 = 7,203.  On the
+        # 8,000-node graph, n3 = 3,200: proj_t4 819,456, proj_t5 204,864.)
         # twin_path is in brain_names, so when it was ~49-65k params of 1x1 heads
         # the 10x brain multiplier was harmless. proj_t4 (1,844,224) and proj_t5
         # (461,056) made it 2,370,752 -- larger than the sparse graph itself

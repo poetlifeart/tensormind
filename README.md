@@ -186,7 +186,8 @@ python3 graphnets/construction/local/emergence_localrepair_standalone.py
 
 One self-contained script: builds its own 16,807-node parent, coarsens it, and
 verifies both against recorded numbers. Outputs:
-- `local/localrepair_parent.npz` — 16,807 / 277,319
+- `local/localrepair_parent.npz` — 16,807 / 277,319, with its colour masks
+  (the audit's colour-respecting null, as the paper uses for the fine parents)
 - `local/localrepair_quotient.npz` — 1,015 / 67,094
 - `local/localrepair_quotient_audit.npz` — same graph, colourless layers
 
@@ -241,9 +242,11 @@ own `--json`.
 Two things to know before running the audit, both in
 `graphnets/graphmetrics/README.md`:
 
-- Audit the local quotient with **`localrepair_quotient_audit.npz`**, not
-  `localrepair_quotient.npz`. The audit picks its null model from the file, and
-  the `_audit` file is the one with colourless layers.
+- The audit picks its null model from the graph. A file whose colour masks
+  rebuild its edges (the 8k parent, `localrepair_parent.npz`) gets the
+  colour-respecting null; anything else gets the generic one. For the local
+  quotient, `localrepair_quotient.npz` and `localrepair_quotient_audit.npz`
+  give the same audit; only the recorded `layers` field differs.
 - Rich-club **counts** come in two kinds. The supplementary notes print floored
   counts from `richclub_other_graphs.py`; the main article's 8,000-node quotient
   table prints the audit's own unfloored count (241). The audit's PASS/FAIL

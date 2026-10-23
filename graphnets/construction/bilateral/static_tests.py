@@ -15,6 +15,14 @@ the same visual weight as the hundreds of nodes carrying the bulk.
 
 Also prints a table of the underlying scalars and the KS statistics.
 
+Two things to know when reading the scores:
+  - "T3 hop plot" scores a single point, the fraction of node pairs within
+    2 hops (hop_frac[1]), not the whole curve.
+  - "T5 network value" compares unit-norm principal-eigenvector components.
+    These scale like 1/sqrt(n), so graphs of different sizes (e.g. 1,076 vs
+    1,015 nodes) differ slightly for that reason alone.  Do not normalise the
+    components without also updating the six-test numbers in the paper.
+
 Usage:
     python static_tests.py --graph graph_v146_6500.npz --budapest edges.csv
     python static_tests.py --graph q.npz --budapest edges.csv \

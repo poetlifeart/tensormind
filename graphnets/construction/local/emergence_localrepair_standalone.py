@@ -8,7 +8,8 @@ verifies it. No imports from any other project file. It:
   1. builds the FINE graph  (16,807-node parent, tensor -> delete -> add, 4 steps)
   2. coarsens to the END graph (1,015-node quotient, Louvain + density-merge)
   3. VERIFIES both against the recorded numbers (parent edges + 7 quotient stats)
-  4. saves: localrepair_parent.npz, localrepair_quotient.npz,
+  4. saves: localrepair_parent.npz  (edges + colour masks: tripartite null in the audit),
+            localrepair_quotient.npz,
             localrepair_quotient_audit.npz  (colorless layers, ready for the audit)
 
 RECIPE
@@ -194,7 +195,27 @@ def main():
           f"mean {dg.mean():.0f}, std {dg.std():.0f}, min {dg.min()}, max {dg.max()}, KS {ks:.3f}, Q {Q:.3f}")
 
     # save the three artefacts
-    np.savez(os.path.join(HERE, 'localrepair_parent.npz'),   n_total=n,  edges=edges)
+    # CHANGED 2026-10-23: the parent is saved WITH its colour masks, so
+    # connectome_audit_gold.py audits it against the colour-respecting (tripartite)
+    # null, as the paper states; an edge list alone got the generic null.  A vertex's
+    # colour is that of its leading base-7 digit (build_fine's project_colors), so the
+    # classes are contiguous index blocks, 4,802 / 4,802 / 7,203.  The masks equal
+    # those of the audited simple_parent_masks.npz.
+    col=COLORS.copy()
+    for _ in range(4): col=project_colors(col,7)
+    sz=[int((col==k).sum()) for k in range(3)]; off=[0,sz[0],sz[0]+sz[1]]
+    assert all((col[off[k]:off[k]+sz[k]]==k).all() for k in range(3)), 'colour classes not contiguous'
+    cu,cv=col[edges[:,0]],col[edges[:,1]]
+    assert (cu!=cv).all(), 'monochromatic edge in the parent'
+    masks={}
+    for a,b in ((0,1),(0,2),(1,2)):
+        e=edges[((cu==a)&(cv==b))|((cu==b)&(cv==a))]
+        lo=np.where(col[e[:,0]]==a,e[:,0],e[:,1]); hi=np.where(col[e[:,0]]==a,e[:,1],e[:,0])
+        m=np.zeros((sz[b],sz[a]),dtype=np.uint8); m[hi-off[b],lo-off[a]]=1
+        masks[f'mask_{a+1}{b+1}']=m
+    assert sum(int(m.sum()) for m in masks.values())==len(edges), 'masks do not hold every edge'
+    np.savez_compressed(os.path.join(HERE, 'localrepair_parent.npz'), n_total=n, edges=edges,
+                        n1=sz[0], n2=sz[1], n3=sz[2], **masks)
     np.savez(os.path.join(HERE, 'localrepair_quotient.npz'), n_total=nq, edges=np.array(sorted(Gq.edges()),dtype=np.int64))
     np.savez(os.path.join(HERE, 'localrepair_quotient_audit.npz'), n_total=nq,
              edges=np.array(sorted(Gq.edges()),dtype=np.int64), n1=nq, n2=0, n3=0)  # colorless -> generic null
