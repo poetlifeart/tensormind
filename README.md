@@ -184,7 +184,7 @@ now train on the final parent** — shipped as
 python3 graphnets/construction/local/emergence_localrepair_standalone.py
 ```
 
-One self-contained script: builds its own 16,807-node parent, coarsens it, and
+One script (plus the shared `graphnets/construction/odd_cycle_witness.py`): builds its own 16,807-node parent, coarsens it, and
 verifies both against recorded numbers. Outputs:
 - `local/localrepair_parent.npz` — 16,807 / 277,319, with its colour masks
   (the audit's colour-respecting null, as the paper uses for the fine parents)
