@@ -1001,9 +1001,9 @@ def run_audit(layered: LayeredGraph, n_null: int = 100,
                 it = pool.imap_unordered(_compute_null_metrics, range(batch_n))
                 for _ in range(batch_n):
                     try:
-                        idx, result, elapsed = it.next(timeout=1800)
+                        idx, result, elapsed = it.next(timeout=10800)
                     except mp.TimeoutError:
-                        print(f"    WARNING: worker timed out after 1800s, skipping")
+                        print(f"    WARNING: worker timed out after 10800s, skipping")
                         null_done += 1
                         continue
                     for k, v in result.items():

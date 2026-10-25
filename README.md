@@ -66,8 +66,14 @@ See `graphdynamics/README.md` for that side.
 
 ```bash
 pip install numpy scipy networkx==3.5 matplotlib
+pip install pandas scikit-learn   # NMI/ARI and Budapest comparison lines in bilateral/
+pip install python-louvain        # finalgraph/step4_degree_match.py (imported as `community`)
 pip install pynauty        # needed only for orbit entropy in run_complexity.py
 ```
+
+Install `python-louvain` under exactly that name. The script imports it as
+`community`, but the PyPI package called `community` is unrelated and the import
+still fails.
 
 **Pin `networkx==3.5`.** Every coarsening step calls `louvain_communities`, which
 gives slightly different partitions on different networkx versions even at fixed

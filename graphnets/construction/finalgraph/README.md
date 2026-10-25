@@ -33,6 +33,9 @@ Each writes into this directory and the next reads from it. `step1` needs
 `../global/graph_brain_mild.npz`, so build the parent first
 (`cd ../global && bash build_mild_graph.sh`).
 
+`step4` also needs `python-louvain` (`pip install python-louvain`; it is imported
+as `community`). Without it, `step4` stops before saving anything.
+
 There is no `step3`. The numbering is historical: a bridge-protected variant
 occupied that slot, was measured, and was dropped. See *Discarded variant* below.
 
