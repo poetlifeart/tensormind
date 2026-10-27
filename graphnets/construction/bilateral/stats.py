@@ -263,10 +263,11 @@ def sec_audit():
         npass = sum(1 for v in scored.values() if v == 'pass')
         bad = [k for k, v in scored.items() if v != 'pass']
         g = d['graph']
-        print('  %-16s %d nodes / %d edges, %s nulls -> %d/9   fails: %s'
-              % (what, g['n_nodes'], g['n_edges'], d.get('n_null'), npass,
+        print('  %-16s %d nodes / %d edges, %s nulls (%s) -> %d/9   fails: %s'
+              % (what, g['n_nodes'], g['n_edges'], d.get('n_null'),
+                 d.get('null_model_type', 'null type not recorded'), npass,
                  ', '.join(bad) or 'none'))
-    print('  nulls are tripartite degree-preserving; p-floor is 1/(n_null+1),')
+    print('  p-floor is 1/(n_null+1),')
     print('  so 100 nulls is the minimum that can pass a p<0.05 criterion.')
     if missing:
         raise SystemExit('audit files missing: %s -- this section reports a '

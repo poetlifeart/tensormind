@@ -222,9 +222,13 @@ asserts the deposited parent.
 
 ```bash
 python3 chromatic_ablation.py --cube --seeds 99 1 2 3 4 \
-    --seed-quota 6 --out results_stage_ablation_capped.json     # ~16 min
-python3 aggregate_stage.py results_stage_ablation_capped.json
+    --seed-quota 6 --out my_stage_capped.json     # ~16 min
+python3 aggregate_stage.py my_stage_capped.json
 ```
+
+The shipped result is `results_stage_ablation_capped.json`; the script refuses to
+overwrite an existing file, hence the new name. Both should match in every field
+except the per-run times (`secs`).
 
 **Why `--seed-quota 6`.** The seed stage's quota is `alpha[0] * n = 60`, but the
 20-vertex seed admits only six legal closures, so `f1 = 0` accepts 5–6 while
@@ -304,12 +308,14 @@ everything else is meaningless if it fails.
 python3 chromatic_ablation.py --control
 ```
 
-Expected, and asserted by the script:
+Expected output; the script exits non-zero unless both of the last two lines
+are `True`:
 
 ```
-f=0 seed=99:  parent 477,584 edges, 0 monochromatic, quotient 1015/64,760
-distance to reference 0.0644
-REPRODUCES THE DEPOSITED CONSTRUCTION: True
+f=0 seed=99:  parent 477,584 edges, 0 monochromatic, quotient 1015/64,491
+distance to reference: full 0.0671  shape-only 0.0571
+REPRODUCES THE DEPOSITED PARENT (477,584 / 0 mono / 1,015): True
+QUOTIENT IN THE f=0 SEED RANGE 61,489-64,491: True
 ```
 
 **Measure the bind rate** (~25 s):
@@ -321,9 +327,14 @@ python3 bind_rate.py
 **Run the ablation sweep** (50 runs, ~25 s each, ~21 min):
 
 ```bash
-python3 chromatic_ablation.py            # full grid -> results_chromatic_ablation_shuffled.json
-python3 chromatic_ablation.py --f 0 0.05 1.0 --seeds 99 1   # a quick subset
+python3 chromatic_ablation.py --out my_sweep.json                              # full grid
+python3 chromatic_ablation.py --f 0 0.05 1.0 --seeds 99 1 --out my_subset.json  # a quick subset
 ```
+
+`--out` is needed because the default output, the shipped
+`results_chromatic_ablation_shuffled.json`, already exists and the script refuses
+to overwrite it (`--force` overrides). The full grid's `my_sweep.json` should
+match the shipped file in every field except the per-run times (`secs`).
 
 **Rebuild the quotients and audit them** (~25 s each to build; the audits run
 in parallel):

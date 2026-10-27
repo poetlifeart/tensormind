@@ -92,7 +92,7 @@ if __name__ == '__main__':
     print(f"\n  PARENT  n={n:,}  m={P.number_of_edges():,}  <k>={deg.mean():.2f}"
           f"  monochromatic={int((colour[u]==colour[v]).sum())}"
           f"  connected={nx.is_connected(P)}  [{time.time()-t0:.0f}s]", flush=True)
-    print(f"  colour class sizes {list(np.bincount(colour))}")
+    print(f"  colour class sizes {np.bincount(colour).tolist()}")
 
     print(f"\n  coarsening to {a.target} supernodes (single block, global Louvain)...", flush=True)
     label = cc.coarsen(P, block, [a.target], seed=42)

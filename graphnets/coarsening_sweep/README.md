@@ -11,6 +11,12 @@ alpha = (3,4,30), beta = 1.5, three steps).  Harness check: the rebuilt parent
 reproduces the deposited 1,015 / 64,760 quotient exactly, and the deposited row
 reproduces its published six-test score of 0.2009 exactly.
 
+**Rerunning.** Each script writes its result into this folder under the shipped
+file name, replacing it; the run commands are in each section. On a clean
+checkout, `git status` afterwards is the reproduction check: a file it does not
+list is byte-identical to the shipped one. Under a numpy other than 2.3, `r1`,
+`r2` and `three_coarsenings` can differ in the last digit of some floats.
+
 > **CORRECTED 2026-10-06 — read sections 5 and 6 before 3 and 4.** Sections 3
 > and 4 were written before commit b04671b found a sampler truncation bug that
 > corrupted every arm with candidates to spare: 100% of the closure edges in the
@@ -305,7 +311,9 @@ the must-differ rule on a random relabelling of the colours (class sizes
 2400/2400/3200 kept), plus extra random rejection so that its accept rate
 matches chromatic's.
 
-    python r2_truncation_fix.py        # -> r2_truncation_fix.json
+    python sampler_diagnostic.py         # -> sampler_diagnostic.json
+    python r1_permuted_rate_matched.py   # -> r1_permuted_rate_matched.json
+    python r2_truncation_fix.py          # -> r2_truncation_fix.json
 
 All four arms parent-matched at ~477,600 edges, repaired sampler:
 
@@ -395,6 +403,19 @@ robust in both. B and P are the same coarsening at two nearby resolutions (all
 four blocks select gamma = 8.0 in P) and share the same flat degree
 distribution — sd 46.0 and 48.0, maximum degree 288 and 287 — against A and
 C's 61.3 / 383 and 61.2 / 382.
+
+To rerun section 6, build A first (Step 1 of the top README writes
+`../construction/bilateral/graphs/cnew_coarse.npz`, which `hub_seed_sweep.py`
+reads), then:
+
+    python three_coarsenings.py        # -> three_coarsenings.json
+    python export_bc.py                # -> graphs/quot_B_pure_louvain.npz, graphs/quot_C_merge_own_proportions.npz
+    python export_paper_louvain.py     # -> graphs/quot_P_paper_louvain_perblock.npz
+    python connector_hub_count.py      # -> connector_hub_count.json
+    python hub_seed_sweep.py           # -> hub_seed_sweep.json
+
+The B, C and P audits are the standard audit command (top README, Part 2) with
+`--n-null 100 --n-null-rc 1000 --seed 42` on the three files in `graphs/`.
 
 ## Not established
 

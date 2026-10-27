@@ -1,6 +1,6 @@
 # Graph metrics
 
-The six scripts that produced the paper's graph-topology numbers. Each was
+The seven scripts that produced the paper's graph-topology numbers. Each was
 identified by matching the JSON keys it emits against the paper's result files —
 not by filename or date. Several had multiple versions on disk that differ in
 substance; these are the ones that made the published numbers.
@@ -17,7 +17,7 @@ substance; these are the ones that made the published numbers.
 
 ## Usage — one graph in, one JSON out
 
-All six behave identically and independently. Give one graph, get one JSON for
+All seven behave identically and independently. Give one graph, get one JSON for
 that graph. No defaults, no accumulation, no shared state.
 
 ```bash

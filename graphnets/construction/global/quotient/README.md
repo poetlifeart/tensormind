@@ -5,7 +5,7 @@ up) and produces **both** quotients used by the paper:
 
 | output | nodes | edges | what it is |
 |---|---|---|---|
-| `graph_v14.npz` | 1,015 | 70,537–70,538 | pre-swap quotient |
+| `graph_v14.npz` | 1,015 | 70,538 | pre-swap quotient |
 | `graph_v146_6500.npz` | 1,015 | 70,538 | post-swap — most quotient tables use this |
 
 Run it after the parent exists. It is one self-contained script; there is no
@@ -29,10 +29,12 @@ separate coarsening step to run first.
    block across L1 groups (31,302, all kept), T4 cross-block (96 pairs, only the
    top 10 by witness weight). Fill to mean degree 139.
 
-Result: **v14**, 70,537 edges, 83.2% intra-block, 16.8% cross-block, modularity 0.501.
+Result: **v14**, 70,538 edges, 83.2% intra-block, 16.8% cross-block, modularity 0.501.
 
-Steps 1–4 are documented in full, with parameter tables and source, in
-`emergentgraph/graph_topology/quotient_reproduction/reproduction.tex`.
+Steps 1–4 were documented in full, with parameter tables and source, in
+`graph_topology/quotient_reproduction/reproduction.tex` of the earlier
+emergentgraph package. That file is not shipped here; `save_v146_npz.py` is the
+code that runs the four steps.
 
 ## The swap (v14 → v146) — the least documented step in the pipeline
 

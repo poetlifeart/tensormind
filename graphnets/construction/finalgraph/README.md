@@ -1,7 +1,10 @@
 # finalgraph — the inverse relocation construction
 
-Takes the global parent and produces **the graph pair the paper reports**: a
-16,807-node chromatic substrate and the 1,015-node quotient derived from it.
+Takes the global parent and produces a 16,807-node chromatic substrate and the
+1,015-node quotient derived from it. This is the optional fibre-bundle
+refinement: the supplementary notes head these sections "Exploratory; not part
+of the main article's reported results". The main article reports the
+`../bilateral/` and `../local/` constructions.
 
 ```
 graph_brain_mild.npz          16,807 / 337,983     the parent, built by ../global

@@ -2,8 +2,8 @@
 # Nine-criterion audit for the 8,000-node construction: parent and quotient.
 # Paper claims parent 7/9 (failing the two path criteria) and quotient 9/9.
 set -u
-M=/home/vahid/python_programs/tensormind/graphnets/graphmetrics
-B=/home/vahid/python_programs/tensormind/graphnets/construction/bilateral
+B="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+M="$(cd "$B/../../graphmetrics" && pwd)"
 cd "$M"
 echo "[$(date +%T)] QUOTIENT (1,015 / 64,760)"
 python3 connectome_audit_gold.py --graph "$B/graphs/cnew_coarse.npz" \

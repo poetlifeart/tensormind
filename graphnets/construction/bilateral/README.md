@@ -168,29 +168,33 @@ through unmodified. It is not reimplemented anywhere in this folder.
 
 ## Expected output
 
-`construct.py` should end with exactly this. If it does not, something is
-wrong with your environment, not with the construction — there is no
-randomness in the parent.
+`construct.py` should end with exactly this (the NMI/ARI and `built:` lines
+need scikit-learn). If it does not, something is wrong with your environment,
+not with the construction — there is no randomness in the parent.
 
 ```
   n = 8,000   m = 477,584   mean degree 119.4   CV 0.580
-  chi = 3:          0 same-colour edges (=> chi <= 3); triangle present: True
+  chi = 3:          0 same-colour edges (=> chi <= 3); triangle present: True (=> chi >= 3)
   colour classes:   [2400, 2400, 3200]
   connected:        True
   blind Louvain:    4 communities [2400, 2400, 1600, 1600]
-                    NMI=1.0000  ARI=1.0000
+                    NMI=1.0000  ARI=1.0000   (true blocks [2400, 2400, 1600, 1600])
 
   block density matrix (A, B, C, D):
      2400   0.0609   0.0007   0.0020   0.0000
      2400   0.0007   0.0550   0.0000   0.0020
      1600   0.0020   0.0000   0.0501   0.0000
      1600   0.0000   0.0020   0.0000   0.0473
-  exactly zero:     A-D, B-C, C-D
+  exactly zero:     A-D, B-C, C-D   (inherited from the seed at every power)
+==========================================================================
+STAGE 3  COARSEN    targets [307, 306, 201, 201]   (no thinning)
 
   n = 1,015   m = 64,760   density 0.1258   mean degree 127.6   sd 61.3
   supernode sizes:  2 to 59 parent vertices   (median 6)
   witness weight:   median 2   mean 6.9   max 978
   detected blocks:  [307, 306, 201, 201]   ARI vs built = 1.0000
+                    (built: [307, 306, 201, 201])
+==========================================================================
 ```
 
 The three exact zeros are the one structural property here that is derived
@@ -218,7 +222,7 @@ python3 stats.py --section bilateral   # one
 | `community` | Louvain community counts and sizes over 20 seeds |
 | `bilateral` | block-density matrices and the hemisphere test |
 | `sixtests` | pointer to `static_tests.py`, which is slow and runs separately |
-| `audit` | reads recorded audit JSON from `audits/`; that folder is not shipped, so this section prints its header only |
+| `audit` | reads the recorded audit JSONs in `audits/` (shipped; written by `audits/run_audits.sh`) and prints each graph's score and failed criteria |
 
 ### The seed trap
 

@@ -503,7 +503,7 @@ def verify_parent(graph, u_arr, v_arr, colour, block, resolution=0.2, seed=7):
     has_triangle = sum(nx.triangles(graph).values()) > 0
     print(f"  chi = 3:          {bad} same-colour edges (=> chi <= 3);"
           f" triangle present: {has_triangle} (=> chi >= 3)")
-    print(f"  colour classes:   {list(np.bincount(colour))}")
+    print(f"  colour classes:   {np.bincount(colour).tolist()}")
     print(f"  connected:        {nx.number_connected_components(graph) == 1}")
 
     parts = sorted(louvain_communities(graph, resolution=resolution, seed=seed),
@@ -517,7 +517,7 @@ def verify_parent(graph, u_arr, v_arr, colour, block, resolution=0.2, seed=7):
     if HAVE_SK:
         line += (f"\n                    NMI={normalized_mutual_info_score(found, block):.4f}"
                  f"  ARI={adjusted_rand_score(found, block):.4f}"
-                 f"   (true blocks {list(np.bincount(block))})")
+                 f"   (true blocks {np.bincount(block).tolist()})")
     print(line)
 
     sizes_b = np.bincount(block)
@@ -559,7 +559,7 @@ def verify_coarse(coarse, super_block, label, witness):
             for v in p:
                 detected[v] = i
         line += (f"   ARI vs built = {adjusted_rand_score(detected, super_block):.4f}"
-                 f"\n                    (built: {list(np.bincount(super_block))})")
+                 f"\n                    (built: {np.bincount(super_block).tolist()})")
     print(line)
 
 
@@ -641,8 +641,8 @@ def main():
     seed_edges = build_seed()
     print("=" * 74)
     print(f"STAGE 0  SEED    {SEED_N} vertices, {len(seed_edges)} edges")
-    print(f"  colours {list(np.bincount(COLOURS))}"
-          f"   blocks {list(np.bincount(BLOCKS))}")
+    print(f"  colours {np.bincount(COLOURS).tolist()}"
+          f"   blocks {np.bincount(BLOCKS).tolist()}")
     print("  26 within-block : 4 same-hemisphere : 1 cross-hemisphere")
 
     print("=" * 74)

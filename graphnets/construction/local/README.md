@@ -81,5 +81,5 @@ fail under any other, by design.
 `dmin=3` and the bundle maximum are seed-specific and are not properties of the
 method.
 
-Sweep script and per-seed results: `~/Downloads/paper_data/sweeps/seed_sensitivity/`
-(`local_seedsweep.py` imports this file rather than editing it).
+The sweep script (`local_seedsweep.py`, which imports this file rather than
+editing it) and its per-seed results are not shipped in this repository.

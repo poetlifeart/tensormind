@@ -1,6 +1,7 @@
 # tensormind
 
-Code to build the graphs in *Causal Event Networks* and measure them.
+Code to build the graphs in *Chromatically Constrained Tensor Graphs: Concurrency
+and Connectome Topology* and measure them.
 
 Everything is grown from a hard-coded seed. The only input file in this
 repository is the Budapest reference connectome, used for comparison.
@@ -175,7 +176,7 @@ to rerun it, but this is where it came from.
 python3 graphnets/construction/global/quotient/save_v146_npz.py
 python3 graphnets/construction/global/quotient/lift/invert146_feeder.py
 ```
-- `quotient/graph_v14.npz` — 1,015 / 70,537 (pre-swap)
+- `quotient/graph_v14.npz` — 1,015 / 70,538 (pre-swap)
 - `quotient/graph_v146_6500.npz` — 1,015 / 70,538 (post-swap)
 - `quotient/lift/graph_brain_mild_v146_feeder.npz` — 16,807 / 344,483 (feeder lift)
 
@@ -209,7 +210,7 @@ Needs nothing from the global pipeline. Can run first, last, or alongside.
 | global parent | 16,807 | 337,983 | step 2 | input to steps 3 and 4 |
 | final parent | 16,807 | 337,980 | step 3 | optional refinement |
 | final quotient | 1,015 | 71,098 | step 3 | optional refinement |
-| pre-swap quotient (v14) | 1,015 | 70,537 | step 4 | superseded |
+| pre-swap quotient (v14) | 1,015 | 70,538 | step 4 | superseded |
 | post-swap quotient (v146) | 1,015 | 70,538 | step 4 | superseded |
 | feeder lift | 16,807 | 344,483 | step 4 | superseded |
 | local parent | 16,807 | 277,319 | step 5 | comparison |
@@ -231,9 +232,10 @@ python3 graphnets/graphmetrics/run_controllability.py   --graph GRAPH --json con
 python3 graphnets/graphmetrics/clique_census.py         --graph GRAPH --json cliques.json
 python3 graphnets/graphmetrics/combinatorial_metrics_npz.py --graph GRAPH --json combinatorial.json
 python3 graphnets/graphmetrics/richclub_other_graphs.py --graph GRAPH --json richclub.json
+python3 graphnets/graphmetrics/skeleton_fractality.py   --graph GRAPH --json skeleton.json
 ```
 
-`--graph` accepts `.npz` or `.gml` and is required in all six. Give each run its
+`--graph` accepts `.npz` or `.gml` and is required in all seven. Give each run its
 own `--json`.
 
 | script | measures |
@@ -244,6 +246,7 @@ own `--json`.
 | `clique_census.py` | clique number, histogram peak, maximal cliques |
 | `combinatorial_metrics_npz.py` | vertex cover, matching, Hoffman bound, bisection |
 | `richclub_other_graphs.py` | rich-club curve, floored at 20 nodes |
+| `skeleton_fractality.py` | box-covering fractality of the graph and of its skeleton |
 
 Two things to know before running the audit, both in
 `graphnets/graphmetrics/README.md`:
