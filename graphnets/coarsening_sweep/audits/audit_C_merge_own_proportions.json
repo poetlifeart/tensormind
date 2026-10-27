@@ -275,35 +275,41 @@
       {
         "gamma": 0.5,
         "Q": 0.712985197347062,
+        "Q_standard": 0.46290815518745376,
         "n_comm": 2
       },
       {
         "gamma": 0.8,
         "Q": 0.6155675466322496,
+        "Q_standard": 0.5571486540956915,
         "n_comm": 4
       },
       {
         "gamma": 1.0,
         "Q": 0.5571486540956915,
+        "Q_standard": 0.5571486540956915,
         "n_comm": 4
       },
       {
         "gamma": 1.5,
         "Q": 0.4573326584443937,
+        "Q_standard": 0.5413841032176923,
         "n_comm": 6
       },
       {
         "gamma": 2.0,
         "Q": 0.37302113842925644,
+        "Q_standard": 0.5418583326518231,
         "n_comm": 6
       },
       {
         "gamma": 3.0,
         "Q": 0.24051132367275038,
+        "Q_standard": 0.4212456234081849,
         "n_comm": 24
       }
     ],
-    "n_modular": 5,
+    "n_modular": 6,
     "total": 6,
     "nesting_scores": [
       1.0,
@@ -327,7 +333,8 @@
       0.9793,
       0.9935
     ],
-    "pass": true
+    "pass": true,
+    "provenance": "2026-10-27: recomputed with connectome_audit_gold.py md5 b75c13aa351f1da4a11d7a5a40f22d94 on the same graph, after 551a067. Each sweep entry gains Q_standard, the standard modularity (gamma=1) of the partition found at that gamma, and n_modular now counts Q_standard > 0.3 (it counted Q_gamma > 0.3). The recomputation reproduced the stored sweep gamma/Q/n_comm, nesting_scores, mean_nesting, std_nesting and all_nestings exactly. Descriptive only; not scored, not in the paper. All other fields in this file are from the original run."
   },
   "fractal": {
     "available": false,
