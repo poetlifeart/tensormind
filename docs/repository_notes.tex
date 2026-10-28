@@ -43,7 +43,7 @@ computational-model specifications underlying the main article. The main text
 now emphasizes two comparatively simple constructions: the local
 prune--repair construction and the $8{,}000$-node seed-encoded construction.
 These notes give reproducibility details for those models and
-retains the earlier, more elaborate $16{,}807$-node fixed-partition relocation
+retain the earlier, more elaborate $16{,}807$-node fixed-partition relocation
 pipeline as an optional refinement for the case in which fiber-bundle
 multiplicity is itself treated as an explicit target. The organization
 separates reproducibility-oriented methods from extended results that are
@@ -131,10 +131,16 @@ candidate pool is exhausted, use any available legal endpoint.  If the graph
 is disconnected, add legal bridging edges until connectivity is restored.
 
 \item \textbf{Chromatic triangle closure.}
-For every open wedge \(u-v-w\), admit the closing edge \(\{u,w\}\) as a
-candidate only when \(c(u)\ne c(w)\).  Rank the candidate closures by
-common-neighbor support and add them until the total edge count reaches
-\(\operatorname{round}(a\,b_{k+1})\).
+Admit the closing edge \(\{u,w\}\) of an open wedge \(u-v-w\) as a
+candidate only when \(c(u)\ne c(w)\).  Candidates are collected by visiting
+vertices in a seeded random order (seed \(42\)) and sampling at most \(60\)
+neighbors of each vertex, so each candidate's common-neighbor support is a
+partial count; collection stops once the pool holds five times as many
+candidates as are needed.  Rank the collected candidates by this support and
+add them until the total edge count reaches
+\(\operatorname{round}(a\,b_{k+1})\).  At the final scale the admitted
+closures average \(15.5\) common neighbors, against \(19.4\) for an exact
+ranking of all legal open wedges.
 
 \item \textbf{Invariant safeguard.}
 Verify connectivity and non-bipartiteness of the edited graph.  If it is
@@ -313,7 +319,12 @@ $2{,}400/2{,}400/1{,}600/1{,}600$. Since tensor edges inherit the seed's
 cross-color legality and every closure is filtered explicitly, no chromatic
 repair step is required. The graph has zero monochromatic edges and contains a
 triangle, so $\chi=3$ exactly. Topology-only Louvain recovery of the finished
-parent returns the four blocks with $\mathrm{NMI}=\mathrm{ARI}=1.000$.
+parent at resolution $\gamma=0.2$ (construct.py, Louvain seed $7$; seeds $1$,
+$2$, $3$ and $42$ give the same partition) returns the four blocks with
+$\mathrm{NMI}=\mathrm{ARI}=1.000$. Higher resolutions subdivide the blocks
+without merging across them: at $\gamma=0.5$ the result depends on the seed
+(four to six communities), and the standard $\gamma=1$ gives eight
+communities, each contained in a single block.
 
 Coarsening is performed independently within each block.   Louvain is run at
    high resolution; the adjacent pair of communities with the largest

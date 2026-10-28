@@ -42,8 +42,9 @@ Stage 1  GROW       Three Kronecker powers with triangle closure after each:
                     alpha_k * n edges at step k, alpha = (3,4,30).
                     -> the PARENT GRAPH.
 
-Stage 2  VERIFY     Louvain on the parent with no block labels supplied
-                    returns 2400/2400/1600/1600 at NMI = ARI = 1.000.
+Stage 2  VERIFY     Louvain (resolution 0.2) on the parent with no block
+                    labels supplied returns 2400/2400/1600/1600 at
+                    NMI = ARI = 1.000.
 
 Stage 3  COARSEN    Group the parent's vertices into 1,015 supernodes:
                     Louvain within each block, then merge the densest
@@ -340,8 +341,8 @@ def merge_densest(edges_2xm, communities, n, target):
     Contrast with merging the SMALLEST community first, the more common
     choice: that equalises supernode sizes, and since coarse degree tracks
     supernode size it flattens the degree distribution.  Densest-first keeps
-    more of Louvain's natural size spread (1-46 parent vertices per supernode
-    rather than 4-19).
+    more of Louvain's natural size spread (2-59 parent vertices per supernode
+    in the deposited quotient, rather than 4-19).
 
     Note what this does NOT do: no individual vertex is ever moved between
     supernodes.  A vertex is placed once by Louvain and thereafter travels

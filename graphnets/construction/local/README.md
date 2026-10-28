@@ -53,9 +53,10 @@ across versions even at fixed seed 42.
 
 ## Seed sensitivity (measured 2026-09-16)
 
-The fine parent is deterministic — 277,319 edges on every run. The only
-stochastic step is `louvain_communities(..., resolution=40, seed=42)` in
-`coarsen()`. Repeating just that step under eleven seeds (42, plus 0–9), with the
+With its internal seed fixed (see "The internal growth seed" below), the fine
+parent is identical on every run — 277,319 edges. The coarsening adds a second
+random step, `louvain_communities(..., resolution=40, seed=42)` in `coarsen()`.
+Repeating just that step under eleven seeds (42, plus 0–9), with the
 parent rebuilt each time:
 
 | measure | seed 42 (this file) | seeds 0–9: mean ± sd (range) |
@@ -72,7 +73,7 @@ parent rebuilt each time:
 | bundle mean / max | 2.870 / 918 | 2.881 ± 0.029 / 897 ± 141 (698–1,200) |
 | bundle Gini | 0.5434 | 0.5458 ± 0.0032 |
 
-Structure is stable to under 1%. **Seed 42 is the best of the eleven on all three
+Across Louvain seeds, structure is stable to under 1%. **Seed 42 is the best of the eleven on all three
 statistics the paper quotes** (KS, Q, six-test score), so quote the ensemble and
 name seed 42 as the deposited instance, not a typical one. `EXPECT` in this file
 records seed 42's values and is a reproduction check for *this* seed — it will
@@ -83,3 +84,34 @@ method.
 
 The sweep script (`local_seedsweep.py`, which imports this file rather than
 editing it) and its per-seed results are not shipped in this repository.
+
+### The internal growth seed (measured 2026-10-28)
+
+The table above varies only the Louvain seed. The growth also draws random
+numbers: `triangle_prune_local` (degree repair) and `add_chromatic_to_budget`
+(closure) each call `np.random.default_rng(42)`, hard-coded. That seed sets the
+order of repair attachments and the random scan of wedge centres in closure. It
+changes the graph far more than the Louvain seed does. Changing it alone, with
+the Louvain seed held at 42:
+
+| internal seed | parent edges shared with seed 42 | quotient edges | degree sd | max degree | KS vs Budapest | Q |
+|---|---|---|---|---|---|---|
+| 42 (this file) | 100% | 67,094 | 68.1 | 502 | 0.111 | 0.524 |
+| 0    | 6.2%   | 55,763 | 48.3 | 346 | 0.242 | 0.579 |
+| 1    | 6.2%   | 61,094 | 50.6 | 335 | 0.221 | 0.594 |
+| 2    | 3.6%   | 53,902 | 45.3 | 309 | 0.267 | 0.589 |
+| 3    | 2.4%   | 53,864 | 45.3 | 303 | 0.279 | 0.616 |
+| 4    | 5.2%   | 44,094 | 27.0 | 226 | 0.433 | 0.682 |
+| 5    | 8.7%   | 52,595 | 38.7 | 290 | 0.300 | 0.628 |
+| 6    | 8.9%   | 54,307 | 43.6 | 315 | 0.260 | 0.621 |
+| 7    | 6.3%   | 57,491 | 54.9 | 433 | 0.229 | 0.533 |
+| 8    | 6.2%   | 50,020 | 37.6 | 248 | 0.321 | 0.660 |
+| 9    | 6.4%   | 59,962 | 56.4 | 390 | 0.210 | 0.510 |
+| 10   | 7.2%   | 54,055 | 53.6 | 278 | 0.215 | 0.584 |
+| 11   | 8.6%   | 63,826 | 68.3 | 443 | 0.137 | 0.499 |
+| 100  | 7.8%   | 54,953 | 38.6 | 266 | 0.285 | 0.644 |
+| 1000 | 5.2%   | 49,006 | 35.7 | 236 | 0.350 | 0.643 |
+
+Every parent has exactly 277,319 edges. Of the fifteen, seed 42 is the closest
+to Budapest. Its KS of 0.111 and its degree spread are properties of this
+instance, not of the construction.

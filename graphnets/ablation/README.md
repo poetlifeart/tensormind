@@ -48,9 +48,10 @@ defines, not "roughly half". The figure `product m = 237,584` printed by
 `construct.py` at scale 3 is the product of the scale-2 graph, which already
 contained 1,605 random closures — it is not a count of deterministic edges.
 
-> Note this is the **opposite** of the local construction in
-> `../construction/local/`, where the fine parent is deterministic (277,319
-> edges every run) and the Louvain coarsening is the only stochastic step.
+> The local construction in `../construction/local/` also places edges by
+> chance while growing: its repair and closure steps draw from a hard-coded
+> internal seed (42). Changing that seed leaves only 2.4–8.9% of its parent's
+> edges in place (see its README).
 
 ## Results
 
@@ -68,18 +69,16 @@ All five pass every criterion, under the same protocol as the deposited run
 (100 degree-preserving nulls, 1,000 rich-club nulls). Audit JSONs are in this
 folder as `audit_quot_seed*.json`.
 
-> **These four cannot be regenerated from the current code, and that is by
-> design.** `build_seed_quotients.py` calls `chromatic_ablation.py`'s `grow()`,
-> which now permutes candidates before applying the quota. `rng.shuffle` consumes
-> draws, so the random stream moved: at `f = 0` seed 99 the quotient is now
-> 1,015 / 64,491, and the five f=0 seeds span 61,489–64,491 (which is what
-> `--control` asserts). The five `quot_seed*.npz` these audits were run on predate
-> the fix and are not shipped; only their audit JSONs are. Seed 99's 64,760 is
-> still reproducible — that graph is, edge for edge, the deposited quotient
-> `construction/bilateral/graphs/cnew_coarse.npz`, which `construct.py` (untouched)
-> builds — but seeds 1–4 are not. Rerunning `build_seed_quotients.py` gives five
-> new, equally valid graphs (seed 99 too, at 64,491, since it now goes through the
-> shuffled `grow()`) that would need re-auditing.
+> **Regenerating the five.** The `quot_seed*.npz` graphs are not shipped, only
+> their audit JSONs. `build_seed_quotients.py` rebuilds all five with
+> `construct.py`'s own `grow()` (the same graphs as `construct.py --seed N`):
+> 64,760 / 63,413 / 62,901 / 63,628 / 62,584, and seed 99 is, edge for edge, the
+> deposited quotient `construction/bilateral/graphs/cnew_coarse.npz`.
+> `chromatic_ablation.py`'s `grow()` would not give these graphs. It permutes
+> candidates before applying the quota, and `rng.shuffle` consumes draws. At
+> `f = 0` seed 99 it gives a parent of the same size (477,584 edges) with 35.4%
+> of the edges different, and a 1,015 / 64,491 quotient. The five f = 0 seeds of
+> that `grow()` span 61,489–64,491, which is what `--control` asserts.
 
 The deposited run is the most favourable of the five — it has the largest
 quotient, which puts its density and mean degree closest to the reference.
@@ -303,8 +302,9 @@ m and correctly disqualifies the pair.
 Requires the same environment as `construct.py` (numpy, scipy, networkx).
 Pin `networkx==3.5` — Louvain drifts across versions even at a fixed seed.
 
-**Check the control reproduces the deposited graph** (~25 s). Do this first;
-everything else is meaningless if it fails.
+**Check the control** (~25 s): at f = 0, seed 99 must give a parent of the
+deposited size (477,584 edges, 0 monochromatic), and a quotient inside the f = 0
+seed range. Do this first; everything else is meaningless if it fails.
 
 ```bash
 python3 chromatic_ablation.py --control
@@ -316,7 +316,7 @@ are `True`:
 ```
 f=0 seed=99:  parent 477,584 edges, 0 monochromatic, quotient 1015/64,491
 distance to reference: full 0.0671  shape-only 0.0571
-REPRODUCES THE DEPOSITED PARENT (477,584 / 0 mono / 1,015): True
+PARENT HAS THE DEPOSITED SIZE (477,584 / 0 mono / 1,015): True
 QUOTIENT IN THE f=0 SEED RANGE 61,489-64,491: True
 ```
 
@@ -340,10 +340,10 @@ match the shipped file in every field except the per-run times (`secs`); it also
 carries two fields the shipped file predates, `f_stages` (the scalar `f` as a
 triple) and `quotas` (`null`).
 
-**Build new seed quotients and audit them** (~25 s each to build; the audits run
-in parallel). These are new graphs, not the ones behind the shipped
-`audit_quot_seed*.json` (see above), so the audits write to `my_audit_*` and the
-shipped JSONs are left alone:
+**Rebuild the seed quotients and re-audit them** (~25 s each to build; the audits
+run in parallel). These are the graphs behind the shipped `audit_quot_seed*.json`
+(see above); the audits write to `my_audit_*`, so the shipped JSONs are left
+alone:
 
 ```bash
 python3 build_seed_quotients.py                # writes quot_seed{99,1,2,3,4}.npz
@@ -361,43 +361,44 @@ grep -A11 "EVIDENCE SCORECARD" ../ablation/my_audit_quot_seed*.log
 The build prints:
 
 ```
-seed  99  parent 477,584  mono 0  quotient 1015/64,491  -> quot_seed99.npz
-seed   1  parent 481,428  mono 0  quotient 1015/61,489  -> quot_seed1.npz
-seed   2  parent 481,428  mono 0  quotient 1015/62,733  -> quot_seed2.npz
-seed   3  parent 481,428  mono 0  quotient 1015/62,822  -> quot_seed3.npz
-seed   4  parent 480,932  mono 0  quotient 1015/63,562  -> quot_seed4.npz
+seed  99  parent 477,584  mono 0  quotient 1015/64,760  -> quot_seed99.npz
+seed   1  parent 481,428  mono 0  quotient 1015/63,413  -> quot_seed1.npz
+seed   2  parent 481,366  mono 0  quotient 1015/62,901  -> quot_seed2.npz
+seed   3  parent 481,428  mono 0  quotient 1015/63,628  -> quot_seed3.npz
+seed   4  parent 481,366  mono 0  quotient 1015/62,584  -> quot_seed4.npz
 ```
 
 About 1 h 40 m each; five in parallel finish in about that. The **parent**
 audit is four times the work (25,303 s for 8,000 nodes / 477,584 edges), so do
 not launch one casually.
 
-To re-audit the graph behind `audit_quot_seed99.json`, build the deposited
-quotient (`construction/bilateral/README.md`) and run the same audit command with
-`--graph ../construction/bilateral/graphs/cnew_coarse.npz`.
+`quot_seed99.npz` is identical, edge for edge, to the deposited quotient
+`../construction/bilateral/graphs/cnew_coarse.npz`.
 
 ## Files
 
 | file | what |
 |---|---|
-| `chromatic_ablation.py` | the sweep; `--control` reproduces the deposited parent. Reports BOTH the nine-measure distance and the six-measure shape distance |
+| `chromatic_ablation.py` | the sweep; `--control` checks that f = 0 gives a parent of the deposited size (477,584 edges, 0 monochromatic; not the same edges). Reports BOTH the nine-measure distance and the six-measure shape distance |
 | `fiedler_vs_bilateral.py` | does the Fiedler bisection *identify* the bilateral split, or only match its cut cost? Reports ARI/NMI and the Fiedler-vector correlation |
 | `bind_rate.py` | instruments closure and counts colour rejections |
-| `build_seed_quotients.py` | builds `quot_seed*.npz` (not shipped) for auditing; under the current `grow()` these are new graphs, not the audited ones |
+| `build_seed_quotients.py` | rebuilds the five audited seed quotients `quot_seed{99,1,2,3,4}.npz` (not shipped) with `construct.py`'s `grow()` |
 | `results_chromatic_ablation_shuffled.json` | the 50-run sweep — **the source of the paper's ablation table** |
 | `aggregate_stage.py` | the stage ablation's analysis: per-corner means, and the key comparisons PAIRED BY RNG SEED with parent-size equality verified per pair rather than assumed |
 | `results_stage_ablation.json` | the 8-corner (f1,f2,f3) cube x 5 seeds, seed-stage quota at its default 60. Shows the scaffold comparison is not parent-matchable: relaxing the seed stage adds ~30,752 edges by construction |
 | `results_stage_ablation_capped.json` | the same cube with `--seed-quota 6`, capping the seed stage at the number of closures the seed legally admits, so every comparison is parent-matched. Five seeds |
 | `results_stage_ablation_capped20.json` | the capped cube at twenty seeds, 160 runs. **This is the one to read** |
 | `results_chromatic_ablation.json` | the same sweep before the sampler fix in `close_relaxed` (candidates are now permuted before the quota truncation). Kept as a record; not used by the paper. `--out` no longer defaults to this path, and the script refuses to overwrite an existing output without `--force` |
-| `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits of the pre-fix seed quotients, all 9/9; the graphs are not shipped (seed 99's is the deposited quotient) |
+| `audit_quot_seed{99,1,2,3,4}.json` | nine-criterion audits of the five seed quotients, all 9/9; the graphs are not shipped (rebuild with `build_seed_quotients.py`; seed 99's is the deposited quotient) |
 
-**On code duplication, stated plainly.** `build_seed_quotients.py` does exec
-`chromatic_ablation.py` and shares its `grow()`. `bind_rate.py` does **not** —
-it carries its own instrumented copy of the closure loop, so there are two
-hand-copies of `construct.py`'s `close_triangles` in this folder, and all three
-scripts reimplement `grow()`. Only `build_seed`, `coarsen`, `build_coarse`,
-`COLOURS`, `BLOCKS` and `BLOCK_TARGETS` are imported from `construct.py`.
+**On code duplication, stated plainly.** `build_seed_quotients.py` execs
+`chromatic_ablation.py` only to load `construct.py`. It grows with
+`construct.py`'s own `grow()`. `bind_rate.py` carries its own instrumented copy
+of the closure loop, so there are two hand-copies of `construct.py`'s
+`close_triangles` in this folder. `chromatic_ablation.py` and `bind_rate.py`
+each reimplement `grow()`. Otherwise only `build_seed`, `coarsen`,
+`build_coarse`, `COLOURS`, `BLOCKS` and `BLOCK_TARGETS` are imported from
+`construct.py`.
 
 The copies are therefore verified empirically rather than guaranteed
 structurally: `chromatic_ablation.py --control` asserts the deposited parent

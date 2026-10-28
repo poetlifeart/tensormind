@@ -12,14 +12,15 @@ same beta 1.5, same block filter, same coarsening (Louvain per block at
 resolution 30, densest-pair merge to 307/306/201/201), same strict quotient.
 Only the colour filter in close_triangles is relaxed.
 
-f = 0.0 reproduces the deposited PARENT exactly (checked: 477,584 edges, 0
-monochromatic, chi = 3).  It no longer reproduces the deposited QUOTIENT edge
-count of 64,760: close_relaxed now permutes its candidate array before applying
-the quota (see the comment there), and rng.shuffle consumes draws, so the
-random stream differs from the one that produced the deposit.  At seed 99 the
-quotient is 1,015 / 64,491, inside the 61,489-64,491 range of the five f = 0
-seeds.  The exact 64,760 was a property of one random stream, not of the
-construction; the deposited graph itself comes from construct.py and is
+f = 0.0 reproduces the deposited PARENT's size (477,584 edges, 0
+monochromatic, chi = 3) but not its edges.  close_relaxed permutes its
+candidate array before applying the quota (see the comment there), and
+rng.shuffle consumes draws, so the random stream differs from construct.py's.
+At seed 99, 169,283 of the 477,584 edges (35.4%) differ from the deposited
+parent, and the quotient is 1,015 / 64,491 rather than 64,760.  That is inside
+the 61,489-64,491 range of the five f = 0 seeds.  Every f in the sweep goes
+through this same grow() (run() calls it for each f), so the comparison is like
+for like.  The deposited graph itself comes from construct.py and is
 unaffected.
 """
 import sys, os, json, time
@@ -247,9 +248,10 @@ if __name__ == '__main__':
     import argparse
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--control', action='store_true',
-                    help='run only f=0 seed=99 and assert it reproduces the '
-                         'deposited PARENT, and that the quotient lands in the '
-                         'f=0 seed range (about 25 seconds)')
+                    help='run only f=0 seed=99 and assert the parent has the '
+                         'deposited size (477,584 edges, 0 monochromatic), and '
+                         'that the quotient lands in the f=0 seed range (about '
+                         '25 seconds)')
     ap.add_argument('--f', type=float, nargs='+', default=None,
                     help='violation probabilities to sweep (default: 10 values)')
     ap.add_argument('--seeds', type=int, nargs='+', default=None,
@@ -296,7 +298,7 @@ if __name__ == '__main__':
               f"{r['mono_parent']} monochromatic, quotient {r['n']}/{r['m']:,}")
         print(f"distance to reference: full {r['dist']:.4f}  "
               f"shape-only {r['shape_dist']:.4f}")
-        print(f"REPRODUCES THE DEPOSITED PARENT (477,584 / 0 mono / 1,015): "
+        print(f"PARENT HAS THE DEPOSITED SIZE (477,584 / 0 mono / 1,015): "
               f"{parent_ok}")
         print(f"QUOTIENT IN THE f=0 SEED RANGE {F0_QUOTIENT_RANGE[0]:,}"
               f"-{F0_QUOTIENT_RANGE[1]:,}: {quotient_ok}")

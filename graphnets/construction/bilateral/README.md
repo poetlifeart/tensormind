@@ -8,7 +8,7 @@ independent labellings: a proper 3-colouring, and a four-block partition
 arranged as two hemispheres `{A,C}` and `{B,D}`. Both survive three Kronecker
 powers. The colouring survives exactly — the parent is 3-chromatic with zero
 monochromatic edges — and the blocks survive well enough to be recovered
-blindly from the edge list alone at NMI = ARI = 1.
+blindly from the edge list alone at NMI = ARI = 1 (Louvain at resolution 0.2).
 
 This folder is self-contained. It does not import from the rest of the
 repository, and the only external input is the Budapest reference connectome
@@ -319,7 +319,9 @@ the connectome's block densities. Bilateral organisation is accommodated here,
 not predicted.
 
 **Measured, not targeted.** χ = 3 exactly, with no repair operator anywhere in
-the code. Blind block recovery at NMI = ARI = 1, across seeds. Three block pairs
+the code. Blind block recovery at NMI = ARI = 1 (Louvain resolution 0.2), across
+RNG seeds 99 and 1–4 and Louvain seeds 1, 2, 3, 7 and 42. Higher resolutions
+split blocks but never merge across them. Three block pairs
 at exactly zero density at every Kronecker power. Modularity, path length,
 effective diameter, global efficiency, clustering, transitivity, the degree
 distribution, and the spectrum.
@@ -344,7 +346,9 @@ the spectral gap remains the largest single error in both coarsenings.
 
 ## Reproducibility
 
-The parent is fully deterministic; the coarsening's Louvain step is not, which
+With its RNG seed fixed (default 99) the parent is identical on every run;
+other RNG seeds give other parents, 75% of whose edges are placed by chance
+(see `../../ablation/README.md`). Louvain also depends on its seed, which
 is what the 20-seed rule above is for. `construct.py`, `stats.py --section basic`, `make_figures.py --only AI` and
 `blockwise_pipeline.py --parent-only` were each run from this folder and
 verified; `make_figures.py` creates `figures/` on first run. `static_tests.py`
