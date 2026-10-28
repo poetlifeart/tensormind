@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/heawood.npz",
+ "stat": {
+  "n": 14,
+  "m": 21,
+  "hop_count": [
+   42,
+   126,
+   182,
+   182,
+   182,
+   182
+  ],
+  "hop_frac": [
+   0.23076923076923078,
+   0.6923076923076923,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ],
+  "connected_ordered_pairs": 182
+ }
+}

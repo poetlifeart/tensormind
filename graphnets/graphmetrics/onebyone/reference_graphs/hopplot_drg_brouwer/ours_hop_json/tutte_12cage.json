@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/tutte_12cage.npz",
+ "stat": {
+  "n": 126,
+  "m": 189,
+  "hop_count": [
+   378,
+   1134,
+   2646,
+   5670,
+   11718,
+   15750
+  ],
+  "hop_frac": [
+   0.024,
+   0.072,
+   0.168,
+   0.36,
+   0.744,
+   1.0
+  ],
+  "connected_ordered_pairs": 15750
+ }
+}

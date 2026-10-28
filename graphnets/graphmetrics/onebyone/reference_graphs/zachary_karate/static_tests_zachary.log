@@ -1,0 +1,41 @@
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78   sum of degrees 156
+  mean degree 4.588235294117647   sd 3.820360677912828   min 1   max 17
+  degree:count  1:1  2:11  3:6  4:6  5:3  6:2  9:1  10:1  12:1  16:1  17:1
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78   connected ordered pairs (u != v) 1,122
+  effective diameter (90%, interpolated) = 3.3410958904109593
+  diameter (context, not scored)          = 5
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78   connected ordered pairs (u != v) 1,122
+    h   hop_count g(h)               hop_frac
+    1              156    0.13903743315508021
+    2              686     0.6114081996434938
+    3              960     0.8556149732620321
+    4            1,106     0.9857397504456328
+    5            1,122                    1.0
+    6            1,122                    1.0
+  scored point hop_frac[1] (within 2 hops) = 0.6114081996434938
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78   mean degree 4.588235294117647
+  sv[0] = lambda_1 (spectral norm) = 6.725697727631729
+  sv[1] = lambda_2                 = 4.9770742332883335
+  lambda_1/<d>                     = 1.465857197047941
+  gap sv[0] - sv[1]                = 1.7486234943433958
+  sv[0]/sv[1]                      = 1.3513356265912246
+  sv[0:10] = 6.725698  4.977074  4.487229  3.447935  3.110691  2.916507  2.437424  2.309088  2.090823  2.000000
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78   ||nv||_2 = 1.0000000000000009
+  nv[0:10] = 0.373363  0.355491  0.317193  0.308644  0.265960  0.227404  0.226473  0.211180  0.191034  0.174758
+  nv min 0.023635628104590984   median 0.10203875645655547   nv[0]/median 3.6590358728102363
+  largest components at nodes (0-based id: value) 33: 0.373363  0: 0.355491  2: 0.317193  32: 0.308644  1: 0.265960
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/zachary_karate/zachary.npz
+  nodes 34   edges 78
+  total triangles sum/3 = 45   (sum over nodes 135)
+  per node: mean 3.9705882352941178   min 0   max 18   nodes in no triangle 2
+

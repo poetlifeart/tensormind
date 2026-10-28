@@ -1,0 +1,35 @@
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/konect_powergrid/powergrid.npz
+  nodes 4,941   edges 6,594   sum of degrees 13,188
+  mean degree 2.66909532483303   sd 1.7912722617587216   min 1   max 19
+  degree:count  1:1226  2:1656  3:1060  4:401  5:252  6:137  7:84  8:46  9:27  10:26  11:11  12:5  13:5  14:3  18:1  19:1
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/konect_powergrid/powergrid.npz
+  nodes 4,941   edges 6,594   connected ordered pairs (u != v) 24,408,540
+  effective diameter (90%, interpolated) = 26.87312200326315
+  diameter (context, not scored)          = 46
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/konect_powergrid/powergrid.npz
+  nodes 4,941   edges 6,594   connected ordered pairs (u != v) 24,408,540
+    h   hop_count g(h)               hop_frac
+    1           13,188  0.0005403026973346214
+    2           45,258  0.0018541871000887394
+    3          106,250   0.004352984652093079
+    4          210,466   0.008622637814469853
+    5          371,984   0.015239911932462982
+    6          603,100    0.02470856511696316
+  scored point hop_frac[1] (within 2 hops) = 0.0018541871000887394
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/konect_powergrid/powergrid.npz
+  nodes 4,941   edges 6,594   mean degree 2.66909532483303
+  sv[0] = lambda_1 (spectral norm) = 7.483051328847267
+  sv[1] = lambda_2                 = 6.609245032404257
+  lambda_1/<d>                     = 2.8035908868542876
+  gap sv[0] - sv[1]                = 0.8738062964430107
+  sv[0]/sv[1]                      = 1.1322096990138593
+  sv[0:10] = 7.483051  6.609245  5.572834  5.326115  5.298557  5.220805  5.142382  5.078731  5.029405  4.907628
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/konect_powergrid/powergrid.npz
+  nodes 4,941   edges 6,594
+  total triangles sum/3 = 651   (sum over nodes 1,953)
+  per node: mean 0.39526411657559196   min 0   max 21   nodes in no triangle 3,990
+

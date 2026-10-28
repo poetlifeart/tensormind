@@ -19,6 +19,9 @@ How each check is done
 
 
 STATUS
+  NOT CHECKED = only shown to be an unchanged copy of the source code; no
+  published measurement or exact value has been compared yet.  (Updated
+  2026-10-28: earlier versions of this table said DONE or SKIPPED for these.)
   #   metric (paper)                          standalone file                     reference check
   --  --------------------------------------  ----------------------------------  ---------------
   connectome_audit_gold.py — nine scored criteria
@@ -27,32 +30,32 @@ STATUS
   3   small_world_sigma_er (+ sigma_dp)       gold_small_world_sigma_er.py        DONE — CLOSE (power grid 86.3 vs 84.45)
   4   modularity_enriched                     gold_modularity_enriched.py         DONE — Q code SAME; karate at seed 42 0.385 vs 0.42
   5   global_eff_near_random                  gold_global_eff_near_random.py      DONE — SAME (Autobahn 0.067175)
-  6   local_eff_enriched                      gold_local_eff_enriched.py          DONE — DIFFERS (lattice 0.854 vs published 0.82)
-  7   connector_hubs                          gold_connector_hubs.py              DONE — participation SAME; hub count SKIPPED
+  6   local_eff_enriched                      gold_local_eff_enriched.py          DONE — CLOSE (lattice 0.854 vs published 0.82, 4%)
+  7   connector_hubs                          gold_connector_hubs.py              DONE — P and z SAME (Guimera's rgraph via rnetcarto); hub count SAME (0, Ghosh & Lerman)
   8   rich_club                               gold_rich_club.py                   DONE — CLOSE (same club as Towlson 2013)
-  9   propermulti_vi_stability                gold_propermulti_vi_stability.py    VI SAME (Meila); criterion SKIPPED
+  9   propermulti_vi_stability                gold_propermulti_vi_stability.py    VI SAME (Meila); rule CLOSE on football (Lambiotte 2010), DIFFERS on karate (Lee et al. 2021)
   connectome_audit_gold.py — descriptive
   10  assortativity                           gold_assortativity.py               DONE — SAME (C. elegans -0.163); power grid sign differs
   11  fractal_scaling (MEMB box covering)     gold_fractal_scaling.py             DONE — box counts SAME; d_B 2.87 vs 3.5 (box-size convention)
-  12  hierarchical modularity                 gold_hierarchical_modularity.py     SKIPPED (no published value)
+  12  hierarchical modularity                 gold_hierarchical_modularity.py     DONE — n_modular SAME (CHAMP: karate 5, football 6); nesting function SAME on published partitions
   13  degree summary (Gini, Hill tail)        gold_degree_summary.py              DONE — Gini SAME; Hill CLOSE
   14  betweenness hubs                        gold_betweenness_hubs.py            DONE — SAME exact; CLOSE as the audit samples
   richclub_other_graphs.py
-  15  rich-club counts, floored at 20 nodes   richclub_floored.py                 DONE — DIFFERS by design (floor removes a 11-14-node club)
+  15  rich-club counts, floored at 20 nodes   richclub_floored.py                 DONE — CLOSE without the floor (Towlson 2013, same club); the 20-node floor removes that 11-14-node club by design
   skeleton_fractality.py
   16  box-covering d_B of graph and skeleton  skeleton_fractality_dB.py           DONE — DIFFERS: calls E. coli exponential, published fractal
   run_complexity.py
-  17  automorphism group / edge-orbit entropy complexity_orbit_entropy.py         DONE — |Aut| SAME; entropy SKIPPED
+  17  automorphism group / edge-orbit entropy complexity_orbit_entropy.py         DONE — |Aut| SAME; entropy SAME on exact C60 value only
   18  graph energy                            complexity_graph_energy.py          DONE — SAME (Petersen 16)
   19  Estrada index                           complexity_estrada.py               DONE — SAME (karate, Minnesota)
   20  Kirchhoff index                         complexity_kirchhoff.py             DONE — SAME connected; bug on disconnected
   21  off-diagonal complexity, degree entropy, unique degrees
-                                          complexity_offdiagonal.py           DONE — OdC SAME; degree entropy SKIPPED
+                                          complexity_offdiagonal.py           DONE — OdC SAME; degree entropy SAME (Jones & Wiesner 9/9, Rodrigues, star formula)
   run_controllability.py
   22  average and modal controllability       controllability_average_modal.py    DONE — SAME on 3 of 5 published graphs
   clique_census.py
   23  clique number, maximal cliques, size peak, participation Gini, null omega
-                                          clique_census_standalone.py         DONE — omega SAME 12/12; max cliques SAME 16/17
+                                          clique_census_standalone.py         DONE — omega SAME 12/12; max cliques SAME 16/17; null omega SAME (Wormald formula, Palla 2005 range)
   combinatorial_metrics_npz.py
   24  lambda_max / <k>                        combinatorial_lmax_div_d.py         DONE — SAME (karate, power grid)
   25  random-walk eigengap                    combinatorial_rw_eigengap.py        DONE — SAME (Johns55 0.1258, CA-GrQc)
@@ -63,7 +66,7 @@ STATUS
   30  max matching, max fractional matching   combinatorial_max_matching.py       DONE — SAME (Herschel, Petersen 5)
   31  min spanning forest                     combinatorial_min_spanning_forest.py  DONE — SAME (netscience 1193)
   construction/bilateral/static_tests.py
-  32  six static tests (Leskovec et al.)      static_test_*.py (six files)        DONE — 5 SAME; hop plot SKIPPED
+  32  six static tests (Leskovec et al.)      static_test_*.py (six files)        DONE — 6 SAME (hop plot: karate igraph counts, 10 distance-regular graphs)
   Not a graph metric (compares two partitions of one graph; no published reference possible):
       Fiedler/community partition agreement (ARI) — ablation/fiedler_vs_bilateral.py
 
@@ -341,11 +344,42 @@ Agreement omega: SAME on 12 of 12.
           Maximal cliques: SAME on 16 of 17; DIFFERS on Zachary (36 vs 39) — a
           brute-force count on the same file also gives 36, so their 39 is not
           reproducible on Newman's karate.
-          Size peak, participation Gini, null omega: SKIPPED (no published
-          values).  Analytic cross-checks: johnson16-2-4 = Kneser K(16,2), whose
-          maximal cliques are the perfect matchings of K16 — h = {8: 2,027,025},
-          ours identical; vertex-transitive graphs must give Gini 0 — ours 0 on
-          all five.
+          Size peak, participation Gini: no published values.  Analytic
+          cross-checks: johnson16-2-4 = Kneser K(16,2), whose maximal cliques
+          are the perfect matchings of K16 — h = {8: 2,027,025}, ours
+          identical; vertex-transitive graphs must give Gini 0 — ours 0 on all
+          five.
+Null omega — checked 2026-10-28.
+  (B) Formula: Wormald 1999, "Models of random regular graphs", Theorem 2.5
+      p. 7 and Lemma 2.7 p. 8,
+      https://users.monash.edu.au/~nwormald/papers/regsurvey.pdf : in a random
+      d-regular graph the triangle count -> Poisson((d-1)^3/6) and K4 is a.a.s.
+      absent.  For d = 3: P(omega = 3) -> 1 - e^(-4/3), so omega has mean
+      2.736403, sd 0.440583 (the step from triangle count to omega is ours).
+      Degree-preserving swaps on a regular graph have the uniform law as
+      stationary distribution; ours is a finite chain (10 m swaps), n finite.
+      Graphs: Tutte 12-cage 126/189 and Foster 90/135
+      (reference_graphs/hopplot_drg_brouwer/).  Ours, 4,000 nulls, seed 42:
+      Tutte 12-cage 2.7348 +- 0.4415 (z -0.24), Foster 2.7405 +- 0.4384
+      (z +0.59); no null with omega >= 4.  Results in
+      reference_graphs/nullomega_random_cubic/.  SAME within sampling error.
+  (A) Measured, published as a range: Palla, Derenyi, Farkas & Vicsek 2005,
+      Nature 435:814, Supplementary Information sec. 4 pp. 9-11,
+      https://static-content.springer.com/esm/art%3A10.1038%2Fnature03607/MediaObjects/41586_2005_BFnature03607_MOESM1_ESM.pdf :
+      Maslov-Sneppen (degree-preserving) randomisation; "except for the
+      link-randomised word association graph, cliques of size larger than
+      three were totally absent"; the randomised word-association graph's
+      largest 4-clique community has 5 nodes -> 4 <= null omega <= 5.
+      Graph: USF Free Association Norms (http://w3.usf.edu/FreeAssociation/AppendixA/),
+      built with Palla's recipe (weight FSG(a->b) + FSG(b->a)): full graph
+      10,615/63,768 vs Palla's 10,617/63,788 (near-match reconstruction);
+      threshold f* 0.67 -> 8,440/42,825;
+      reference_graphs/nullomega_usf_freeassoc/usf_fstar067.npz.
+      Ours: omega 8 (Palla 8); null omega 4 +- 0 over 10 nulls (seeds
+      42-51), inside the published 4-5.  CLOSE (consistent with the
+      published range; Palla ~12 relocations per link, ours ~20).
+  Agreement null omega: SAME (formula) and inside the published range
+      (measured).
 Note      null_clique_census does not check census['timed_out']: a null that
           hits --null-timeout (60 s) contributes a partial omega without a flag.
           Did not happen on any graph here.  Not changed.
@@ -409,8 +443,43 @@ Ours      0.2188 / 0.5000 / 0.2076 with node 9 in the officers' faction (the
           one relabelling that also reproduces Agarwal & Kempe's faction
           Q 0.3715); 0.1172 / 0.5000 / 0.2907 with Netzschleuder's labels as
           they are.  Audit pipeline on karate: 1 connector hub (node 34), PASS.
-Agreement Participation coefficient: SAME (3 of 3).  Hub count: SKIPPED (no
-          published count for a public graph found).
+Agreement Participation coefficient: SAME (3 of 3).
+z-score and hub count — checked 2026-10-28.
+  z, P      rnetcarto 0.2.6 README (CRAN; Stouffer & Doulcier, bundling
+            Guimera's rgraph library),
+            https://cran.r-project.org/web/packages/rnetcarto/readme/README.html :
+            netcarto() on igraphdata karate prints module, z, P for nodes 1-5
+            and Q 0.4197896 (the modularity optimum).  rgraph modules.c and
+            rnetcarto use population SD and z = 0 when SD = 0, as ours.
+            Graph: igraphdata 1.0.1 karate.rda, 34/78, edge set = Netzschleuder
+            karate/78; reference_graphs/roles_karate_rnetcarto/.  Partition: the
+            optimum (every Louvain seed reaching Q 0.4197896 of 300 gives the
+            same partition; agrees with the printed module labels).
+            Published z 2.13570766, 1.40155815, 0.30033389, 0.66740864,
+            -0.81649658; ours 2.1357076617, 1.4015581530, 0.3003338899,
+            0.6674086443, -0.8164965809 (|diff| <= 4.3e-9).  P identical.
+            Agreement: SAME.  (rgraph's GetRole uses 0.30 <= P < 0.75 for a
+            connector hub, ours 0.30 < P <= 0.75; differs only at P exactly
+            0.30 or 0.75.)
+  hub count Ghosh & Lerman, "A parameterized centrality metric for network
+            analysis", arXiv 1010.4247 (Phys. Rev. E 83:066118, 2011; arXiv
+            version read), p. 5 text and Fig. 3 p. 6,
+            https://arxiv.org/pdf/1010.4247 : on karate with Zachary's two
+            factions (node 9 with John A.), "provincial hubs (34, 1),
+            peripheral (33, 2, 28, 14, 31, 29, 20, 3, 9, 10) and
+            ultra-peripheral nodes (rest)" -> 0 connector hubs.
+            Graph: reference_graphs/roles_karate_ghosh_lerman/ (Netzschleuder
+            karate/78).  Ours on the same partition: hubs exactly {1, 34}, both
+            provincial (z 3.2065 / 3.2241, P 0.2188 / 0.2076); 0 connector, 0
+            kinless; same ultra-peripheral set.  (Their peripheral list has 28
+            where their Fig. 3 marker sits at node 32's values — a labelling slip
+            in the source.  Their z values, read off Fig. 3, use the sample SD;
+            ours the population SD, as Guimera's code; roles are the same.)
+            Agreement: SAME (hub set, roles, connector-hub count 0).
+  Note      The only published counts found are 0.  No source publishes a
+            nonzero connector-hub count on a downloadable graph with its
+            partition.  On the optimal partition ours finds 1 connector hub
+            (node 34, z 2.5117, P 0.5121) — not published.
 Note      The comment at l.1153 says "z > 2.5 AND P > 0.3"; the code uses
           z >= 2.5 and 0.30 < P <= 0.75, which is the Guimera-Amaral version.
 
@@ -431,9 +500,47 @@ Reference VI itself: Meila 2007 closed forms
           singletons vs one cluster = ln n (Eq. 24); splitting a cluster
           (Eqs. 27-28).  On karate partitions ours give ln 34 = 3.526361,
           0.111859 (Eq. 28), (17/34) ln 17 = 1.416607, ln 2 — all within 7e-16.
-Agreement VI: SAME.  The criterion: SKIPPED — no published gamma-sweep VI
-          values found (searched Karrer et al. 2008, CHAMP, resolution papers;
-          VI appears only in figures).
+Agreement VI: SAME.
+Criterion (the pass/fail rule) — checked 2026-10-28 against published stable
+          scales on two public graphs.  Sources saved in
+          reference_graphs/multiscale_vi_published_sources/.
+  Football  reference_graphs/football/football_gcc.npz (115/613).
+            Published: Lambiotte 2010, "Multi-scale modularity in complex
+            networks", WiOpt 2010 pp. 546-553, arXiv 1004.4268
+            (https://arxiv.org/pdf/1004.4268), Sec. V.B pp. 6-7, Fig. 3 p. 7:
+            "The only time window where <V> vanishes corresponds to a partition
+            into 12 communities"; "t = 1 does not belong to this plateau".
+            Window read off Fig. 3 (no numbers in the text): t 0.266-0.552,
+            i.e. gamma = 1/t 1.81-3.76 (+-0.03).
+            Differences: linearized Markov stability (same optimum as
+            modularity at gamma = 1/t); Blondel C++ Louvain, 100 runs; VI
+            normalized by log N; no interior-minimum rule, no Q threshold;
+            pre-2014 football file (2 duplicated edges).
+            Ours (seed 42): minima at gamma 2.0 (VI 0, 12.0 modules, Q 0.6005)
+            and 0.7 (VI 0.098, 6.8 modules, Q 0.598); PASS.  Curve levels agree
+            with the published curve at gamma 1.0, 1.2, 1.5 and >= 2.
+            Agreement: CLOSE — the gamma 2.0 minimum lies inside the published
+            window with the same 12 communities.  The extra minimum at 0.7 is
+            not in the published curve (its dip is near 0.8, where ours peaks).
+            Corroborated: Weir et al. 2017, Algorithms 10:93 (CHAMP), arXiv
+            1706.03675 p. 7 Sec. 3.1: football 12-community partition optimal
+            "from gamma = 1.45 to just below 4"; that partition's standard Q
+            0.600517 = ours at gamma 2.0.
+  Karate    reference_graphs/karate/karate_gcc.npz (34/78).
+            Published: Lee, Lee, Kim & Kim 2021, "Consistency landscape of
+            network communities", Phys. Rev. E 103:052306, arXiv 2103.12626,
+            Sec. III.B.1 pp. 7-8, Fig. 6: "the range gamma = [0.42, 0.62] where
+            two communities are detected is the most valid resolution".
+            Differences: GenLouvain, 500 runs; inconsistency Omega
+            (element-centric similarity), not VI; same gamma convention.
+            Ours: lowest VI at gamma 0.5 (2 modules, Q 0.3718) but the sweep
+            starts there and ends never count; counted minima 0.8 (3.1 modules,
+            Q 0.4023) and 2.0 (7.1 modules, Q 0.3412); PASS.
+            Agreement: DIFFERS — the published stable scale lies at the edge of
+            our sweep and is not counted; PASS rests on minima the source does
+            not identify as stable.
+Overall   Criterion matches a published stable scale on football; not on
+          karate.
 
 
 ══════════════════════════════════════════════════════════════════════════════
@@ -446,10 +553,33 @@ Source    connectome_audit_gold.py: _louvain, _hierarchical_modularity
           own construction, no original citation).
 Same      all copied functions identical.  C. elegans: n_modular 5/6, mean
           nesting 0.826861 +- 0.022105, every field == full audit.
-Reference none published for n_modular or the nesting score.
-Ours      Karate: n_modular 5/6, nesting 0.9661.  Its gamma 0.5 partition has
-          Q_standard 0.371795 = Agarwal & Kempe's best bipartition 0.3718.
-Agreement SKIPPED — no published value for this metric.
+Reference (checked 2026-10-28) CHAMP domain-of-optimality tables, ideanet 1.1.1
+          vignettes (CRAN, 2025-07-03; authors include P. J. Mucha, CHAMP
+          co-author): CHAMP_karate and CHAMP_football, CHAMPsummary tables and
+          the football contingency tables,
+          https://cran.r-project.org/web/packages/ideanet/vignettes/CHAMP_karate.html
+          https://cran.r-project.org/web/packages/ideanet/vignettes/CHAMP_football.html
+          Supporting text: Gibson & Mucha 2022, Sci Rep 12:15928, pp. 3-4.
+          Same configuration null as networkx modularity(resolution=gamma);
+          CHAMP reports the best partition of a pool at each gamma, the audit
+          one Louvain run per gamma.  Graphs: karate 34/78, football 115/613
+          (reference_graphs/karate, reference_graphs/football).
+          Published table reproduced: karate all 11 domain boundaries up to
+          gamma 2.2941 (9 to all 7 printed digits, 2 off by 1e-7); football all
+          15 boundaries 0.4741728-7.0 and all 3 contingency tables.
+Ours      Karate: n_modular 5/6, nesting 0.9661.  Football: n_modular 6/6,
+          nesting 0.9908.  Per gamma, CHAMP-optimal K / audit K:
+          karate 0.5 2/2, 0.8 3/2, 1.0 4/3, 1.5 5/5, 2.0 7/7, 3.0 10/11;
+          football 0.5 5/6, 0.8 7/7, 1.0 10/10, 1.5-3.0 12/12.  The audit's
+          single run is suboptimal at karate 0.8, 1.0, 1.5 and football 0.5.
+          Nesting function: the published football partitions 24, 27, 31
+          (11, 12, 14 communities) fed through _hierarchical_modularity
+          (only _louvain replaced) give 0.983333, 1.000000, 0.941667, 0.965967,
+          equal to the hand values from the published tables (11.8/12, 1,
+          11.3/12, (9 + 14/15 + 9/13)/11).
+Agreement n_modular: SAME (karate 5 vs 5, football 6 vs 6).  Nesting function:
+          SAME on published partitions.  The audit's own whole-graph nesting
+          value has no published counterpart.
 
 
 ══════════════════════════════════════════════════════════════════════════════
@@ -563,8 +693,34 @@ Published OdC = 1.376939.  Claussen 2007, "Offdiagonal complexity: a
           Modeling of Biological Systems II, ch. 26, Fig. 26.1(b), p.295
           (https://arxiv.org/pdf/0712.4216).
 Ours      OdC 1.3769391.
-Agreement OdC: SAME.  Degree-distribution entropy: SKIPPED (no published value
-          found).  Unique degrees: trivially SAME (6).
+Agreement OdC: SAME.  Unique degrees: trivially SAME (6).
+Degree-distribution entropy — checked 2026-10-28.
+  (A) Jones & Wiesner 2022, "Clarifying how degree entropies and degree-degree
+      correlations relate to network robustness", Entropy 24:1182,
+      doi:10.3390/e24091182, Eq. 4 and Supplementary Table S1 pp. 1-3 (from
+      Europe PMC, PMC9497962; copy in reference_graphs/degentropy_jw_power_us_grid/).
+      Table S1 is in bits and on the largest component (every value = our
+      nats / ln 2 on the LCC).  Graphs from https://nrvis.com/download/data/
+      in reference_graphs/degentropy_jw_*/.
+      Connected (our whole-graph value applies directly), published / ours bits:
+        power-US-Grid 4941/6594     2.4552 / 2.455227
+        ia-email-univ 1133/5451     4.5849 / 4.584928
+        tech-routers-rf 2113/6632   3.6790 / 3.679048
+        power-bcspwr10 5300/8271    2.3304 / 2.330439
+      Disconnected (ours on the LCC matches; ours on the whole graph does not,
+      because the code uses every node): road-euroroad 2.0037 / LCC 2.003676;
+      bio-CE-LC 2.2872 / 2.287222; bio-CE-HT 2.3282 / 2.328180; web-EPA
+      2.8274 / 2.827403; ca-Erdos992 1.9042 / 1.904229.
+      Agreement: SAME (9 of 9 with the same node set).
+  (B) F. A. Rodrigues, tutorial "Characterization of network structure",
+      https://sites.icmc.usp.br/francisco/codes/structure.html , cells
+      In[20]-[23]: Les Miserables 77/254, "Shannon Entropy = 3.5957" (bits),
+      normalized 0.5738.  Graph: Newman lesmis.gml, degree multiset identical to
+      the tutorial's; reference_graphs/degentropy_lesmis_rodrigues/.  Ours
+      2.4923459637 nats = 3.5956951620 bits, normalized 0.5738.  SAME.
+  (C) Exact formula: Cai, Cui & Stanley 2017, Sci. Rep. 7:9340, Methods (after
+      Eq. 10): star on N nodes, H = log N - ((N-1)/N) log(N-1).  Ours on stars
+      N = 10, 100, 1000 within 9e-16.  SAME.
 
 
 ══════════════════════════════════════════════════════════════════════════════
@@ -594,8 +750,31 @@ Reference graphs and published values
                   Published "90-percentile effective diameter 7.6", diameter 17.
                   Ours 7.6064, diameter 17.  SAME.  (SNAP samples start nodes;
                   its own convention gives 7.50-7.69.)
-  T3 hop plot     no published hop-plot numbers found (SNAP: scalars only;
-                  KONECT: plot image; Leskovec 2010: figures only).  SKIPPED.
+  T3 hop plot     checked 2026-10-28.
+                  (A) Zachary karate: M. Franceschet (Univ. Udine), course notes
+                  "Small-world networks", section "Code",
+                  https://users.dimi.uniud.it/~massimo.franceschet/ns/plugandplay/small-world/small-world.html
+                  (copy: reference_graphs/hopplot_franceschet_karate/): R igraph
+                  distance_table(make_graph("Zachary")) = 78 265 137 73 8
+                  (unordered pairs at distance 1-5), mean distance 2.4082.
+                  Course notes, not peer-reviewed; independent software.
+                  Graph: reference_graphs/zachary_karate/zachary.npz (34/78,
+                  edge set identical to igraph's Zachary).  Ours: hop_count
+                  156, 686, 960, 1106, 1122 (ordered) = 2 x the cumulative
+                  published counts; hop_frac[h=2] 686/1122 = 0.611408 =
+                  (78+265)/561; mean distance 2.408200.  SAME.
+                  (B) Exact, distance-regular graphs: A. E. Brouwer's pages
+                  https://www.win.tue.nl/~aeb/graphs/cubic_drg.html (intersection
+                  arrays; Coxeter.html layers 1+3+6+12+6, Heawood.html 1+3+6+4,
+                  Odd.html O4 {4,3,3;1,1,2}; Johnson.html, Hamming.html
+                  definitions).  Petersen, Heawood, Coxeter, Dodecahedron,
+                  Desargues, Foster, Tutte 12-cage, O4, J(8,3), H(4,3)
+                  (reference_graphs/hopplot_drg_brouwer/).  Ours: hop_count
+                  = n x cumulative layer sizes at h = 1..6 on all 10;
+                  hop_frac[h=2] e.g. Heawood 9/13, O4 8/17, J(8,3) 9/11,
+                  H(4,3) 2/5.  SAME 10 of 10.
+                  (KONECT's mean distance / effective diameters for Zachary are
+                  sampled estimates and match neither pair convention; not used.)
   T4 scree        KONECT power grid: spectral norm 7.48305, separation
                   lambda_1/lambda_2 1.13221.  Ours 7.483051, 1.132210.  SAME.
                   (Zachary: 6.72570 / 1.35134, ours identical.)
@@ -696,9 +875,11 @@ Published 0.82: Latora & Marchiori 2001, PRL 87:198701, Fig. 1 caption ("from
 Ours      0.854386 = 162 1/3 / 190 exactly (each neighbourhood: 190 pairs, 135
           adjacent, 54 at distance 2, 1 at distance 3); nx.local_efficiency
           gives the same.
-Agreement DIFFERS — 0.854 vs 0.82.  Hand count and networkx agree on 0.854 for
-          the lattice as described, so the published 0.82 does not match that
-          graph.  The code is right; this reference cannot confirm it.  No
+Agreement CLOSE — 0.854 vs 0.82 (4%; the same standard as small-world S,
+          +2.2%, and the Hill tail, 5%).  The lattice is deterministic, so the
+          exact value of the graph as described is 0.854 (hand count and
+          networkx agree); the published 0.82 is rounded or from a slightly
+          different lattice.  No
           real-graph check achieved (searched L&M 2001/2003, Vragovic 2005, H&G
           2008, karate/dolphins/Les Mis/football/power grid/C. elegans/Autobahn).
 

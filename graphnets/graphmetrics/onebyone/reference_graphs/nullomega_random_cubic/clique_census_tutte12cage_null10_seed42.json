@@ -1,0 +1,68 @@
+{
+  "graph": "reference_graphs/hopplot_drg_brouwer/tutte_12cage.npz",
+  "n_nodes": 126,
+  "n_edges": 189,
+  "density": 0.024,
+  "omega": 2,
+  "n_maximal_cliques": 189,
+  "timed_out": false,
+  "elapsed": 0.0006999969482421875,
+  "h": {
+    "2": 189
+  },
+  "histogram_analysis": {
+    "k_range": [
+      2,
+      2
+    ],
+    "peak_k": 2,
+    "is_bimodal": false,
+    "bimodality_ratio": null
+  },
+  "participation": {
+    "P_mean": 3.0,
+    "P_std": 0.0,
+    "P_max": 3.0,
+    "P_median": 3.0,
+    "n_high_participation": 0,
+    "high_participation_frac": 0.0,
+    "participation_degree_corr": 0.0,
+    "participation_gini": 0.0
+  },
+  "null": {
+    "n_null": 10,
+    "omega_mean": 2.8,
+    "omega_std": 0.39999999999999997,
+    "omega_all": [
+      2,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      3
+    ],
+    "seed": 42
+  },
+  "enrichment": [
+    {
+      "k": 2,
+      "real": 189,
+      "null_mean": 185.1,
+      "null_std": 2.6999999999999997,
+      "ratio": 1.0210696920583469,
+      "z": 1.4444444444444466
+    },
+    {
+      "k": 3,
+      "real": 0,
+      "null_mean": 1.3,
+      "null_std": 0.9,
+      "ratio": 0.0,
+      "z": -1.4444444444444444
+    }
+  ]
+}

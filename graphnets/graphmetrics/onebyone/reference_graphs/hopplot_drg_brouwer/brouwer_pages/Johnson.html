@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML>
+<HEAD>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <TITLE>Johnson</TITLE>
+</HEAD>
+<BODY>
+<a href="index.html">Up</a>
+
+<H1>Johnson graphs</H1>
+<p>
+Selmer M. Johnson worked on bounds for codes, both unrestricted codes
+and constant weight codes. The <i>Johnson scheme</i> J(<i>n</i>,<i>m</i>)
+named after him is the association scheme of which the elements are the
+<i>m</i>-subsets of a <i>n</i>-set, and the relation (called
+<i>Johnson distance</i>) of two <i>m</i>-sets is half the size of
+their symmetric difference.
+<p>
+The Johnson graph J(<i>n</i>,<i>m</i>) is the graph that describes
+the distance-1 relation in the Johnson scheme.
+It is distance-regular of diameter min(<i>m</i>, <i>n</i> – <i>m</i>).
+In particular, for <i>m</i> = 2 it is strongly regular,
+and the parameters are
+<i>v</i> = <i>m</i>(<i>m</i> – 1)/2,
+<i>k</i> = 2(<i>m</i> – 2),
+&lambda; = <i>m</i> – 2,
+&mu; = 4.
+<p>
+This graph J(<i>n</i>,2) is also known as the <i>triangular graph</i>
+T(<i>n</i>). It can be regarded as the special case of the block graph
+of a Steiner system for the trivial <a href="S.html">Steiner systems</a>
+S(2,2,<i>n</i>).
+The first nontrivial case is T(5), the complement of the
+<a href="Petersen.html">Petersen graph</a>. For <i>n</i> smaller than 4
+these graphs are complete. The graph T(4) is the complete multipartite
+graph K<sub>3&times;2</sub>, the complement of 3K<sub>2</sub>.
+<p>
+The triangular graphs T(<i>n</i>) are uniquely determined by their
+parameters when <i>n</i> is not 8. The three
+<a href="Chang.html">Chang graphs</a> have the same parameters as T(8).
+<p>
+<H2>Kneser graph</H2>
+The graph that describes being at maximum distance in the Johnson scheme
+is known as the <i>Kneser graph</i>. Thus, K(<i>n</i>,<i>m</i>) is the
+graph on the <i>m</i>-subsets of an <i>n</i>-set, adjacent when they
+are disjoint. When <i>n</i> = 2<i>m</i>+1 this graph is known as the
+<a href="Odd.html">Odd graph</a> O<sub><i>m</i>+1</sub>.
+Of course K(<i>n</i>,2) is the complement of the triangular graph T(<i>n</i>).
+<p>
+<H2>Independence and chromatic number</H2>
+The triangular graph T(<i>n</i>) has independence number [<i>n</i>/2]
+and chromatic number <i>n</i> when <i>n</i> is odd, <i>n</i>–1 when
+<i>n</i> is even (so that the chromatic number is always odd).
+<p>
+The complement of the triangular graph T(<i>n</i>) has (for <i>n</i>
+at least 4) independence number <i>n</i>–1 and chromatic number
+<i>n</i>–2.
+<p>
+More generally, the Kneser graph K(<i>n</i>,<i>m</i>) has (for <i>n</i>
+at least 2<i>m</i>) independence number (<i>n</i>–1 choose <i>m</i>–1)
+and chromatic number <i>n</i>–2<i>m</i>+2.
+<p>
+The independence number of the Johnson graph J(<i>n</i>,<i>m</i>) is
+the size of the largest constant weight code with word length <i>n</i>,
+weight <i>m</i>, and minimum distance 4. There is a lot of literature.
+See, e.g., Brouwer et al. (1990).
+The chromatic number of J(<i>n</i>,<i>m</i>) is the minimum number
+of parts in a partition into such constant weight codes. One has
+&chi;(J(<i>n</i>,<i>m</i>)) ≤ <i>n</i> (since one can put the structure
+of abelian group on the coordinate positions, and all words with given
+sum of the elements in the support form a constant weight code with
+minimum distance 4). Often the chromatic number is a little bit smaller.
+For example, since there is for <i>n</i> = 1,3 (mod 6), <i>n</i> &gt; 7,
+a partition of all triples into Steiner triple systems
+<a href="STS.html">STS</a>(<i>n</i>),
+it follows that &chi;(J(<i>n</i>,3)) = <i>n</i>–2 for these <i>n</i>.
+A general lower bound is &chi;(J(<i>n</i>,<i>m</i>)) ≥ <i>n</i>–<i>m</i>+1.
+See also Etzion & Bitan (1996) and Brouwer & Etzion (2009).
+<p>
+A table with bounds on the chromatic number of the Johnson graph
+J(<i>n</i>,<i>m</i>):
+<p>
+<table border="1">
+<tr>
+<th><i>n\m</i></th><th></th>
+<th>1</th><th>2</th><th>3</th><th>4</th>
+<th>5</th><th>6</th><th>7</th><th>8</th>
+</tr>
+<tr>
+</tr>
+<tr>
+<td>5</td><td></td>
+<td>5</td><td>5</td>
+</tr>
+<tr>
+<td>6</td><td></td>
+<td>6</td><td>5</td><td>6</td>
+</tr>
+<tr>
+<td>7</td><td></td>
+<td>7</td><td>7</td><td>6</td>
+</tr>
+<tr>
+<td>8</td><td></td>
+<td>8</td><td>7</td><td>7</td><td>6</td>
+</tr>
+<tr>
+<td>9</td><td></td>
+<td>9</td><td>9</td><td>7</td><td>8</td>
+</tr>
+<tr>
+<td>10</td><td></td>
+<td>10</td><td>9</td><td>10</td><td>8--9</td>
+<td>8</td>
+</tr>
+<tr>
+<td>11</td><td></td>
+<td>11</td><td>11</td><td>10</td><td>10</td>
+<td>8--9</td>
+</tr>
+<tr>
+<td>12</td><td></td>
+<td>12</td><td>11</td><td>11</td><td>10--11</td>
+<td>10--11</td><td>8--9</td>
+</tr>
+<tr>
+<td>13</td><td></td>
+<td>13</td><td>13</td><td>11</td><td>11--13</td>
+<td>10--13</td><td>10--13</td>
+</tr>
+<tr>
+<td>14</td><td></td>
+<td>14</td><td>13</td><td>13</td><td>11--13</td>
+<td>11--14</td><td>10--14</td><td>10--14</td>
+</tr>
+<tr>
+<td>15</td><td></td>
+<td>15</td><td>15</td><td>13</td><td>13--14</td>
+<td>12--15</td><td>11--15</td><td>10--15</td>
+</tr>
+<tr>
+<td>16</td><td></td>
+<td>16</td><td>15</td><td>16</td><td>13--14</td>
+<td>13--15</td><td>12--15</td><td>11--16</td><td>10--15</td>
+</tr>
+</table>
+
+<h2>References</h2>
+A.E. Brouwer & T. Etzion,
+<i>Some new distance-4 constant weight codes</i>,
+Advances in Mathematics of Communications <b>5</b> (2011) 417-424.
+<p>
+A.E. Brouwer, James B. Shearer, N.J.A. Sloane & Warren D. Smith,
+<i>A new table of constant weight codes</i>,
+IEEE Trans. Inform. Th. <b>36</b> (1990) 1334-1380.
+<p>
+Tuvi Etzion & Sara Bitan,
+<i>On the chromatic number, colorings, and codes of the Johnson graph</i>,
+Discr. Applied Math. <b>70</b> (1996) 163-175.
+<p>
+Luc Teirlinck,
+<i>A completion of Lu's determination of the spectrum of
+large sets of disjoint Steiner triple systems</i>,
+J. Combin. Th. (A) <b>57</b> (1991) 302-305.
+<p>
+Lijun Ji,
+<i>A new existence proof for large sets of disjoint Steiner triple systems</i>,
+J. Combin. Th. (A) <b>112</b> (2005) 308-327.
+<p>
+</BODY>
+</HTML>

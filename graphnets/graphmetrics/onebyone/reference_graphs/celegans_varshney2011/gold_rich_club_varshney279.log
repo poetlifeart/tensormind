@@ -1,0 +1,45 @@
+  [Loaded from edge list: 2287 edges]
+  Nodes: 279   Edges: 2,287   max degree: 93   (rich club measured on the whole graph, as in the audit)
+
+  1000 null curves (generic_degree_preserving), 3 workers:
+    100 main nulls, seeds 1042..1141
+    900 extra nulls, seeds 5042..5941
+       50/1000 curves  (6s, last 0.29s)
+      100/1000 curves  (13s, last 0.29s)
+      150/1000 curves  (20s, last 0.48s)
+      200/1000 curves  (26s, last 0.51s)
+      250/1000 curves  (32s, last 0.29s)
+      300/1000 curves  (38s, last 0.33s)
+      350/1000 curves  (45s, last 0.30s)
+      400/1000 curves  (52s, last 0.29s)
+      450/1000 curves  (58s, last 0.37s)
+      500/1000 curves  (64s, last 0.29s)
+      550/1000 curves  (71s, last 0.33s)
+      600/1000 curves  (76s, last 0.30s)
+      650/1000 curves  (82s, last 0.31s)
+      700/1000 curves  (87s, last 0.28s)
+      750/1000 curves  (93s, last 0.29s)
+      800/1000 curves  (97s, last 0.17s)
+      850/1000 curves  (100s, last 0.17s)
+      900/1000 curves  (103s, last 0.17s)
+      950/1000 curves  (106s, last 0.17s)
+     1000/1000 curves  (108s, last 0.17s)
+  null ensemble done (108.3s)
+
+========================================================================
+RICH_CLUB (ensemble-normalized, unfloored)
+========================================================================
+                 n_null_rc: 1000   (p resolution 1/1001)
+           n_k_significant: 34
+   longest_consecutive_run: 18
+          high_k_mean_norm: 1.22399
+           high_k_max_norm: 1.40036
+           high_k_n_tested: 72
+      high_k_n_significant: 24
+   high_k_frac_significant: 0.333333
+           high_k_max_pval: 0.839161
+                    k grid: 0..91  (92 thresholds tested)
+      significant k (runs): 8, 10-13, 15-25, 36-53
+  rich_club: PASS   (pass if longest run of consecutive significant k >= 3)
+
+Wrote JSON to /home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/celegans_varshney2011/gold_rich_club_varshney279.json

@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/hamming_H4_3.npz",
+ "stat": {
+  "n": 81,
+  "m": 324,
+  "hop_count": [
+   648,
+   2592,
+   5184,
+   6480,
+   6480,
+   6480
+  ],
+  "hop_frac": [
+   0.1,
+   0.4,
+   0.8,
+   1.0,
+   1.0,
+   1.0
+  ],
+  "connected_ordered_pairs": 6480
+ }
+}

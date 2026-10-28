@@ -1,0 +1,9 @@
+ecoli_gcc.npz: n=2859 m=6890
+  full       diam=  16  npts=  8  d_B= 2.71  gap=-0.0320  exponential
+  skeleton   diam=  19  npts=  9  d_B= 2.91  gap=-0.0480  exponential
+  NOTE: skeleton fit rests on fewer than 10 points -- suggestive, not conclusive.
+  wrote onebyone/reference_graphs/ecoli_whole/skeleton_dB_ecoli.json
+
+real	0m47.802s
+user	0m40.663s
+sys	0m0.068s
