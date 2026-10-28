@@ -112,6 +112,24 @@ the Louvain seed held at 42:
 | 100  | 7.8%   | 54,953 | 38.6 | 266 | 0.285 | 0.644 |
 | 1000 | 5.2%   | 49,006 | 35.7 | 236 | 0.350 | 0.643 |
 
-Every parent has exactly 277,319 edges. Of the fifteen, seed 42 is the closest
-to Budapest. Its KS of 0.111 and its degree spread are properties of this
-instance, not of the construction.
+Every parent has exactly 277,319 edges, is connected and non-bipartite, has no
+monochromatic edge and has minimum degree 3. Of the fifteen, seed 42 is the
+closest to Budapest. Its KS of 0.111 and its degree spread are properties of
+this instance, not of the construction.
+
+Nine-criterion audits (100 degree-preserving nulls, 1,000 rich-club nulls) of
+five other internal seeds, chosen to span the KS range:
+
+| internal seed | KS vs Budapest | audit | connector hubs |
+|---|---|---|---|
+| 42 (this file) | 0.111 | 9/9 | 4 |
+| 11 | 0.137 | 9/9 | 5 |
+| 9 | 0.210 | 8/9 | 0 |
+| 1 | 0.221 | 8/9 | 0 |
+| 3 | 0.279 | 8/9 | 0 |
+| 4 | 0.433 | 9/9 | 1 |
+
+The three 8/9 results fail only `connector_hubs`; the other eight criteria pass
+under every internal seed audited. Seed 3's failure does not depend on the
+Louvain run: under 50 Louvain seeds no node reaches z >= 2.5 at all. The
+connector hubs, like the degree fit, are a property of the deposited instance.
