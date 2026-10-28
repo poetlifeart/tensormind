@@ -48,10 +48,11 @@ defines, not "roughly half". The figure `product m = 237,584` printed by
 `construct.py` at scale 3 is the product of the scale-2 graph, which already
 contained 1,605 random closures — it is not a count of deterministic edges.
 
-> The local construction in `../construction/local/` also places edges by
-> chance while growing: its repair and closure steps draw from a hard-coded
-> internal seed (42). Changing that seed leaves only 2.4–8.9% of its parent's
-> edges in place (see its README).
+> Note that the local construction in `../construction/local/` also makes
+> random choices during growth, in the order of repair and closure. There the
+> order is fixed in the code, so its parent is identical on every run
+> (277,319 edges), but different orders give different parents; see the main
+> paper's local quotient section.
 
 ## Results
 

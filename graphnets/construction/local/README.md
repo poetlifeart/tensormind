@@ -53,11 +53,14 @@ across versions even at fixed seed 42.
 
 ## Seed sensitivity (measured 2026-09-16)
 
-With its internal seed fixed (see "The internal growth seed" below), the fine
-parent is identical on every run — 277,319 edges. The coarsening adds a second
-random step, `louvain_communities(..., resolution=40, seed=42)` in `coarsen()`.
-Repeating just that step under eleven seeds (42, plus 0–9), with the
-parent rebuilt each time:
+The fine parent is identical on every run (277,319 edges), because its repair
+and closure steps use a fixed pseudorandom order in the code. That order is
+not incidental: different orders give a family of parents with the same
+guarantees but different coarse statistics (see "The repair/closure order"
+below, and the main paper, local quotient section). The table below varies
+only the Louvain seed, `louvain_communities(..., resolution=40, seed=42)` in
+`coarsen()`. Repeating just that step under eleven seeds (42, plus 0–9), with
+the parent rebuilt each time:
 
 | measure | seed 42 (this file) | seeds 0–9: mean ± sd (range) |
 |---|---|---|
@@ -85,16 +88,19 @@ method.
 The sweep script (`local_seedsweep.py`, which imports this file rather than
 editing it) and its per-seed results are not shipped in this repository.
 
-### The internal growth seed (measured 2026-10-28)
+### The repair/closure order (measured 2026-10-28)
 
-The table above varies only the Louvain seed. The growth also draws random
-numbers: `triangle_prune_local` (degree repair) and `add_chromatic_to_budget`
-(closure) each call `np.random.default_rng(42)`, hard-coded. That seed sets the
-order of repair attachments and the random scan of wedge centres in closure. It
-changes the graph far more than the Louvain seed does. Changing it alone, with
-the Louvain seed held at 42:
+The table above varies only the Louvain seed. The growth also uses a fixed
+pseudorandom order: `triangle_prune_local` (degree repair) and
+`add_chromatic_to_budget` (closure) each call `np.random.default_rng(42)`,
+hard-coded. That order sets which repair attachments are tried first and the
+order in which wedge centres are scanned in closure. Different orders give a
+family of parents with the same guarantees but different coarse statistics,
+and the order changes the graph far more than the Louvain seed does. Changing
+only the order (the value passed to `default_rng`), with the Louvain seed held
+at 42:
 
-| internal seed | parent edges shared with seed 42 | quotient edges | degree sd | max degree | KS vs Budapest | Q |
+| order (`default_rng` value) | parent edges shared with order 42 | quotient edges | degree sd | max degree | KS vs Budapest | Q |
 |---|---|---|---|---|---|---|
 | 42 (this file) | 100% | 67,094 | 68.1 | 502 | 0.111 | 0.524 |
 | 0    | 6.2%   | 55,763 | 48.3 | 346 | 0.242 | 0.579 |
@@ -113,14 +119,14 @@ the Louvain seed held at 42:
 | 1000 | 5.2%   | 49,006 | 35.7 | 236 | 0.350 | 0.643 |
 
 Every parent has exactly 277,319 edges, is connected and non-bipartite, has no
-monochromatic edge and has minimum degree 3. Of the fifteen, seed 42 is the
+monochromatic edge and has minimum degree 3. Of the fifteen, order 42 is the
 closest to Budapest. Its KS of 0.111 and its degree spread are properties of
-this instance, not of the construction.
+this member of the family, not of the construction.
 
 Nine-criterion audits (100 degree-preserving nulls, 1,000 rich-club nulls) of
-five other internal seeds, chosen to span the KS range:
+five other orders, chosen to span the KS range:
 
-| internal seed | KS vs Budapest | audit | connector hubs |
+| order (`default_rng` value) | KS vs Budapest | audit | connector hubs |
 |---|---|---|---|
 | 42 (this file) | 0.111 | 9/9 | 4 |
 | 11 | 0.137 | 9/9 | 5 |
@@ -130,6 +136,7 @@ five other internal seeds, chosen to span the KS range:
 | 4 | 0.433 | 9/9 | 1 |
 
 The three 8/9 results fail only `connector_hubs`; the other eight criteria pass
-under every internal seed audited. Seed 3's failure does not depend on the
-Louvain run: under 50 Louvain seeds no node reaches z >= 2.5 at all. The
-connector hubs, like the degree fit, are a property of the deposited instance.
+under every order audited. Order 3's failure does not depend on the Louvain
+run: under 50 Louvain seeds no node reaches z >= 2.5 at all. The connector
+hubs, like the degree fit, are a property of the deposited member of the
+family.

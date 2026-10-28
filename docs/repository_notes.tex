@@ -82,8 +82,12 @@ title={Algorithm 1A: Parent construction by local repair}
 \textbf{Input.}
 A tripartite seed graph \(S=(V_S,E_S)\) with proper 3-coloring
 \(c_S:V_S\to\{0,1,2\}\); tensor depth \(K\); minimum degree \(d_{\min}\);
-pruning fraction \(p\); triangle-addition fraction \(a\); and a fixed random
-seed for randomized tie-breaking.
+pruning fraction \(p\); triangle-addition fraction \(a\); and a fixed
+pseudorandom order, which sets the order in which repair attachments are
+tried and wedge centers are scanned in the closure step.  Different orders
+give different members of a family of parents with the same guarantees (see
+the main text for their effect).
+
 
 \medskip
 \textbf{Definitions.}
@@ -132,12 +136,12 @@ is disconnected, add legal bridging edges until connectivity is restored.
 
 \item \textbf{Chromatic triangle closure.}
 Admit the closing edge \(\{u,w\}\) of an open wedge \(u-v-w\) as a
-candidate only when \(c(u)\ne c(w)\).  Candidates are collected by visiting
-vertices in a seeded random order (seed \(42\)) and sampling at most \(60\)
-neighbors of each vertex, so each candidate's common-neighbor support is a
-partial count; collection stops once the pool holds five times as many
-candidates as are needed.  Rank the collected candidates by this support and
-add them until the total edge count reaches
+candidate only when \(c(u)\ne c(w)\).  Scan wedge centers in the fixed
+pseudorandom order (a center of degree above \(60\) contributes a random
+sample of \(60\) of its neighbors), score each candidate pair by the number
+of scanned centers adjacent to both of its endpoints, and stop once five
+times the needed number of candidates has been collected.  Add the
+highest-scoring candidates until the total edge count reaches
 \(\operatorname{round}(a\,b_{k+1})\).  At the final scale the admitted
 closures average \(15.5\) common neighbors, against \(19.4\) for an exact
 ranking of all legal open wedges.
@@ -212,7 +216,8 @@ For the concrete run reported here, the seed has \(|V_S|=7\) vertices and
 \(|E_S|=9\) edges.  We use tensor depth \(K=4\), minimum degree
 \(d_{\min}=3\), pruning fraction \(p=0.10\), triangle-addition fraction
 \(a=0.18\), Louvain resolution \(\gamma=40\), target quotient size
-\(N=1{,}015\), and random seed \(42\).  With these values, the local
+\(N=1{,}015\), a fixed pseudorandom order for repair and closure, and
+Louvain random seed \(42\).  With these values, the local
 construction produces a quotient \(H_{\rm LR}\) with
 \[
 n=1{,}015,\qquad |E|=67{,}094,\qquad \rho=0.1304,\qquad Q=0.524.
