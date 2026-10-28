@@ -1,0 +1,959 @@
+METRIC CHECKS — each metric of the papers, isolated into its own self-contained
+file and run on a published graph whose value for that metric is known.
+Folder: graphnets/graphmetrics/onebyone/   (started 2026-10-28)
+
+How each check is done
+  1. ISOLATE   copy the metric's code from the script that produced the paper's
+               number into one runnable file.  Copied functions are unchanged:
+               check_same_code.py compares each one with the source (AST,
+               docstrings/comments ignored).
+  2. SAME      run the original script and the standalone on the same graph;
+               the metric's numbers must be identical.
+  3. REFERENCE find a graph online whose value for this metric is published,
+               read the value in the publication itself, run the standalone on
+               that graph, compare.  If no published value exists, SKIPPED (with
+               what was searched).
+  Reference graphs, with the raw downloads, are in reference_graphs/.
+  newman_gml_to_npz.py converts Newman-format GML to the edge-list .npz the
+  loader reads (undirected, unweighted, no self-loops, largest component).
+
+
+STATUS
+  #   metric (paper)                          standalone file                     reference check
+  --  --------------------------------------  ----------------------------------  ---------------
+  connectome_audit_gold.py — nine scored criteria
+  1   clustering_enriched                     gold_clustering_enriched.py         DONE — matches
+  2   path_near_random                        gold_path_near_random.py            DONE — L matches; published L_random not reproduced
+  3   small_world_sigma_er (+ sigma_dp)       gold_small_world_sigma_er.py        DONE — CLOSE (power grid 86.3 vs 84.45)
+  4   modularity_enriched                     gold_modularity_enriched.py         DONE — Q code SAME; karate at seed 42 0.385 vs 0.42
+  5   global_eff_near_random                  gold_global_eff_near_random.py      DONE — SAME (Autobahn 0.067175)
+  6   local_eff_enriched                      gold_local_eff_enriched.py          DONE — DIFFERS (lattice 0.854 vs published 0.82)
+  7   connector_hubs                          gold_connector_hubs.py              DONE — participation SAME; hub count SKIPPED
+  8   rich_club                               gold_rich_club.py                   DONE — CLOSE (same club as Towlson 2013)
+  9   propermulti_vi_stability                gold_propermulti_vi_stability.py    VI SAME (Meila); criterion SKIPPED
+  connectome_audit_gold.py — descriptive
+  10  assortativity                           gold_assortativity.py               DONE — SAME (C. elegans -0.163); power grid sign differs
+  11  fractal_scaling (MEMB box covering)     gold_fractal_scaling.py             DONE — box counts SAME; d_B 2.87 vs 3.5 (box-size convention)
+  12  hierarchical modularity                 gold_hierarchical_modularity.py     SKIPPED (no published value)
+  13  degree summary (Gini, Hill tail)        gold_degree_summary.py              DONE — Gini SAME; Hill CLOSE
+  14  betweenness hubs                        gold_betweenness_hubs.py            DONE — SAME exact; CLOSE as the audit samples
+  richclub_other_graphs.py
+  15  rich-club counts, floored at 20 nodes   richclub_floored.py                 DONE — DIFFERS by design (floor removes a 11-14-node club)
+  skeleton_fractality.py
+  16  box-covering d_B of graph and skeleton  skeleton_fractality_dB.py           DONE — DIFFERS: calls E. coli exponential, published fractal
+  run_complexity.py
+  17  automorphism group / edge-orbit entropy complexity_orbit_entropy.py         DONE — |Aut| SAME; entropy SKIPPED
+  18  graph energy                            complexity_graph_energy.py          DONE — SAME (Petersen 16)
+  19  Estrada index                           complexity_estrada.py               DONE — SAME (karate, Minnesota)
+  20  Kirchhoff index                         complexity_kirchhoff.py             DONE — SAME connected; bug on disconnected
+  21  off-diagonal complexity, degree entropy, unique degrees
+                                          complexity_offdiagonal.py           DONE — OdC SAME; degree entropy SKIPPED
+  run_controllability.py
+  22  average and modal controllability       controllability_average_modal.py    DONE — SAME on 3 of 5 published graphs
+  clique_census.py
+  23  clique number, maximal cliques, size peak, participation Gini, null omega
+                                          clique_census_standalone.py         DONE — omega SAME 12/12; max cliques SAME 16/17
+  combinatorial_metrics_npz.py
+  24  lambda_max / <k>                        combinatorial_lmax_div_d.py         DONE — SAME (karate, power grid)
+  25  random-walk eigengap                    combinatorial_rw_eigengap.py        DONE — SAME (Johns55 0.1258, CA-GrQc)
+  26  Hoffman bound                           combinatorial_hoffman_bound.py      DONE — SAME (karate, Petersen 5/2)
+  27  spanning-tree entropy                   combinatorial_spanning_tree_entropy.py  DONE — SAME (Petersen 2000); wrong for n > 2000
+  28  min vertex cover (LP and 2-approx)      combinatorial_min_vertex_cover.py   DONE — SAME as bounds of published optima
+  29  balanced bisection cut + Fiedler value  combinatorial_bisection_fiedler.py  DONE — Fiedler SAME; cut is a heuristic (karate 11 vs opt 10)
+  30  max matching, max fractional matching   combinatorial_max_matching.py       DONE — SAME (Herschel, Petersen 5)
+  31  min spanning forest                     combinatorial_min_spanning_forest.py  DONE — SAME (netscience 1193)
+  construction/bilateral/static_tests.py
+  32  six static tests (Leskovec et al.)      static_test_*.py (six files)        DONE — 5 SAME; hop plot SKIPPED
+  Not a graph metric (compares two partitions of one graph; no published reference possible):
+      Fiedler/community partition agreement (ARI) — ablation/fiedler_vs_bilateral.py
+
+
+PROBLEMS FOUND IN THE SOURCE SCRIPTS  (none changed; details in each entry)
+  a. fractal_scaling (11): box size labelled l_B = 2 r_B; Song's convention is
+     2 r_B + 1.  Box counts are exact, but any d_B printed is ~16% low (E. coli
+     2.87; 3.42 with 2 r_B + 1; published 3.5).  Verdict unaffected.
+  b. skeleton_fractality.py (16): its random-order ball cover needs 2-6x more
+     boxes than MEMB and calls the E. coli network and its skeleton
+     "exponential", where the literature reports fractal (d_B 3.5).
+  c. modularity (4): Q is one Louvain run at seed 42; on karate that seed is the
+     worst of 1,000 (0.385 vs optimum 0.42).  The modularity code itself is exact.
+  d. Kirchhoff index (20): finite on a disconnected graph (should be infinite).
+     Paper graphs are connected — unaffected.
+  e. spanning-tree entropy (27): wrong for n > 2000 (sums 500 eigenvalues) and
+     for disconnected graphs.  The papers report it only for 1,015-node
+     connected graphs — unaffected.
+  f. clique census (23): a null that hits its timeout adds a partial omega
+     without a flag.  Did not happen on any graph checked.
+  g. betweenness (14): 200 sampled sources whenever n > 200, i.e. on every
+     paper graph — an estimate, not exact.
+  h. rich-club floor (15): the 20-node floor removes any rich club smaller than
+     20 nodes (by design; 2% of a 1,015-node graph).
+  i. Comments only: connector-hub comment says "z > 2.5 AND P > 0.3" (code is
+     z >= 2.5, 0.30 < P <= 0.75, the Guimera-Amaral rule); vertex-cover
+     docstring says "greedy matching" (networkx uses local-ratio).
+
+PUBLISHED REFERENCES THAT DID NOT REPRODUCE  (reference side, not our code)
+  W&S power-grid L_random 12.4 (2); Latora-Marchiori lattice E_loc 0.82 (6;
+  0.854 by hand count); Newman power-grid assortativity -0.003 (10; +0.003 from
+  the file); Eppstein-Strash karate maximal cliques 39 (23; 36 by brute force);
+  Lee et al. Diseasome and Dolphins controllability (22; their files differed).
+
+
+══════════════════════════════════════════════════════════════════════════════
+1. clustering_enriched
+══════════════════════════════════════════════════════════════════════════════
+File      gold_clustering_enriched.py
+Source    connectome_audit_gold.py: nx.average_clustering on the GCC; nulls
+          _generate_null(seed + 1000 + i); p = (#null >= real + 1)/(n_null + 1);
+          PASS if p < 0.05.
+Metric    Watts & Strogatz (1998): mean over nodes of the fraction of a node's
+          neighbour pairs that are themselves linked.
+Same      all copied functions identical (check_same_code.py).
+          C. elegans (297 nodes): standalone 0.292363, null 0.141377 +- 0.00467,
+          z 32.4, p 0.0099 == full audit, digit for digit.
+Reference graph
+          US Western power grid, Watts & Strogatz 1998 — the same graph as the
+          paper: 4,941 nodes, 6,594 edges, mean degree 2.67, connected.
+          Download: https://websites.umich.edu/~mejn/netdata/power.zip
+          (Newman's network data; "compiled by Duncan Watts and Steven Strogatz")
+          -> reference_graphs/power_grid/power_gcc.npz
+Published Watts & Strogatz 1998, Nature 393:440, Table 1: C = 0.080,
+          C_random = 0.005 (Albert & Barabasi table) / 0.0005 (Newman table).
+          Read in: Albert & Barabasi 2002, Rev. Mod. Phys. 74:47, Table I,
+          https://arxiv.org/pdf/cond-mat/0106096 ;
+          Newman 2000, J. Stat. Phys. 101:819, Table 1,
+          https://arxiv.org/pdf/cond-mat/0001118
+          (the Nature original itself could not be opened).
+Ours      C = 0.0801.  Random baseline <k>/n = 2.67/4941 = 0.00054, which agrees
+          with Newman's 0.0005 (Albert & Barabasi's 0.005 looks like a typo).
+          Degree-preserving null 0.000493 +- 0.000325; ratio 162.6; z 245;
+          p 0.0099; PASS  (gold_clustering_enriched.py, 100 nulls, seed 42).
+Agreement SAME (0.0801 vs 0.08).
+Also      C. elegans neural network (Newman's celegansneural.zip; 297 neurons
+          vs the paper's 282 — a slightly larger version): C 0.292 vs
+          published 0.28; baseline <k>/n 0.049 vs 0.05.  CLOSE.
+
+
+══════════════════════════════════════════════════════════════════════════════
+2. path_near_random
+══════════════════════════════════════════════════════════════════════════════
+File      gold_path_near_random.py
+Source    connectome_audit_gold.py: _exact_apl (all pairs, scipy Dijkstra,
+          unweighted) on the GCC; the same nulls; ratio = L / mean(L_null);
+          PASS if ratio <= 1.25.  --no-null uses the Fronczak et al. (2004)
+          ER estimate, as the audit does.
+Metric    Watts & Strogatz (1998): characteristic path length, the mean
+          shortest-path length over all pairs.
+Same      all copied functions identical (check_same_code.py).
+          C. elegans: standalone 2.45532, null 2.37842 +- 0.00878, ratio 1.032
+          == full audit, digit for digit.
+          Independent implementation: nx.average_shortest_path_length gives
+          the same 18.9892 (power grid) and 2.4553 (C. elegans).
+Reference graph
+          US Western power grid (as in 1.)
+Published Watts & Strogatz 1998, Table 1: L = 18.7, L_random = 12.4
+          (same two tables as in 1.).
+Ours      L = 18.99.  L_random: 8.46 +- 0.05 for G(n,m) (20 graphs, giant
+          component), 8.52 +- 0.03 for the audit's degree-preserving null;
+          ln n / ln<k> = 8.66.  Ratio 2.23 -> FAIL, as it should: the power grid
+          is the textbook long-path network (by W&S's own numbers 18.7/12.4 =
+          1.51 > 1.25).
+Agreement L: SAME within 1.5% (18.99 vs 18.7).
+          L_random: DIFFERS (8.5 vs 12.4) — that is W&S's comparison baseline,
+          not our metric; their 12.4 could not be reproduced by simulation or
+          by the standard formula.
+Also      C. elegans (297 vs 282 neurons): L 2.455 vs 2.65; L_ER 2.42 vs 2.25.
+          PASS (1.033).  Not the identical graph, so not used as the check.
+
+
+══════════════════════════════════════════════════════════════════════════════
+11. fractal_scaling (MEMB box covering)   [descriptive, not scored]
+══════════════════════════════════════════════════════════════════════════════
+File      gold_fractal_scaling.py
+Source    connectome_audit_gold.py: MEMB_LB_OFFSET = 0 (l.769), _memb_count
+          (l.771), _fractal_memb (l.812-897); _fractal_verdict nested in
+          run_audit (l.1306).  For r_B = 1 .. max distance/2: l_B = 2 r_B,
+          N_B = MEMB box count; d_B = -slope of log10 N_B on log10 l_B over the
+          points with N_B > 1.  Verdict PASS if >= 3 points have N_B > 1 (it does
+          not look at d_B or at the exponential fit).
+Metric    Box-covering fractal dimension N_B(l_B) ~ l_B^-d_B (Song, Havlin &
+          Makse 2005, Nature 433:392); covering by maximum-excluded-mass burning
+          (Song, Gallos, Havlin & Makse 2007, J. Stat. Mech. P03006).
+Same      all copied functions identical (check_same_code.py; the nested
+          _fractal_verdict and MEMB_LB_OFFSET also identical).  C. elegans:
+          N_B [19, 3], insufficient range, FAIL == full audit.  E. coli: the
+          original _fractal_memb and the standalone give the same dict, digit
+          for digit.
+Reference graph
+          E. coli whole cellular network of Jeong et al. 2000 (Nature 407:651),
+          the network Song et al. used.  Download: Wolfram Data Repository,
+          https://datarepository.wolframcloud.com/resources/Escherichia-Coli-Whole-Network
+          (raw 2,897 vertices / 7,104 directed edges) -> undirected, no
+          self-loops, largest component: 2,859 nodes / 6,890 edges, diameter 18
+          — the same size as in Schneider et al. 2012 and Kovacs et al. 2021
+          Table 3.  reference_graphs/ecoli_whole/ecoli_gcc.npz
+          (converter reference_graphs/wolfram_graph_to_npz.py).
+Published d_B = 3.5: Song et al. 2005 (arXiv cond-mat/0503078 p.4, cellular
+          networks); Song et al. 2007 (arXiv cond-mat/0701216 p.13, Fig. 13,
+          E. coli, all methods incl. MEMB, with l_B = 2 r_B + 1, p.12).
+          Box counts: Kovacs, Nagy & Molontay 2021, Appl. Netw. Sci. 6:73, MEMB
+          run on the same graph, published log
+          https://github.com/PeterTKovacs/boxes/blob/master/ans_2021_supplementary/logs_ans_2021/eco/eco_memb_benchmark.txt
+          (copy: reference_graphs/ecoli_whole/kovacs2021_boxes_repo/):
+          N_B for r_B = 1..9 = 644, 138, 49, 16, 9, 4, 3, 2, 1.
+          Also Schneider et al. 2012, PRE 86:016707: d_B = 3.47 +- 0.11.
+Ours      N_B for r_B = 1..9 = 644, 138, 49, 16, 9, 4, 3, 2, 1.
+          d_B = 2.867 (R^2 0.991); fractal_scaling PASS.
+          The same counts on l_B = 2 r_B + 1 give d_B = 3.418 (R^2 0.996).
+Agreement Box counts: SAME (all nine identical to an independent MEMB on the
+          identical graph).  Verdict (fractal): SAME.
+          d_B: DIFFERS, 2.87 vs 3.5 — only because the audit labels box size
+          l_B = 2 r_B; with Song's l_B = 2 r_B + 1 it is 3.42, CLOSE to 3.5.
+Note      The source comment says l_B = 2 r_B "gives closer benchmark results on
+          finite graphs"; on this benchmark it gives the further one (2.87 vs
+          3.42, against 3.5).  Any d_B the audit prints is ~16% low here.  The
+          verdict is unaffected (it only counts points).  Not changed.
+
+
+══════════════════════════════════════════════════════════════════════════════
+16. box-covering d_B of the graph and of its skeleton (skeleton_fractality.py)
+══════════════════════════════════════════════════════════════════════════════
+File      skeleton_fractality_dB.py
+Source    skeleton_fractality.py (already self-contained; the standalone is the
+          original byte for byte under a new docstring): ball_cover (random-order
+          greedy ball cover, best of 3 trials), box_fit (radii 1 .. diam//2,
+          diam from 300 sampled sources; ln N_B on ln r vs on r), skeleton
+          (maximum spanning tree by edge betweenness).  Verdict 'power law' if
+          R^2_power > R^2_exp, else 'exponential'.
+Metric    Box covering (Song et al. 2005); skeleton (Goh, Salvi, Kahng & Kim
+          2006, PRL 96:018701).  d_B here is the exponent on the radius r.
+Same      all functions identical (check_same_code.py).  C. elegans and E. coli:
+          original JSON == standalone JSON.
+Reference graph
+          E. coli whole network, 2,859 / 6,890 (as in 11).
+Published Full graph fractal, d_B = 3.5 (Song 2005 p.4; Song 2007 Fig. 13).
+          Skeleton: Goh et al. 2006 (arXiv cond-mat/0508332) p.1 — for the
+          E. coli metabolic network, "the numbers of boxes needed to cover the
+          original network and its skeleton are almost the same"; Fig. 1(b)
+          guideline slope 3.5.  No separate skeleton number is given.
+Ours      full graph: d_B 2.708, R^2 power 0.942 vs exp 0.974 -> 'exponential'.
+          skeleton:   d_B 2.910, R^2 power 0.945 vs exp 0.993 -> 'exponential'.
+Agreement DIFFERS — the script calls the E. coli network and its skeleton
+          exponential (non-fractal); the publications call them fractal,
+          d_B = 3.5.
+Why       The random-order ball cover needs 2-6x as many boxes as MEMB on the
+          same graph (1,453 vs 644 at r = 1; 295 vs 49 at r = 3), and d_B is
+          fitted on r, not l_B (on 2r+1 the full-graph counts give 3.25).  The
+          power-vs-exponential call rests on 8-9 points and R^2 gaps of only
+          0.03-0.05; only seed 0 was run.
+
+
+══════════════════════════════════════════════════════════════════════════════
+22. average and modal controllability
+══════════════════════════════════════════════════════════════════════════════
+File      controllability_average_modal.py
+Source    run_controllability.py: load_graph_npz, controllability, analyze
+          (l.26-105, copied byte-identical); the loading part of main rewritten
+          as the driver.
+Metric    Gu et al. 2015, Nat. Commun. 6:8414: x(t+1) = A_n x(t) + e_i u(t),
+          A_n = A / (1 + lambda_max).  Average controllability
+          AC_i = sum_j V_ij^2 / (1 - lambda_j^2) = [(I - A_n^2)^-1]_ii;
+          modal phi_i = sum_j V_ij^2 (1 - lambda_j^2).  Reported: means, and the
+          correlation of each with degree.
+Same      all copied functions identical (check_same_code.py).  C. elegans and
+          power grid: all 11 JSON fields == run_controllability.py.  Independent
+          routes (matrix inverse; 400-term Gramian series; modal = 1 - k/c^2)
+          agree per node within 1e-9.
+Reference graphs
+          Five networks of Lee et al.'s Table S1, from Network Repository (their
+          stated source), undirected, unweighted, no self-loops, all nodes kept
+          (mtx_to_npz.py):
+            ca-sandi_auths 86/124   https://nrvis.com/download/data/ca/ca-sandi_auths.zip
+            ca-netscience 379/914   https://nrvis.com/download/data/ca/ca-netscience.zip
+            road-euroroad 1,174/1,417  https://nrvis.com/download/data/road/road-euroroad.zip
+            bio-diseasome 516/1,188 https://nrvis.com/download/data/bio/bio-diseasome.zip
+            soc-dolphins 62/159     (identical to Newman's dolphins)
+          -> reference_graphs/nr_*/   (Lee give only N; N matches for all five.)
+Published Lee, Kang, Chang & Cho 2019, iScience 13:154, "The Hidden Control
+          Architecture of Complex Brain Networks", Supplemental Table S1
+          (PDF pp. 19-20), mean average / mean modal controllability,
+          computed with the Bassett-lab code.  Read in
+          https://sbie.kaist.ac.kr/data/papers/Recommended/201903_iScience.pdf
+            Sandi authors 1.139 / 0.912     Network science 1.057 / 0.963
+            Euro road     1.125 / 0.904     Diseasome       1.046 / 0.974
+            Dolphins      1.095 / 0.938
+Ours        Sandi authors 1.1394 / 0.9118   Network science 1.0572 / 0.9627
+            Euro road     1.1251 / 0.9038   Diseasome       1.0371 / 0.9768
+            Dolphins      1.1382 / 0.9236
+Agreement SAME on Sandi authors, Network science and Euro road (every printed
+          digit of both means).  DIFFERS on Diseasome and Dolphins: no single
+          normalization reproduces both of their numbers on these files, so
+          their graph files must have differed (Lee give only N).
+Note      On an unweighted graph phi_i = 1 - k_i/(1+lambda_max)^2 exactly, so
+          corr(degree, modal) = -1 by construction (as the paper already says).
+          Gu 2015's own numbers are on weighted DTI / CoCoMac networks, not
+          public exact graphs, so not usable.
+
+
+══════════════════════════════════════════════════════════════════════════════
+23. clique census: clique number, maximal cliques, size peak, participation
+    Gini, null clique number
+══════════════════════════════════════════════════════════════════════════════
+File      clique_census_standalone.py (one file: all five come from the same
+          single Bron-Kerbosch enumeration)
+Source    clique_census.py: clique_census, participation_stats,
+          histogram_analysis, null_clique_census, enrichment, load_graph
+          (l.32-343 copied byte-identical); new driver with the same JSON keys.
+Metric    Maximal cliques by Bron-Kerbosch with Tomita pivoting
+          (nx.find_cliques); omega = largest; mu = number of maximal cliques;
+          h(k) = maximal cliques of size k, peak = argmax; P(v) = maximal
+          cliques containing v (Sizemore et al. 2018), Gini of P; null omega
+          over double-edge-swap rewirings.
+Same      all copied functions identical (check_same_code.py).  C. elegans:
+          omega 8, mu 1,386, peak 3, Gini 0.538739, null omega 5.6 +- 0.49 —
+          all 82 JSON values == clique_census.py.  Power grid: all 68 equal.
+Reference graphs
+          (a) 11 DIMACS clique benchmarks,
+          http://archive.dimacs.rutgers.edu/pub/challenge/graph/benchmarks/clique/<name>.clq.b
+          (MANN_a9, hamming6-4, hamming6-2, johnson8-2-4, johnson8-4-4,
+          johnson16-2-4, brock200_2, c-fat200-5, c-fat500-10, p_hat300-1,
+          keller4; n and m equal the published ones) -> reference_graphs/dimacs_clique/
+          (converter dimacs_clq_b_to_npz.py, with integrity checks).
+          (b) Newman network data: karate 34/78, dolphins, lesmis, polbooks,
+          adjnoun, football, power grid -> reference_graphs/<name>/
+Published Maximal cliques: Eppstein & Strash 2011, "Listing all maximal cliques
+          in large sparse real-world graphs", arXiv 1103.0318, Table 1 p.7
+          (zachary 39, dolphins 84, power 5,687, polbooks 199, adjnoun 303,
+          football 281, lesmis 59) and Table 5 p.9 (MANN_a9 590,887,
+          brock200_2 431,586, c-fat200-5 7, c-fat500-10 8, hamming6-2
+          1,281,402, hamming6-4 464, johnson8-4-4 114,690, johnson16-2-4
+          2,027,025, keller4 10,284,321, p_hat300-1 58,176).
+          Clique number: DIMACS benchmark table (contents.tex, same archive)
+          and Prosser 2012, arXiv 1207.4616, Table 1 p.25 (johnson16-2-4 8,
+          johnson8-4-4 14, keller4 11, hamming6-2 32, hamming6-4 4, brock200_2
+          12, MANN_a9 16, c-fat200-5 58, c-fat500-10 126, johnson8-2-4 4,
+          p_hat300-1 8); karate 5 (Network Repository soc-karate lower bound 5,
+          with degeneracy 4 from Eppstein & Strash giving omega <= 5).
+Ours      omega: all 11 DIMACS graphs exactly as published; karate 5.
+          Maximal cliques: every DIMACS and Newman value above exactly, except
+          karate 36.
+Agreement omega: SAME on 12 of 12.
+          Maximal cliques: SAME on 16 of 17; DIFFERS on Zachary (36 vs 39) — a
+          brute-force count on the same file also gives 36, so their 39 is not
+          reproducible on Newman's karate.
+          Size peak, participation Gini, null omega: SKIPPED (no published
+          values).  Analytic cross-checks: johnson16-2-4 = Kneser K(16,2), whose
+          maximal cliques are the perfect matchings of K16 — h = {8: 2,027,025},
+          ours identical; vertex-transitive graphs must give Gini 0 — ours 0 on
+          all five.
+Note      null_clique_census does not check census['timed_out']: a null that
+          hits --null-timeout (60 s) contributes a partial omega without a flag.
+          Did not happen on any graph here.  Not changed.
+
+
+══════════════════════════════════════════════════════════════════════════════
+4. modularity_enriched
+══════════════════════════════════════════════════════════════════════════════
+File      gold_modularity_enriched.py
+Source    connectome_audit_gold.py: _louvain (l.398-415) on the GCC at gamma 1,
+          seed 42; null i = _generate_null(seed+1000+i), its GCC, Louvain seed
+          seed+i+1 (l.1017-1019); comparison l.1131-1149.  PASS if p < 0.05 and
+          Q > 0.3.  No-null mode: mean Q of 3 G(n,m) graphs, verdict not_tested.
+Metric    Newman & Girvan 2004 modularity of the Louvain partition (Blondel et
+          al. 2008).
+Same      all copied functions identical.  C. elegans: Q 0.3999657, null
+          0.2084863 +- 0.0044145, z 43.38, p 0.0099, 5 communities, PASS ==
+          full audit; no-null mode also identical to the audit run with
+          --no-null.
+Reference graph
+          Zachary karate club, Newman https://websites.umich.edu/~mejn/netdata/karate.zip
+          (34/78).  Blondel's table says 34/77: Netzschleuder
+          (https://networks.skewed.de/net/karate) has both versions; the 77-edge
+          one lacks edge 23-34.  reference_graphs/karate_louvain/
+          Also Newman's dolphins, lesmis, polbooks, football
+          (reference_graphs/modularity_ak2008/).
+Published Blondel et al. 2008 (arXiv 0803.0476) Table 1: karate Q = .42.
+          Agarwal & Kempe 2008, EPJ B (https://arxiv.org/pdf/0710.2533) sec. 4.1:
+          proven optimum 0.4197; published factions 0.3715; best bipartition
+          0.3718; football 0.6046 (sec. 4.2).
+Ours      Karate at the audit's seed 42: Q 0.385355 (3 communities).
+          Over 1,000 seeds: max 0.419790 (= the optimum, 250 seeds); 92% of
+          seeds >= 0.415; seed 42 is the only seed giving the minimum 0.3854.
+          Factions partition 0.371466 (= 0.3715); gamma 0.5 bipartition 0.371795
+          (= 0.3718); football at seed 42 0.60457 (= 0.6046).
+Agreement Modularity computation: SAME (optimum, both published partitions,
+          football).  Karate at the audit's own seed: DIFFERS, 0.385 vs 0.42 —
+          seed 42 happens to be the worst Louvain run of 1,000 on this graph.
+Note      The audit's Q is one Louvain run at one seed; on a small graph that
+          can sit well below the optimum.
+
+
+══════════════════════════════════════════════════════════════════════════════
+7. connector_hubs
+══════════════════════════════════════════════════════════════════════════════
+File      gold_connector_hubs.py
+Source    connectome_audit_gold.py: _louvain, _participation (l.418-429); the
+          z-score and role code inline in run_audit (l.1151-1196), moved into
+          two functions and diffed textually identical.  Connector hub:
+          z >= 2.5 and 0.30 < P <= 0.75.  PASS if at least one.
+Metric    Guimera & Amaral 2005, J. Stat. Mech. P02001, Eqs. 3-4, roles R6/R7
+          (read in the PDF; the code matches it).
+Same      all copied functions identical.  C. elegans: Q 0.3999657, P mean
+          0.383426, 9 connector hubs, PASS == full audit.
+Reference graph
+          Karate 34/78 with the two-faction labels (Netzschleuder nodes.csv).
+Published Shao & Le, arXiv 2402.01866v3, sec. 6.3, Table 2
+          (https://arxiv.org/pdf/2402.01866): participation coefficient for the
+          two-faction split: Mr. Hi 0.2188, node 10 0.5000, John A. 0.2076.
+Ours      0.2188 / 0.5000 / 0.2076 with node 9 in the officers' faction (the
+          one relabelling that also reproduces Agarwal & Kempe's faction
+          Q 0.3715); 0.1172 / 0.5000 / 0.2907 with Netzschleuder's labels as
+          they are.  Audit pipeline on karate: 1 connector hub (node 34), PASS.
+Agreement Participation coefficient: SAME (3 of 3).  Hub count: SKIPPED (no
+          published count for a public graph found).
+Note      The comment at l.1153 says "z > 2.5 AND P > 0.3"; the code uses
+          z >= 2.5 and 0.30 < P <= 0.75, which is the Guimera-Amaral version.
+
+
+══════════════════════════════════════════════════════════════════════════════
+9. propermulti_vi_stability
+══════════════════════════════════════════════════════════════════════════════
+File      gold_propermulti_vi_stability.py
+Source    connectome_audit_gold.py: _partition_to_labels, _entropy_from_counts,
+          variation_of_information (l.599-638), _find_local_minima
+          (l.644-683), _propermulti (l.686-744, on the whole G).  PASS if some
+          interior local minimum of mean VI has standard Q > 0.3.
+Metric    Betzel et al. 2017 gamma sweep; VI from Meila 2007 (natural log).
+Same      all copied functions identical.  C. elegans: all 11 mean VI values,
+          Q per gamma, no minima, FAIL == full audit.
+Reference VI itself: Meila 2007 closed forms
+          (https://sites.stat.washington.edu/mmp/Papers/compare-jmva-revised.pdf):
+          singletons vs one cluster = ln n (Eq. 24); splitting a cluster
+          (Eqs. 27-28).  On karate partitions ours give ln 34 = 3.526361,
+          0.111859 (Eq. 28), (17/34) ln 17 = 1.416607, ln 2 — all within 7e-16.
+Agreement VI: SAME.  The criterion: SKIPPED — no published gamma-sweep VI
+          values found (searched Karrer et al. 2008, CHAMP, resolution papers;
+          VI appears only in figures).
+
+
+══════════════════════════════════════════════════════════════════════════════
+12. hierarchical modularity   [descriptive]
+══════════════════════════════════════════════════════════════════════════════
+File      gold_hierarchical_modularity.py
+Source    connectome_audit_gold.py: _louvain, _hierarchical_modularity
+          (l.538-592), on the whole G; gammas 0.5/0.8/1/1.5/2/3, seeds 42-51;
+          n_modular = #(Q_standard > 0.3); nesting by containment (the repo's
+          own construction, no original citation).
+Same      all copied functions identical.  C. elegans: n_modular 5/6, mean
+          nesting 0.826861 +- 0.022105, every field == full audit.
+Reference none published for n_modular or the nesting score.
+Ours      Karate: n_modular 5/6, nesting 0.9661.  Its gamma 0.5 partition has
+          Q_standard 0.371795 = Agarwal & Kempe's best bipartition 0.3718.
+Agreement SKIPPED — no published value for this metric.
+
+
+══════════════════════════════════════════════════════════════════════════════
+17. automorphism group order + edge-orbit entropy
+══════════════════════════════════════════════════════════════════════════════
+File      complexity_orbit_entropy.py
+Source    run_complexity.py: load_graph_npz, edge_orbit_entropy (l.65-153):
+          nauty (pynauty.autgrp) gives |Aut| and generators; edge orbits by
+          union-find over generators; H = -sum p log2 p, normalized by log2 m.
+Metric    Orbit entropy (Mowshowitz 1968; edge form Trucco 1956); |Aut| of
+          real networks with nauty as in MacArthur et al. 2008.
+Same      all copied functions identical.  C. elegans and power grid: every
+          value == run_complexity.py.
+Reference graph
+          US power grid (reference_graphs/power_grid/power_gcc.npz, the
+          paper's exact 4,941/6,594).
+Published MacArthur, Sanchez-Garcia & Anderson 2008, Discrete Appl. Math.
+          156:3525 (arXiv 0705.3215v2, Table 1, p.3,
+          https://arxiv.org/pdf/0705.3215): power grid |Aut| = 5.1851 x 10^152.
+Ours      |Aut| = 5.18507 x 10^152.
+Agreement |Aut|: SAME (all 5 published figures).  Edge-orbit entropy: SKIPPED
+          (no published value).  Derived check: C60 from Fripertinger's
+          published edge generators gives group order 120, edge orbits 30/60,
+          H 0.918296 bits; ours identical.
+
+
+══════════════════════════════════════════════════════════════════════════════
+18. graph energy
+══════════════════════════════════════════════════════════════════════════════
+File      complexity_graph_energy.py
+Source    run_complexity.py: compute_graph_energy (l.178-186): E = sum |lambda_i|
+          of the adjacency matrix; the paper prints E/n.
+Metric    Gutman 1978.
+Same      all copied functions identical.  C. elegans E 782.0714, E/n 2.63324
+          == run_complexity.py; power grid identical.
+Reference graph
+          Petersen graph, built from the adjacency matrix printed in the paper
+          (checked isomorphic to nx.petersen_graph);
+          reference_graphs/complexity_petersen/
+Published E = 16.  Alikhani & Ghanbari, arXiv 1412.8137, Theorem 2(i) proof,
+          p.8 (https://arxiv.org/pdf/1412.8137).
+Ours      16.0 (per node 1.6).
+Agreement SAME.  No published energy of a real network was found.
+
+
+══════════════════════════════════════════════════════════════════════════════
+19. Estrada index
+══════════════════════════════════════════════════════════════════════════════
+File      complexity_estrada.py
+Source    run_complexity.py: compute_estrada (l.160-171): EE = sum exp(lambda_i);
+          the paper prints log10 EE.
+Metric    Estrada 2000; EE/n = mean subgraph centrality.
+Same      all copied functions identical.  C. elegans and power grid ==
+          run_complexity.py.
+Reference graphs
+          Karate 34/78 (Newman) and the Minnesota road network 2,642/3,303
+          (https://nrvis.com/download/data/road/road-minnesota.zip, all nodes
+          kept, as in the paper).  reference_graphs/complexity_karate/,
+          complexity_minnesota/
+Published Benzi & Klymko, "Total communicability as a centrality measure",
+          arXiv 1302.6770v2, Table 5.8 p.13 (https://arxiv.org/pdf/1302.6770):
+          EE/n karate 30.62, Minnesota 2.86; Table 5.6: lambda_1 6.726 / 3.2324.
+Ours      EE/n 30.6249 and 2.8550; lambda_1 6.7257 and 3.23240.
+Agreement SAME (both, to the published precision).  nx.estrada_index and
+          trace(expm(A)) also give 30.62491.
+
+
+══════════════════════════════════════════════════════════════════════════════
+20. Kirchhoff index
+══════════════════════════════════════════════════════════════════════════════
+File      complexity_kirchhoff.py
+Source    run_complexity.py: compute_kirchhoff (l.193-204): Kf = n * sum 1/mu
+          over Laplacian eigenvalues mu > 1e-10; the paper prints Kf/n^2.
+Metric    Klein & Randic 1993 (sum of resistance distances).
+Same      all copied functions identical.  C. elegans Kf 13709.777, power grid
+          63769632.80 == run_complexity.py.
+Reference graphs
+          K4, C4, S4, P4, O4 (empty) built with networkx; C60 fullerene built
+          and checked (cubic, planar, 12 pentagons, Wiener index 8340).
+          reference_graphs/complexity_four_vertex/, complexity_c60/
+Published Ellens & Kooij, arXiv 1311.5064, Table 1 p.9: K4 3, C4 5, S4 9,
+          P4 10, O4 infinity.  Fowler 2002, Croat. Chem. Acta 75:401 (abstract,
+          https://hrcak.srce.hr/127528): C60 = 479482/209 = 2294.1722488.
+Ours      K4 3, C4 5, S4 9, P4 10, O4 0.0; C60 2294.172248803816.
+Agreement SAME on every connected graph (C60 to 13 significant figures).
+          DIFFERS on the disconnected O4 (0 vs infinity).
+BUG       compute_kirchhoff drops all zero eigenvalues, so on a disconnected
+          graph it returns a finite number where Kf is infinite.  Paper graphs
+          are unaffected: Budapest, the local quotient and the 8k quotient are
+          each one connected component (checked).  Not changed.
+
+
+══════════════════════════════════════════════════════════════════════════════
+21. off-diagonal complexity, degree-distribution entropy, unique degrees
+══════════════════════════════════════════════════════════════════════════════
+File      complexity_offdiagonal.py
+Source    run_complexity.py: compute_offdiagonal (l.211-255): OdC = -sum a_k ln a_k,
+          a_k = fraction of edges with |deg u - deg v| = k (each edge once);
+          H_deg = Shannon entropy (nats) of the degree histogram.
+Metric    Claussen 2007 (Physica A 375:365; arXiv q-bio/0410024).
+Same      all copied functions identical.  C. elegans OdC 3.95861, H_deg
+          3.34931, 44 unique degrees == run_complexity.py; power grid identical.
+Reference graph
+          The original network is not available; a 31-node, 41-edge graph built
+          (nx.joint_degree_graph) to have exactly the published degree
+          histogram and degree-pair table of Claussen's Fig. 26.1(b) (OdC
+          depends on the graph only through that table; the builder asserts
+          it).  reference_graphs/complexity_claussen_odc/
+Published OdC = 1.376939.  Claussen 2007, "Offdiagonal complexity: a
+          computationally quick network complexity measure", Mathematical
+          Modeling of Biological Systems II, ch. 26, Fig. 26.1(b), p.295
+          (https://arxiv.org/pdf/0712.4216).
+Ours      OdC 1.3769391.
+Agreement OdC: SAME.  Degree-distribution entropy: SKIPPED (no published value
+          found).  Unique degrees: trivially SAME (6).
+
+
+══════════════════════════════════════════════════════════════════════════════
+32. six static tests (Leskovec et al. 2010)  — static_tests.py
+══════════════════════════════════════════════════════════════════════════════
+Files     static_test_degree.py, static_test_effective_diameter.py,
+          static_test_hop_plot.py, static_test_scree.py,
+          static_test_network_value.py, static_test_triangle_participation.py
+Source    construction/bilateral/static_tests.py: load_edges, build_graph,
+          effective_diameter, measure(), scores().  Errors: T1 KS of degrees;
+          T2 |eff - eff_ref|/eff_ref; T3 relative error of hop_frac at 2 hops;
+          T4 0.5 x lambda_1/<k> error + 0.5 x min(gap error, 2); T5 KS of the
+          principal eigenvector; T6 KS of per-node triangle counts.
+Same      load_edges, build_graph, effective_diameter identical (the new
+          measure_*/score_* lines appear verbatim in static_tests.py).  The
+          paper's pair (8k quotient vs Budapest) and C. elegans vs power grid:
+          every array and all six errors == static_tests.py and its CSV;
+          default-thread run reproduces the shipped baselines/scores/cnew_coarse.csv.
+Reference graphs and published values
+  T1 degree       US power grid (KONECT opsahl-powergrid,
+                  http://konect.cc/networks/opsahl-powergrid/, 4,941/6,594, the
+                  same graph as power_gcc.npz).  KONECT statistics: d_max 19,
+                  mean 2.66910, Gini 0.324777, power-law gamma 2.24678.
+                  Ours 19, 2.66910, 0.3247773, 2.246778.  SAME.
+  T2 effective    SNAP ca-GrQc (https://snap.stanford.edu/data/ca-GrQc.html),
+     diameter     whole graph 5,242 nodes / 14,484 edges (12 self-loops dropped).
+                  Published "90-percentile effective diameter 7.6", diameter 17.
+                  Ours 7.6064, diameter 17.  SAME.  (SNAP samples start nodes;
+                  its own convention gives 7.50-7.69.)
+  T3 hop plot     no published hop-plot numbers found (SNAP: scalars only;
+                  KONECT: plot image; Leskovec 2010: figures only).  SKIPPED.
+  T4 scree        KONECT power grid: spectral norm 7.48305, separation
+                  lambda_1/lambda_2 1.13221.  Ours 7.483051, 1.132210.  SAME.
+                  (Zachary: 6.72570 / 1.35134, ours identical.)
+  T5 network      Zachary karate (KONECT ucidata-zachary, 34/78); Ghosh &
+     value        Lerman, arXiv 1010.4247, Table I: eigenvector centrality of
+                  all 34 members.  Ours equal all 34 at 4 decimals (max diff
+                  4.8e-5).  SAME.
+  T6 triangles    SNAP ca-GrQc: "Number of triangles 48260".  Ours 48,260.
+                  SAME.  (KONECT: power grid 651, karate 45 — ours identical.)
+Saved     reference_graphs/konect_powergrid/, ca_grqc/, zachary_karate/
+          (converter reference_graphs/edgelist_to_npz.py).
+Note      T3 is an unbounded relative error (294.97 on C. elegans vs power
+          grid); against Budapest it stays below about 0.53.  static_tests.py
+          labels hop_frac[1] "g(2)/total pairs" but divides by connected pairs
+          (same thing for connected graphs).
+
+
+══════════════════════════════════════════════════════════════════════════════
+3. small_world_sigma_er (+ sigma_dp)
+══════════════════════════════════════════════════════════════════════════════
+File      gold_small_world_sigma_er.py
+Source    connectome_audit_gold.py run_audit: transitivity and _exact_apl on the
+          GCC (l.948-951); sigma_dp = transitivity ratio / APL ratio against the
+          degree-preserving nulls (l.1053-1055); sigma_er (l.1064-1078):
+          n_null G(n_gcc, m_gcc) graphs, seeds from default_rng(seed+7777), each
+          measured on its GCC, sigma_er = (C/C_ER)/(L/L_ER).  PASS if
+          sigma_er > 1 (_sw_verdict_er); sigma_dp not scored.
+Metric    Humphries & Gurney 2008, PLoS ONE 3:e2051, Eqs. 2-5: S^Delta, with
+          transitivity C^Delta and an ER reference of the same n and m.
+Same      all copied functions identical.  C. elegans: transitivity 0.1807115,
+          APL 2.4553190, sigma_dp 1.5230428, sigma_er 3.6464279, PASS == full
+          audit, bit for bit.
+Reference graph
+          US power grid (power_gcc.npz), exactly H&G Table 1 row 19 (4,941/6,594).
+Published H&G 2008, Table 1 p.4, row 19 "power grid": S^Delta = 84.45
+          (C^Delta 0.1, L 18.99).  Read in
+          https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0002051&type=printable
+          H&G use the analytic ER values C_rand = <k>/n, L_rand = ln n / ln<k>.
+Ours      C^Delta 0.103153, L 18.9892; ER ensemble C_ER 0.000534, L_ER 8.487;
+          sigma_er = 86.28, PASS.  sigma_dp = 76.40.
+Agreement CLOSE — 86.28 vs 84.45 (+2.2%).  H&G rounded C^Delta to 0.10 and used
+          analytic baselines: their formula with 0.10 gives 84.46, with the
+          exact 0.10315 gives 87.12; ours (simulated ER) sits between.
+Also      Dolphins (H&G row 1, 62/159, published 2.8): ours 2.864; H&G's formula
+          on our C and L 2.807.  CLOSE.
+
+
+══════════════════════════════════════════════════════════════════════════════
+5. global_eff_near_random
+══════════════════════════════════════════════════════════════════════════════
+File      gold_global_eff_near_random.py
+Source    connectome_audit_gold.py: _exact_geff (l.332-351) on the real GCC and
+          each null GCC.  PASS if 0.8 <= E / mean(E_null) < 1.0
+          (_geff_verdict l.1293-1304).  No-null mode: E_rand = 1/L_Fronczak.
+Metric    Latora & Marchiori 2001, PRL 87:198701, Eq. 1: mean of 1/d_ij over
+          ordered pairs, unreachable pairs 0.
+Same      all copied functions identical.  C. elegans: E 0.4448229, null
+          0.4556678 +- 0.0011144, ratio 0.97620, PASS == full audit, bit for bit.
+Reference graph
+          German Autobahn network (Kaiser & Hilgetag 2004, PRE 69:036103),
+          https://www.dynamic-connectome.org/download/autobahn.zip
+          (autobahn.mat, variable auto1168) -> 1,168 nodes / 1,243 edges,
+          connected, exactly the published counts.
+          reference_graphs/autobahn/autobahn_gcc.npz (converter
+          mat_adjacency_to_npz.py).
+Published Noschese & Reichel 2025, "Network connectivity analysis via shortest
+          paths", arXiv 2509.03230v2, Example 3: 1168 nodes, 1243 edges,
+          global efficiency 6.7175e-2 (same definition, their Eq. 4).
+          https://arxiv.org/pdf/2509.03230
+Ours      E_glob = 0.0671745 (nx.global_efficiency identical).  Null 0.07402;
+          ratio 0.9075, PASS.
+Agreement SAME — all five published digits.
+Also      Vragovic, Louis & Diaz-Guilera 2005, PRE 71:036122, Table I, ring
+          lattice N=100, K=2: E_g 0.154; ours 0.153776 (L 12.8788, C 0.5).  SAME.
+          (Latora & Marchiori's C. elegans value 0.46 is for a 282-neuron /
+          2,462-link version, not Newman's file, so not a check.)
+
+
+══════════════════════════════════════════════════════════════════════════════
+6. local_eff_enriched
+══════════════════════════════════════════════════════════════════════════════
+File      gold_local_eff_enriched.py
+Source    connectome_audit_gold.py: _exact_leff (l.354-367): mean over nodes of
+          the global efficiency of the subgraph on the node's neighbours
+          (nodes with < 2 neighbours count 0).  PASS if p < 0.05.
+Metric    Latora & Marchiori 2001: E_loc = (1/N) sum_i E(G_i).
+Same      all copied functions identical.  C. elegans: E_loc 0.5128549, null
+          0.2919175 +- 0.0077154, z 28.64, PASS == full audit, bit for bit;
+          nx.local_efficiency identical.
+Reference graph
+          No real downloadable graph with a published E_loc was found.  Used the
+          one exactly specified graph with a published value: Latora &
+          Marchiori's regular ring lattice N = 1000, k = 20 (nx.circulant_graph,
+          reference_graphs/ring_lattice_n1000_k20/).
+Published 0.82: Latora & Marchiori 2001, PRL 87:198701, Fig. 1 caption ("from
+          the value of 0.82 of the regular lattice"), p.3; repeated in L&M
+          2003, EPJ B 32:249.
+Ours      0.854386 = 162 1/3 / 190 exactly (each neighbourhood: 190 pairs, 135
+          adjacent, 54 at distance 2, 1 at distance 3); nx.local_efficiency
+          gives the same.
+Agreement DIFFERS — 0.854 vs 0.82.  Hand count and networkx agree on 0.854 for
+          the lattice as described, so the published 0.82 does not match that
+          graph.  The code is right; this reference cannot confirm it.  No
+          real-graph check achieved (searched L&M 2001/2003, Vragovic 2005, H&G
+          2008, karate/dolphins/Les Mis/football/power grid/C. elegans/Autobahn).
+
+
+══════════════════════════════════════════════════════════════════════════════
+10. assortativity   [descriptive]
+══════════════════════════════════════════════════════════════════════════════
+File      gold_assortativity.py
+Source    connectome_audit_gold.py: nx.degree_assortativity_coefficient on the
+          real GCC (l.956) and each null GCC (l.914).  No verdict.
+Metric    Newman 2002, PRL 89:208701, Eqs. 3-4: Pearson correlation of the
+          degrees at the two ends of an edge.
+Same      all copied functions identical.  C. elegans: r -0.1631992, null
+          -0.1005811 +- 0.0084429 == full audit, bit for bit.
+Reference graph
+          C. elegans neural network, Newman's celegansneural (undirected,
+          unweighted, 297/2,148).  Newman's table says n 307 with the same
+          2,359 edge records (the file's labels run 1..306).
+Published Newman 2002, arXiv cond-mat/0205405v1, Table I: "neural network,
+          n 307, r -0.163" — undirected, unweighted synaptic connections of
+          C. elegans.  https://arxiv.org/pdf/cond-mat/0205405
+Ours      r = -0.163199.
+Agreement SAME — all published digits.
+Also      Power grid (the exact W&S graph): published r = -0.003 (sigma_r 0.013;
+          Newman 2003, PRE 67:026126, Table II).  Ours +0.003457; an
+          independent computation from the raw power.gml also gives +0.003457.
+          DIFFERS in sign at the third decimal (gap 0.0065, half of Newman's own
+          sigma_r); -0.003 cannot be reproduced from this file.
+
+
+══════════════════════════════════════════════════════════════════════════════
+8. rich_club
+══════════════════════════════════════════════════════════════════════════════
+File      gold_rich_club.py
+Source    connectome_audit_gold.py: _rich_club (l.437-511).  Null curves as
+          run_audit builds them: one per main null (seed+1000+i), then extra
+          nulls seed+5000+j up to n_null_rc (l.1204-1215), on the whole graph.
+          k significant if rho > 1 and permutation p < 0.05; PASS if the
+          longest run of consecutive significant k >= 3.
+Metric    phi(k) = 2E_>k / (N_>k (N_>k - 1)) (Zhou & Mondragon 2004);
+          rho = phi / mean phi_null (Colizza et al. 2006); run criterion after
+          van den Heuvel & Sporns 2011.
+Same      all copied functions identical.  C. elegans (100 + 900 nulls):
+          n_k_significant 3, longest run 1, FAIL, every field == full audit.
+Reference graph
+          C. elegans somatic connectome, Varshney et al. 2011, WormAtlas
+          https://www.wormatlas.org/images/NeuronConnect.xls — chemical and
+          electrical synapses, NMJ and self-loops dropped, undirected, binary,
+          giant component 279 nodes / 2,287 edges = Towlson's N and M exactly.
+          reference_graphs/celegans_varshney2011/varshney279_gcc.npz
+          (converter varshney_csv_to_npz.py).
+Published Towlson, Vertes, Ahnert, Schafer & Bullmore 2013, J. Neurosci.
+          33:6380 (https://pmc.ncbi.nlm.nih.gov/articles/PMC4104292/): 1000
+          double-edge-swap nulls; rich club over 35 <= k <= 73 (1 sd) and
+          44 <= k < 53 (3 sd); Table 1: the 3-sd club is 11 neurons (AVAR/L,
+          AVBL/R, AVER/L, AVDR/L, PVCL/R, DVA), the 1-sd club 14.
+Ours      Audit test (1000 nulls): significant k 36-53 (plus scattered low k),
+          longest run 18 -> PASS; max rho 1.40 at k 44-49.
+          Towlson's sd criterion on our per-k output: +1 sd k 34-73,
+          +3 sd k 39-52.  Nodes with degree > 39: exactly Towlson's 11
+          neurons; 1-sd club: the same 14.
+Agreement CLOSE — same rich-club range and the same member neurons
+          (34-73 vs 35-73; 39-52 vs 44-52); PASS where a rich club is published.
+Also      Newman's 297-neuron C. elegans (an older reconstruction) has no rich
+          club by this test (run 1, FAIL).  Towlson's Table 1 degrees are 1
+          higher than ours for 11 of 14 neurons; not explained.
+
+
+══════════════════════════════════════════════════════════════════════════════
+15. rich-club counts floored at 20 nodes (richclub_other_graphs.py)
+══════════════════════════════════════════════════════════════════════════════
+File      richclub_floored.py
+Source    richclub_other_graphs.py: _null_phi, longest_run, compute (1000 nulls
+          seed+5000+i, MINNODES = 20: keep k only if >= 20 nodes have degree
+          > k); the loader and null functions it imports from the audit are
+          copied in.
+Same      functions identical to both sources.  C. elegans: the original
+          script and the standalone give identical JSON in every field
+          (n_sig_full 3, run_full 1, n_sig_floor 3, run_floor 1).
+Reference graph   Varshney 279 (as in 8).
+Published Towlson 2013 (as in 8): a rich club of 11-14 neurons at k >= 35.
+Ours      Full grid: 34 significant, run 18 (k 36-53).  Floored at 20 nodes:
+          only k <= 32 survive; 16 significant, run 11 (k 8-25).
+Agreement DIFFERS — by construction: a club smaller than 20 nodes is invisible
+          to the floor, so the whole published rich club (11-14 neurons) is
+          cut.  The unfloored part of the same script agrees with 8.
+Note      20 nodes is 7% of a 279-node graph but 2% of a 1,015-node quotient,
+          so the floor is far less restrictive on the paper's graphs.
+
+
+══════════════════════════════════════════════════════════════════════════════
+13. degree summary (Gini, Hill tail)   [descriptive]
+══════════════════════════════════════════════════════════════════════════════
+File      gold_degree_summary.py
+Source    connectome_audit_gold.py: _degree_summary (l.375-390), _gini
+          (l.294-299), _hill (l.302-311), on the whole graph.
+Metric    Gini = 2 sum i d_(i) / (n sum d) - (n+1)/n (degrees ascending);
+          hill_tail = Hill (1975) estimate of the exponent of P(X > x) from the
+          top min(max(10, n//10), 200) degrees (density exponent = hill + 1).
+Same      all copied functions identical.  C. elegans: all 12 values == full
+          audit (Gini 0.3854796, hill_tail 2.1793).
+Reference graph
+          KONECT dimacs10-celegansneural
+          (http://konect.cc/files/download.tsv.dimacs10-celegansneural.tar.bz2),
+          297/2,148, isomorphic to celegans_gcc.npz.
+          reference_graphs/konect_celegansneural/
+Published KONECT page http://konect.cc/networks/dimacs10-celegansneural/
+          (Kunegis 2013): Gini 0.385480 (the KONECT Handbook's formula is the
+          same as _gini); max degree 134; tail exponent gamma_t = 3.341
+          (Clauset's method).
+Ours      Gini 0.385480; max 134; Hill density exponent 3.179.
+Agreement Gini: SAME.  Tail exponent: CLOSE (3.18 vs 3.34; different
+          estimators — Hill on the top 10% vs Clauset's KS-chosen x_min).
+Also      Power grid: Gini 0.324777 vs KONECT 0.324777, SAME.  Hill+1 6.41 vs
+          gamma_t 7.63 — the grid's degree tail is not a power law.
+
+
+══════════════════════════════════════════════════════════════════════════════
+14. betweenness hubs   [descriptive]
+══════════════════════════════════════════════════════════════════════════════
+File      gold_betweenness_hubs.py
+Source    connectome_audit_gold.py: _betweenness_hubs (l.519-530):
+          nx.betweenness_centrality(G, k=min(200, n), seed) — exact only when
+          n <= 200, otherwise 200 sampled sources; reports mean, max, std,
+          max/mean, n_hubs (bc > 2 x mean).
+Metric    Freeman 1977 shortest-path betweenness, normalized by (n-1)(n-2)/2
+          (Brandes 2001).
+Same      all copied functions identical.  C. elegans (sampled): mean
+          0.00488286, max 0.294021, n_hubs 26 == full audit.
+Reference graph   Varshney 279 (as in 8).
+Published Towlson 2013, Results after Table 1: nine of the 11 rich-club
+          neurons (AVAR/L, AVBR/L, AVER/L, DVA, PVCR/L) are in the top 10 by
+          betweenness, "with values ranging from 0.0277 to 0.103".
+Ours      Exact: top 10 AVAL .1033, AVAR .1008, AVBR .0683, AVBL .0647,
+          AVER .0400, AVEL .0389, DVA .0363, RIBL .0329, PVCR .0290,
+          PVCL .0277 — the same nine, range 0.0277-0.1033.
+          As the audit runs it (200 sampled sources): the same nine, range
+          0.0310-0.1012.
+Agreement SAME (exact computation).  CLOSE as the audit computes it (sampling:
+          max -2%, lowest of the nine +12%).
+Note      Every paper graph has n > 200, so the audit's betweenness is always a
+          200-source estimate.
+
+
+══════════════════════════════════════════════════════════════════════════════
+24-31. combinatorial / spectral battery (combinatorial_metrics_npz.py)
+══════════════════════════════════════════════════════════════════════════════
+All eight files copy load_graph (l.40-75) and the metric function unchanged
+(check_same_code.py: all identical).  SAME runs (C. elegans, karate, Petersen,
+Herschel, USAir97, power grid): integer, LP and matching values identical to
+the script.  Two harmless last-digit effects: ARPACK's start vector depends on
+how many ARPACK calls came earlier in the same process (pg_eigengap,
+hoffman_bound, Fiedler value), and dense eigvalsh changes in the last digit with
+the BLAS thread count; with the same call order / thread count the digits are
+identical.  The metric names are those of Szalkai, Varga & Grolmusz
+(arXiv 1603.00904).  Values below independently recomputed with
+numpy/networkx where noted.
+
+24. lambda_max / <k>   — combinatorial_lmax_div_d.py
+    Reference  Zachary karate, Newman karate.zip (34/78; same edge set as
+               KONECT ucidata-zachary) -> reference_graphs/karate/
+    Published  KONECT http://konect.cc/networks/ucidata-zachary/ : spectral norm
+               6.72570, average degree 4.58824 -> 1.465856.
+    Ours       1.4658572 (lambda_max 6.7256977).        SAME
+    Also       Power grid: KONECT 7.48305 / 2.66910 -> 2.803585, ours 2.803591.
+               Herschel graph (House of Graphs 1158): 1.0134131 = ours.
+
+25. random-walk eigengap   — combinatorial_rw_eigengap.py
+    Metric     lambda_1(P) - lambda_2(P), P = D^-1 A; equals lambda_2 of the
+               normalized Laplacian for a connected graph.
+    Reference  Facebook100 Johns Hopkins (FB-Johns55),
+               https://nrvis.com/download/data/socfb/socfb-JohnsHopkins55.zip,
+               largest component 5,157 / 186,572 = the paper's exact counts.
+               reference_graphs/fb_johns55/
+    Published  Jeub, Balachandran, Porter, Mucha & Mahoney 2015, PRE 91:012821
+               (arXiv 1403.3795v2), Table I p.11: FB-Johns55 lambda_2 = 0.1258;
+               CA-GrQc (4,158/13,422) 0.0019.
+    Ours       0.125785 (also by eigsh on the normalized Laplacian); CA-GrQc
+               0.001867.                                SAME
+
+26. Hoffman bound   — combinatorial_hoffman_bound.py
+    Metric     1 + lambda_max / |lambda_min| (Hoffman 1970).
+    Reference  karate; Petersen graph (nx.petersen_graph = Kneser K(5,2) =
+               House of Graphs 660).
+    Published  Petersen: Hoffman bound of Kneser K(p,k) = p/k = 5/2 (Wocjan,
+               Elphick & Anekstein, arXiv 1812.02613v3, sec. 6 p.8); HoG 660:
+               index 3, smallest eigenvalue -2.  Karate: from KONECT's spectral
+               norm 6.72570 and non-bipartivity 0.332823 -> 2.498853 (derived
+               from two printed numbers).
+    Ours       Petersen 2.5; karate 2.4988532.          SAME
+    Also       Power grid (KONECT-derived 2.663263) ours 2.663262; Herschel 2.0
+               = 2.0.
+
+27. spanning-tree entropy   — combinatorial_spanning_tree_entropy.py
+    Metric     log(#spanning trees)/n by the matrix-tree theorem (natural log).
+    Reference  Petersen graph; Herschel graph (built from House of Graphs 1158).
+    Published  Petersen 2,000 spanning trees (Alikhani & Ghanbari, arXiv
+               2407.15860v1, p.2; House of Graphs 660); Herschel 10,800 (HoG 1158).
+    Ours       exp(log count) = 2000 and 10800 exactly.  SAME
+               (No published spanning-tree count of a real network was found.)
+    PROBLEMS   (1) For n > 2000 the code sums only the 500 smallest Laplacian
+               eigenvalues (note 'partial') but prints it as log(count)/n:
+               power grid prints -0.2174, true value 0.4491.
+               (2) On a disconnected graph it returns log(prod n_c tau_c / n)/n,
+               not log(#spanning forests)/n (netscience 0.8866 vs 0.6888).
+               Paper unaffected: the papers report this only for the 1,015-node
+               quotients and Budapest (exact branch, connected).  Not changed.
+
+28. min vertex cover (LP relaxation and 2-approximation)
+    — combinatorial_min_vertex_cover.py
+    Metric     LP lower bound (HiGHS) and networkx's local-ratio 2-approximation
+               (Bar-Yehuda & Even 1985) of the vertex cover number tau.  The
+               source docstring says "greedy matching"; networkx actually uses
+               local-ratio (still a valid 2-approximation).
+    Reference  USAir97, https://nrvis.com/download/data/inf/inf-USAir97.zip
+               (332/2,126); Herschel (bipartite); Petersen.
+    Published  Exact optima: USAir97 tau = 149 (da Silva, Gimenez-Lugo & da
+               Silva, "Vertex cover in complex networks", IJMPC, Table 2 p.7,
+               https://www.inf.ufpr.br/murilo/public/VCCN.pdf); Herschel 5 and
+               Petersen 6 (House of Graphs).
+    Ours       USAir97 LP 140.5 <= 149 <= approx 238; Herschel LP 5.0 = tau 5
+               (exact, as it must be for a bipartite graph); Petersen 5 <= 6 <= 8.
+               SAME as bounds (every published optimum inside [LP, approx]).
+
+29. balanced bisection cut + Fiedler value   — combinatorial_bisection_fiedler.py
+    Metric     Fiedler vector of L, nodes ranked, split in half (spectral
+               HEURISTIC, so the cut is an upper bound on the optimum);
+               Fiedler value lambda_2(L) (Fiedler 1973).
+    Reference  karate; power grid; Herschel; Petersen.
+    Published  Fiedler value: KONECT algebraic connectivity karate 0.468525,
+               power grid 0.000759212; HoG Herschel 1.2679491924, Petersen 2.
+               Optimum bisection: Delling, Fleischman, Goldberg, Razenshteyn &
+               Werneck 2013, "An exact combinatorial algorithm for minimum graph
+               bisection", Table 3 p.22: karate 10, power grid 12.
+    Ours       Fiedler 0.468525, 0.000759212, 1.267949192, 2.0.   SAME
+               Cut karate 11 (opt 10): CLOSE; power grid 36 (opt 12): DIFFERS 3x.
+               Every cut >= the optimum, as a heuristic's must be.
+    Note       On a disconnected graph the "Fiedler vector" is an arbitrary
+               null-space vector (netscience: cut 11 where 0 is possible).
+
+30. max matching, max fractional matching   — combinatorial_max_matching.py
+    Reference  Herschel (bipartite, odd n, no perfect matching); Petersen.
+    Published  House of Graphs "Matching Number": Herschel 5, Petersen 5.
+    Ours       nu 5 and 5; nu_f 5.0 and 5.0.          SAME
+               nu_f has no direct published value; checked only through the
+               bipartite identity nu_f = nu.  USAir97: nu 139 <= nu_f 140.5 <=
+               tau 149, consistent.
+
+31. min spanning forest   — combinatorial_min_spanning_forest.py
+    Metric     edges of the minimum spanning forest = n - (number of components)
+               (the function returns the edge count, which equals the weight
+               only for unweighted graphs).
+    Reference  Newman netscience, all components,
+               https://websites.umich.edu/~mejn/netdata/netscience.zip
+               (1,589 / 2,742, 396 components).
+    Published  SuiteSparse Newman/netscience (https://sparse.tamu.edu/Newman/netscience):
+               1,589 rows, 396 connected components -> 1,193.
+    Ours       1,193 (power grid 4,940).              SAME
