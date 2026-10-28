@@ -94,6 +94,12 @@ graphnets/coarsening_sweep/*.out
 !graphnets/construction/bilateral/audits/*.json
 !graphnets/construction/bilateral/audits/*.log
 
+# local construction under other repair/closure orders: quotients and audits
+# behind the order table in construction/local/README.md
+!graphnets/construction/local/order_audits/*.json
+!graphnets/construction/local/order_audits/*.log
+!graphnets/construction/local/order_audits/*.npz
+
 # B and C audits: the evidence for adopting C over B; the paper cites them
 !graphnets/coarsening_sweep/audits/*.json
 !graphnets/coarsening_sweep/audits/*.log

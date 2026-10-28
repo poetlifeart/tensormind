@@ -140,3 +140,11 @@ under every order audited. Order 3's failure does not depend on the Louvain
 run: under 50 Louvain seeds no node reaches z >= 2.5 at all. The connector
 hubs, like the degree fit, are a property of the deposited member of the
 family.
+
+The five quotients and their audits are in `order_audits/`; a file named
+`internalseed{s}` holds order `s`:
+
+| file | contents |
+|---|---|
+| `localrepair_quotient_internalseed{s}.npz` | the quotient (1,015 nodes; `n_total` + `edges`), built by this file with `np.random.default_rng(42)` replaced by `default_rng(s)` in `triangle_prune_local` and `add_chromatic_to_budget`, everything else unchanged (Louvain seed 42) |
+| `audit_internalseed{s}_100.json` / `.log` | `../../graphmetrics/connectome_audit_gold.py --graph localrepair_quotient_internalseed{s}.npz --n-null 100 --n-null-rc 1000` (audit seed 42, the default) |
