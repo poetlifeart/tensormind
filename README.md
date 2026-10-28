@@ -276,3 +276,28 @@ The other five metrics are minutes at 1,015 nodes.
 on CPU   Intel Core i9-9940X — 14 cores / 28 threads, 3.3 GHz (4.5 boost), 19.7 MB L3
 RAM   62 GB (33 GB available). 
 
+## Metric verification (`graphnets/graphmetrics/onebyone/`)
+
+`onebyone/` contains the verification of every metric the papers report.
+Each metric is copied out of the script that produced the paper's number into
+its own self-contained file, then run on a public network (or an exactly
+specified graph) whose value for that metric is published, and the two are
+compared.
+
+- **Same code.** Copied functions are unchanged; `check_same_code.py SOURCE.py
+  STANDALONE.py` compares each one with the original (AST, docstrings and
+  comments ignored), and each standalone gives the same numbers as its source
+  script on the same graph.
+- **Published value.** `METRIC_CHECKS.txt` records, for every metric, the
+  graph used, where the published value comes from (citation, URL, page or
+  table), our value, and the verdict (SAME / CLOSE / DIFFERS). The status table
+  at its top summarizes all 32.
+- **Reference graphs.** `reference_graphs/` holds each downloaded network with
+  its raw download and the converted `.npz`, plus the converters.
+
+Every metric used in the papers matches at least one published measurement or
+exact value. The one mismatch, `skeleton_fractality.py` calling the E. coli
+network exponential where the literature reports it fractal, is not used in
+the papers. Problems found in the source scripts are listed, unchanged, in
+`METRIC_CHECKS.txt` ("PROBLEMS FOUND IN THE SOURCE SCRIPTS").
+
