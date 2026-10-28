@@ -1,0 +1,24 @@
+  [Loaded from edge list: 2287 edges]
+  Nodes: 279   Edges: 2,287   sources: 200 of 279 (sampled; whole graph, as in the audit)
+
+========================================================================
+BETWEENNESS HUBS
+========================================================================
+              mean: 0.00515432
+               max: 0.101179
+               std: 0.0114777
+     max_over_mean: 19.6299
+            n_hubs: 29
+  top 10 nodes (node index: normalized betweenness):
+          53: 0.101179
+          54: 0.096783
+          56: 0.070079
+          55: 0.062916
+          60: 0.040622
+          59: 0.037843
+         108: 0.036127
+         151: 0.032290
+         150: 0.030987
+         167: 0.030625
+
+Wrote JSON to /home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/celegans_varshney2011/betweenness_varshney279_k200.json

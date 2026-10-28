@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/foster.npz",
+ "stat": {
+  "n": 90,
+  "m": 135,
+  "hop_count": [
+   270,
+   810,
+   1890,
+   4050,
+   6210,
+   7290
+  ],
+  "hop_frac": [
+   0.033707865168539325,
+   0.10112359550561797,
+   0.23595505617977527,
+   0.5056179775280899,
+   0.7752808988764045,
+   0.9101123595505618
+  ],
+  "connected_ordered_pairs": 8010
+ }
+}

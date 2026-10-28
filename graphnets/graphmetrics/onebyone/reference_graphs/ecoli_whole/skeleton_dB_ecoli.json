@@ -1,0 +1,72 @@
+{
+ "graph": "onebyone/reference_graphs/ecoli_whole/ecoli_gcc.npz",
+ "betweenness": "exact",
+ "trials": 3,
+ "seed": 0,
+ "full": {
+  "n": 2859,
+  "m": 6890,
+  "diameter": 16,
+  "giant_fraction": 1.0,
+  "radii": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8
+  ],
+  "counts": [
+   1453,
+   497,
+   295,
+   64,
+   51,
+   14,
+   12,
+   6
+  ],
+  "npts": 8,
+  "d_B": 2.7078172089092383,
+  "r2_power": 0.942298369242795,
+  "r2_exp": 0.9743109443100297,
+  "gap": -0.03201257506723476,
+  "verdict": "exponential"
+ },
+ "skeleton": {
+  "n": 2859,
+  "m": 2858,
+  "diameter": 19,
+  "giant_fraction": 1.0,
+  "radii": [
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "counts": [
+   1945,
+   642,
+   239,
+   109,
+   66,
+   27,
+   11,
+   7,
+   3
+  ],
+  "npts": 9,
+  "d_B": 2.9100042083603848,
+  "r2_power": 0.9448750386673775,
+  "r2_exp": 0.9928504359643844,
+  "gap": -0.04797539729700684,
+  "verdict": "exponential"
+ }
+}

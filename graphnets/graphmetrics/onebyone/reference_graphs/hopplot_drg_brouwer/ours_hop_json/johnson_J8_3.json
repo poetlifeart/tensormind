@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/johnson_J8_3.npz",
+ "stat": {
+  "n": 56,
+  "m": 420,
+  "hop_count": [
+   840,
+   2520,
+   3080,
+   3080,
+   3080,
+   3080
+  ],
+  "hop_frac": [
+   0.2727272727272727,
+   0.8181818181818182,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ],
+  "connected_ordered_pairs": 3080
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/odd_O4.npz",
+ "stat": {
+  "n": 35,
+  "m": 70,
+  "hop_count": [
+   140,
+   560,
+   1190,
+   1190,
+   1190,
+   1190
+  ],
+  "hop_frac": [
+   0.11764705882352941,
+   0.47058823529411764,
+   1.0,
+   1.0,
+   1.0,
+   1.0
+  ],
+  "connected_ordered_pairs": 1190
+ }
+}

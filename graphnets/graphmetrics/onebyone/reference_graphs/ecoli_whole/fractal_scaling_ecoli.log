@@ -1,0 +1,32 @@
+  [Loaded from edge list: 6890 edges]
+  Nodes: 2,859   Edges: 6,890   GCC: 2,859 nodes
+[8/8] Fractal dimension (MEMB box-counting)
+  Computing all-pairs shortest paths...
+  APSP done (1.3s, 16 MB)
+    l_B= 2 (r_B=1): N_B=644 (0.0s)
+    l_B= 4 (r_B=2): N_B=138 (0.0s)
+    l_B= 6 (r_B=3): N_B=49 (0.0s)
+    l_B= 8 (r_B=4): N_B=16 (0.0s)
+    l_B=10 (r_B=5): N_B=9 (0.0s)
+    l_B=12 (r_B=6): N_B=4 (0.0s)
+    l_B=14 (r_B=7): N_B=3 (0.0s)
+    l_B=16 (r_B=8): N_B=2 (0.0s)
+    l_B=18 (r_B=9): N_B=1 (0.0s)
+
+========================================================================
+FRACTAL DIMENSION (MEMB)
+========================================================================
+            method: MEMB_Song2007
+             nodes: 2,859
+         diameters: [2, 4, 6, 8, 10, 12, 14, 16, 18]
+        box_counts: [644, 138, 49, 16, 9, 4, 3, 2, 1]
+               d_B: 2.8673
+                R²: 0.9910
+        d_B 95% CI: [2.59, 3.14]
+        fit points: 8
+            exp R²: 0.9483
+        better fit: power-law
+
+  fractal_scaling: PASS   (descriptive; pass if MEMB gives >= 3 points with N_B > 1)
+
+Wrote JSON to onebyone/reference_graphs/ecoli_whole/fractal_scaling_ecoli.json

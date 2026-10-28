@@ -1,0 +1,24 @@
+{
+ "graph": "/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/hopplot_drg_brouwer/dodecahedron.npz",
+ "stat": {
+  "n": 20,
+  "m": 30,
+  "hop_count": [
+   60,
+   180,
+   300,
+   360,
+   380,
+   380
+  ],
+  "hop_frac": [
+   0.15789473684210525,
+   0.47368421052631576,
+   0.7894736842105263,
+   0.9473684210526315,
+   1.0,
+   1.0
+  ],
+  "connected_ordered_pairs": 380
+ }
+}

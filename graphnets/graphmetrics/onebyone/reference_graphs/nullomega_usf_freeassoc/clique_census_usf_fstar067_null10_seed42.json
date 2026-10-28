@@ -1,0 +1,114 @@
+{
+  "graph": "reference_graphs/nullomega_usf_freeassoc/usf_fstar067.npz",
+  "n_nodes": 8440,
+  "n_edges": 42825,
+  "density": 0.0012025245011734618,
+  "omega": 8,
+  "n_maximal_cliques": 26771,
+  "timed_out": false,
+  "elapsed": 0.1594986915588379,
+  "h": {
+    "2": 11397,
+    "3": 9934,
+    "4": 4294,
+    "6": 158,
+    "5": 965,
+    "7": 21,
+    "8": 2
+  },
+  "histogram_analysis": {
+    "k_range": [
+      2,
+      8
+    ],
+    "peak_k": 2,
+    "is_bimodal": false,
+    "bimodality_ratio": null
+  },
+  "participation": {
+    "P_mean": 8.970142180094786,
+    "P_std": 15.29987948652079,
+    "P_max": 481.0,
+    "P_median": 6.0,
+    "n_high_participation": 231,
+    "high_participation_frac": 0.0273696682464455,
+    "participation_degree_corr": 0.9699936713734263,
+    "participation_gini": 0.5916216445975896
+  },
+  "null": {
+    "n_null": 10,
+    "omega_mean": 4.0,
+    "omega_std": 0.0,
+    "omega_all": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4
+    ],
+    "seed": 42
+  },
+  "enrichment": [
+    {
+      "k": 2,
+      "real": 11397,
+      "null_mean": 36337.4,
+      "null_std": 121.33358974331881,
+      "ratio": 0.3136437939973691,
+      "z": -205.5523128653938
+    },
+    {
+      "k": 3,
+      "real": 9934,
+      "null_mean": 2903.2,
+      "null_std": 69.24564968285011,
+      "ratio": 3.421741526591348,
+      "z": 101.53417625802562
+    },
+    {
+      "k": 4,
+      "real": 4294,
+      "null_mean": 27.7,
+      "null_std": 9.306449376641984,
+      "ratio": 155.01805054151626,
+      "z": 458.42402696649015
+    },
+    {
+      "k": 5,
+      "real": 965,
+      "null_mean": 0,
+      "null_std": 0,
+      "ratio": Infinity,
+      "z": NaN
+    },
+    {
+      "k": 6,
+      "real": 158,
+      "null_mean": 0,
+      "null_std": 0,
+      "ratio": Infinity,
+      "z": NaN
+    },
+    {
+      "k": 7,
+      "real": 21,
+      "null_mean": 0,
+      "null_std": 0,
+      "ratio": Infinity,
+      "z": NaN
+    },
+    {
+      "k": 8,
+      "real": 2,
+      "null_mean": 0,
+      "null_std": 0,
+      "ratio": Infinity,
+      "z": NaN
+    }
+  ]
+}

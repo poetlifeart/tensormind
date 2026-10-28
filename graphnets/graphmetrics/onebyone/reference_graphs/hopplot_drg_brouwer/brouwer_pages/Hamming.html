@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<HTML>
+<HEAD>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <TITLE>Hamming</TITLE>
+</HEAD>
+<BODY>
+<a href="index.html">Up</a>
+
+<H1>Hamming graphs</H1>
+<img src="pics/hamming.gif">
+<p>
+Richard W. Hamming (1915-1998) did pioneering work in coding theory.
+The <i>Hamming scheme</i> is named after him. It is the association
+scheme where the elements are vectors of length <i>d</i> over some
+alphabet of size <i>q</i>. The relation (called <i>Hamming distance</i>)
+of two vectors is the number of coordinates where they differ.
+<p>
+The Hamming graph H(<i>d</i>,<i>q</i>) is the graph that describes
+the distance-1 relation in the Hamming scheme. It is the direct product
+of <i>d</i> complete graphs of size <i>q</i>. For <i>d</i> = 2
+one gets the <i>q</i>&times;<i>q</i> <i>grid</i>, also known as the
+<i>lattice graph</i> of order <i>q</i>.
+<p>
+The Hamming graph H(<i>d</i>,<i>q</i>) is distance-regular of
+diameter <i>d</i>. In particular, for <i>d</i> = 2 it is
+strongly regular, and the parameters are
+<i>v</i> = <i>q</i><sup>2</sup>,
+<i>k</i> = 2(<i>q</i> - 1),
+&lambda; = <i>q</i> - 2,
+&mu; = 2.
+<p>
+Example: H(2,3):
+<p>
+<img src="pics/srg9.png">
+<p>
+<H2>Lattice graphs</H2>
+The graphs H(2,<i>q</i>) are also known as the <i>Lattice graphs</i>
+L<sub>2</sub>(<i>q</i>). They are uniquely determined by their
+parameters, except for <i>q</i>=4, in which case one has one more
+graph, the <a href="Shrikhande.html">Shrikhande graph</a>,
+with the same parameters.
+<p>
+The lattice graph L<sub>2</sub>(<i>q</i>) has independence number <i>q</i>
+and chromatic number <i>q</i>.
+<p>
+The complement of the lattice graph L<sub>2</sub>(<i>q</i>)
+also has independence number <i>q</i> and chromatic number <i>q</i>.
+<p>
+The lattice graph L<sub>2</sub>(3) is isomorphic to its complement.
+It is the <a href="Paley.html">Paley graph</a> of order 9.
+<p>
+<H2>Spectrum</H2>
+The Hamming graph H(<i>d</i>,<i>q</i>) has eigenvalues
+(<i>q</i>–1)<i>d</i>–<i>qi</i> with multiplicities
+(<i>d</i> choose <i>i</i>).(<i>q</i>–1)<sup><i>i</i></sup>
+for <i>i</i>=0,...,<i>d</i>.
+<p>
+The graph H(2,<i>q</i>) is uniquely determined by its spectrum
+when <i>q</i> is not 4.<br>
+The graph H(3,<i>q</i>) is uniquely determined by its spectrum
+when <i>q</i> is at least 36 (Bang-van Dam-Koolen), but not
+when <i>q</i>=3 or <i>q</i>=4.
+(There are four graphs with the spectrum of H(3,3),
+namely H(3,3), the graph on the lines of H(3,3), and two more.
+There are at least two graphs with the spectrum of H(3,4),
+namely H(3,4) and a Doob graph.)
+<p>
+</BODY>
+</HTML>

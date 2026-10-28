@@ -1,0 +1,26 @@
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/ca_grqc/ca_grqc_whole.npz
+  nodes 5,242   edges 14,484   sum of degrees 28,968
+  mean degree 5.526135062953071   sd 7.917700957848316   min 0   max 81
+  degree:count  0:1  1:1197  2:1115  3:777  4:495  5:296  6:225  7:159  8:142  9:99  10:92  11:66  12:45  13:57  14:38  15:48  16:25  17:44  18:20  19:18  20:28  21:16  22:12  23:44  24:8  25:8  26:7  27:3  28:5  29:3  30:8  31:9  32:3  33:9  34:37  35:1  36:2  37:5  38:1  40:1  41:3  42:19  43:2  44:1  45:13  46:2  47:4  48:3  49:4  51:2  53:1  54:1  55:1  56:3  57:1  59:1  60:1  62:1  63:1  65:1  ...
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/ca_grqc/ca_grqc_whole.npz
+  nodes 5,242   edges 14,484   connected ordered pairs (u != v) 17,288,028
+  effective diameter (90%, interpolated) = 7.606432947742215
+  diameter (context, not scored)          = 17
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/ca_grqc/ca_grqc_whole.npz
+  nodes 5,242   edges 14,484   connected ordered pairs (u != v) 17,288,028
+    h   hop_count g(h)               hop_frac
+    1           28,968  0.0016756104282107827
+    2          156,448   0.009049499457080935
+    3          706,406    0.04086099351528121
+    4        2,515,418    0.14550057415455367
+    5        6,344,080      0.366963774005919
+    6       11,052,298     0.6393035689206427
+  scored point hop_frac[1] (within 2 hops) = 0.009049499457080935
+
+/home/vahid/testcopy/graphnets/graphmetrics/onebyone/reference_graphs/ca_grqc/ca_grqc_whole.npz
+  nodes 5,242   edges 14,484
+  total triangles sum/3 = 48,260   (sum over nodes 144,780)
+  per node: mean 27.619229301793208   min 0   max 1179   nodes in no triangle 1,387
+

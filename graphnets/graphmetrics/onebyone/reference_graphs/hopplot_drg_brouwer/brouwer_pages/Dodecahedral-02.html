@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Dodecahedral-02</title>
+</head>
+<body>
+<a href="index.html">Up</a>
+
+<H1>(0,2)-graphs</H1>
+A
+<a href="http://www.win.tue.nl/~aeb/graphs/recta/02graphs.html">(0,2)-graph</a>
+is a graph such that every two vertices have 0 or 2 common neighbours.
+Obvious (0,2)-graphs are K<sub>2</sub> and K<sub>4</sub>
+and the icosahedron and the incidence graph of the 2-(7,4,2) biplane.
+This page describes a (0,2)-graph on 20 vertices related to
+the dodecahedron.
+<p>
+<H1>This page's graph</H1>
+There is a <a href="recta/02graphs.html#N6.3">unique (0,2)-graph</a>
+on 20 vertices such that all local graphs are K<sub>3</sub>+3K<sub>1</sub>.
+It has full group Alt(5) acting vertex-transitively,
+and distance distribution 1+6+12+1 around each point.
+Interchanging antipodes is not an automorphism.
+<p>
+<H2>Construction</H2>
+a) Let the vertices be the ordered pairs ij of distinct elements
+from the 5-set {1,2,3,4,5}, where ij~ik whenever i,j,k are distinct,
+and ij~kl when i,j,k,l are distinct, so that {1,2,3,4,5} = {i,j,k,l,m}
+for some m, and the permutation that maps 1,2,3,4,5 to i,j,k,l,m
+is an even permutation.
+<p>
+b) Equivalently, let the vertices be the 20 vertices of the dodecahedron.
+Choose a fixed partition of the dodecahedron into five tetrahedra.
+Now let two vertices be adjacent whenever they either lie in a common
+tetrahedron, or are joined by an edge of the dodecahedron.
+<p>
+<H2>Discussion</H2>
+Geometrically, the dodecahedron is a cubic graph on the sphere,
+and while following a path on the dodecahedron it makes sense to talk about
+turning left or turning right. Being at distance three and joined by a path
+of the form: step, turn left, step, turn right, step is a symmetric relation
+R of valency 3. Being adjacent in the dodecahedron is a symmetric relation S
+of valency 3. The union of R and S defines our graph.
+<p>
+There are two isomorphic ways of picking the tetrahedra (our way, and
+its mirror image), and thus the group Sym(5) of the dodecahedron
+is reduced to the Alt(5) of this graph.
+<p>
+In the representation with ordered pairs, the antipode of ij is ji.
+Now having the same first coordinate defines a 4-clique,  but
+having the same second coordinate defines a 4-coclique, so interchanging
+antipodes is not an automorphism.
+</body>
+<!--
+Henny suggested looking at ordered pairs.
+Aart suggested looking at tetrahedra,
+-->
+</html>
