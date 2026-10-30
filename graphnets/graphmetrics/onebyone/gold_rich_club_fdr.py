@@ -22,11 +22,43 @@ Outputs (in result["fdr_bh"])
                             the same node set exactly when n_above_k is equal;
                             a long run of k over a gap in the degree sequence
                             is not a long run of distinct clubs.
-    regime_verdict          "not_evaluated".  No published rule turning
-                            FDR-significant k into a rich-club regime has been
-                            verified and implemented here, so none is applied.
+    riedel2022_regime       the rich-club regime by the rule of Riedel, van den
+                            Heuvel & Markett 2022 (Hum. Brain Mapp. 43:4239,
+                            doi:10.1002/hbm.25950), or None.
+    regime_verdict          "valid_regime" or "no_valid_regime" by that rule.
     legacy_three_consecutive_k_verdict
                             gold_rich_club.py's verdict, unchanged.
+
+Regime rule (Riedel et al. 2022, Methods, quoted)
+    "We first selected the lowest and highest k-level with p < .05. If all
+    interjacent p-values were also <.05, we defined the range between the two
+    k-values as the rich club regime. If only one single or two
+    non-neighboring p-values within this range were >.05, we still considered
+    the range as rich club regime (thus considering these data points as
+    outliers). In case that two or more neighboring p-values exceeded the .05
+    threshold (i.e., cutting the range between the lowest and highest k-level
+    with p < .05 in two or more), we assessed whether any of the ranges'
+    length exceeded the other ones by a factor of 1.5. If no range was
+    1.5-times larger, we assumed the range with larger k values (i.e., at the
+    upper end of the normalized rich club curve) as the rich club regime. If
+    none of the criteria applied, we did not assume a valid continuous rich
+    club regime for this participant."  Length = upper end - lower end.
+    Their p is FDR-corrected (BH 1995, all k).  The authors' released code
+    (osf.io/wf4tv) only reads the finished regime (P_RC_Range_adj); the code
+    that computes it is not released, so the rule is implemented from the
+    text.  Readings taken where the text is not explicit:
+      - p < .05 is BH q < q_alpha and rho > 1 (their p is the upper tail);
+      - "neighboring" means adjacent in the tested k grid;
+      - range length is upper - lower k, also for the 1.5 comparison, and a
+        range is "1.5-times larger" if its length is > 0 and >= 1.5 times
+        every other range's length;
+      - in the cut case, isolated non-significant k stay inside their range;
+      - three or more non-significant k, none neighboring, match no criterion,
+        so there is no valid regime.
+    Differences from their analysis that are kept: binary phi (theirs is
+    weighted, BCT rich_club_wu), 1,000 null curves by default (theirs 2,500,
+    BCT randmio_und, 10 rewires per edge), and the family starts at k = 0
+    (their k = 1..n; at k = 0 every null equals the graph, so p = 1).
 
 Dependence
     Adjacent thresholds share most of their nodes, so their p-values are
@@ -44,7 +76,8 @@ from __future__ import annotations
 
 import argparse
 import json
-from typing import Dict, List
+import os
+from typing import Dict, List, Optional, Tuple
 
 from gold_rich_club import _runs, load_layered_graph, rich_club
 
@@ -66,6 +99,43 @@ def bh_adjust(p_values: List[float]) -> List[float]:
     return adjusted
 
 
+def riedel_regime(ks: List[int], sig: List[bool]) -> Tuple[Optional[Tuple[int, int]], str]:
+    """Riedel et al. (2022) rich-club regime over the tested grid ks (sorted)
+    with per-k significance sig.  Returns ((k_lower, k_upper), rule) or
+    (None, reason); see the module docstring for the rule and its readings."""
+    pos = [i for i, s in enumerate(sig) if s]
+    if not pos:
+        return None, "no significant k"
+    lo, hi = pos[0], pos[-1]
+    gaps = []  # runs of non-significant positions inside [lo, hi]
+    for i in range(lo, hi + 1):
+        if not sig[i]:
+            if gaps and gaps[-1][1] == i - 1:
+                gaps[-1][1] = i
+            else:
+                gaps.append([i, i])
+    if not gaps:
+        return (ks[lo], ks[hi]), "all k between lowest and highest significant k significant"
+    if all(a == b for a, b in gaps):
+        if len(gaps) <= 2:
+            return (ks[lo], ks[hi]), f"{len(gaps)} isolated non-significant k treated as outliers"
+        return None, f"{len(gaps)} isolated non-significant k: no criterion applies"
+    pieces, start = [], lo
+    for a, b in gaps:
+        if b > a:  # two or more neighboring non-significant k cut the range
+            pieces.append((start, a - 1))
+            start = b + 1
+    pieces.append((start, hi))
+    lengths = [ks[b] - ks[a] for a, b in pieces]
+    for i, li in enumerate(lengths):
+        others = lengths[:i] + lengths[i + 1:]
+        if li > 0 and li >= 1.5 * max(others):
+            a, b = pieces[i]
+            return (ks[a], ks[b]), f"cut into {len(pieces)} ranges; one is >= 1.5x every other"
+    a, b = pieces[-1]
+    return (ks[a], ks[b]), f"cut into {len(pieces)} ranges; none 1.5x longer, uppermost taken"
+
+
 def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str, object]:
     """Annotate each tested k and return a separate BH-FDR report.
 
@@ -81,12 +151,13 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
         "n_null_curves": result.get("n_curves"), "seed": result.get("seed"),
         "n_tests": len(rows),
         "k_tested": [int(row["k"]) for row in rows],
-        "regime_verdict": "not_evaluated",
         "legacy_three_consecutive_k_verdict": result.get("rich_club_verdict"),
     }
     if not rows:
         report.update(fdr_significant_k=[], n_fdr_significant=0,
-                      fdr_significant_ranges=[], n_distinct_node_sets=0)
+                      fdr_significant_ranges=[], n_distinct_node_sets=0,
+                      riedel2022_regime=None, regime_rule="no k tested",
+                      regime_verdict="no_valid_regime")
         result["fdr_bh"] = report
         return result
 
@@ -109,10 +180,24 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
                        "n_above_k_first": n_above[first],
                        "n_above_k_last": n_above[last],
                        "n_distinct_node_sets": len(sets)})
+    ks = [int(row["k"]) for row in rows]
+    span, rule = riedel_regime(ks, [row["significant_fdr_bh"] for row in rows])
+    regime = None
+    if span is not None:
+        inside = [row for row in rows if span[0] <= row["k"] <= span[1]]
+        regime = {"k_lower": span[0], "k_upper": span[1],
+                  "length": span[1] - span[0],
+                  "n_thresholds": len(inside),
+                  "n_nonsignificant_inside": sum(not r["significant_fdr_bh"] for r in inside),
+                  "n_above_k_lower": n_above[span[0]],
+                  "n_above_k_upper": n_above[span[1]],
+                  "n_distinct_node_sets": len({r["n_above_k"] for r in inside})}
     report.update(
         fdr_significant_k=significant, n_fdr_significant=len(significant),
         fdr_significant_ranges=ranges,
         n_distinct_node_sets=len({n_above[k] for k in significant}),
+        riedel2022_regime=regime, regime_rule=rule,
+        regime_verdict="valid_regime" if regime else "no_valid_regime",
     )
     result["fdr_bh"] = report
     return result
@@ -149,8 +234,31 @@ def _self_test() -> None:
     assert [(r["k_first"], r["k_last"], r["n_distinct_node_sets"])
             for r in out["fdr_significant_ranges"]] == [(2, 4, 2), (6, 6, 1)]
     assert out["n_distinct_node_sets"] == 3
-    assert out["regime_verdict"] == "not_evaluated"
+    assert out["riedel2022_regime"]["k_lower"] == 2 and out["riedel2022_regime"]["k_upper"] == 6
+    assert out["riedel2022_regime"]["n_distinct_node_sets"] == 4
+    assert out["regime_verdict"] == "valid_regime"
     assert out["legacy_three_consecutive_k_verdict"] == "pass"
+    # Each branch of the Riedel et al. (2022) rule, k = 1, 2, ...
+    def regime(pattern):
+        return riedel_regime(list(range(1, len(pattern) + 1)), [c == "T" for c in pattern])[0]
+    assert regime("TTTTT") == (1, 5)               # all significant
+    assert regime("FTTF") == (2, 3)                # outside the extremes ignored
+    assert regime("TTFTT") == (1, 5)               # one outlier
+    assert regime("TFTFT") == (1, 5)               # two non-neighboring outliers
+    assert regime("TFTFTFT") is None               # three isolated: no criterion
+    assert regime("TTTTTFFTTT") == (1, 5)          # cut; length 4 >= 1.5 x 2
+    assert regime("TTTTFFTTT") == (1, 4)           # cut; length 3 >= 1.5 x 2 (counts 4, 3 would not be)
+    assert regime("TTTFFTTT") == (6, 8)            # cut; equal lengths -> uppermost
+    assert regime("TTTTFFT") == (1, 4)             # cut; length 3 vs 0
+    assert regime("TFFTFFT") == (7, 7)             # cut; all lengths 0 -> uppermost
+    assert regime("TTTFTFFTT") == (1, 5)           # outlier stays inside its range
+    assert regime("FTF") == (2, 2)                 # one significant k: length 0
+    assert regime("FFF") is None                   # nothing significant
+    empty = add_fdr_results({"per_k": [], "rich_club_verdict": "not_tested"})["fdr_bh"]
+    assert empty["n_tests"] == 0 and empty["regime_verdict"] == "no_valid_regime"
+    none = add_fdr_results({"per_k": [{"k": k, "p": 0.5, "rho": 1.1, "n_above_k": 9 - k}
+                                      for k in range(4)]})["fdr_bh"]
+    assert none["riedel2022_regime"] is None and none["regime_verdict"] == "no_valid_regime"
     print("BH-FDR self-tests passed.")
 
 
@@ -177,6 +285,8 @@ def main() -> None:
         parser.error("Null counts cannot be negative")
     if args.n_null == 0 and args.n_null_rc == 0:
         parser.error("FDR significance needs null graphs; supply --n-null-rc > 0")
+    if args.json and os.path.exists(args.json):
+        parser.error(f"{args.json} exists; this script never overwrites a result file")
 
     layered = load_layered_graph(args.graph)
     result = rich_club(
@@ -204,10 +314,16 @@ def main() -> None:
         print(f"    k {r['k_first']}..{r['k_last']}: {r['n_thresholds']} thresholds,"
               f" nodes > k {r['n_above_k_first']} -> {r['n_above_k_last']},"
               f" {r['n_distinct_node_sets']} distinct node sets")
-    print(f"  Regime verdict: {summary['regime_verdict']}")
+    reg = summary["riedel2022_regime"]
+    print(f"  Riedel et al. (2022) regime: {summary['regime_verdict']} ({summary['regime_rule']})")
+    if reg:
+        print(f"    k {reg['k_lower']}..{reg['k_upper']}, length {reg['length']},"
+              f" {reg['n_nonsignificant_inside']} non-significant k inside,"
+              f" nodes > k {reg['n_above_k_lower']} -> {reg['n_above_k_upper']},"
+              f" {reg['n_distinct_node_sets']} distinct node sets")
     print(f"  Legacy 3-consecutive-k verdict (unchanged): {summary['legacy_three_consecutive_k_verdict']}")
     if args.json:
-        with open(args.json, "w", encoding="utf-8") as handle:
+        with open(args.json, "x", encoding="utf-8") as handle:
             json.dump(result, handle, indent=2)
         print(f"  Wrote {args.json}")
 
