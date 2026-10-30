@@ -25,7 +25,24 @@ Outputs (in result["fdr_bh"])
     riedel2022_regime       the rich-club regime by the rule of Riedel, van den
                             Heuvel & Markett 2022 (Hum. Brain Mapp. 43:4239,
                             doi:10.1002/hbm.25950), or None.
-    regime_verdict          "valid_regime" or "no_valid_regime" by that rule.
+    regime_verdict          "valid_regime" (length > 0), "single_threshold_regime"
+                            (the rule returned one k, length 0: a significant
+                            threshold, not a continuous range; the paper's
+                            text does not settle this case) or
+                            "no_valid_regime".
+    p_resolution etc.       the smallest attainable p, 1/(n_curves + 1); the
+                            BH cutoff at rank 1, q/n_tests; how many k sit at
+                            that smallest p; and how many such k BH needs
+                            before it can reject any (ceil(n_tests * p_min / q)).
+
+Null selection (--null-mode)
+    audit           gold_rich_club.py's generator, unchanged: up to 8 rewirings
+                    per null seed, the first connected one kept (else the one
+                    with the largest component).
+    unconstrained   one rewiring per null seed, kept whether connected or not.
+    Both draw the first rewiring from the same seeded stream, so the two
+    ensembles differ only in nulls whose first rewiring is disconnected;
+    n_null_disconnected of an unconstrained run counts exactly those.
     legacy_three_consecutive_k_verdict
                             gold_rich_club.py's verdict, unchanged.
 
@@ -75,10 +92,13 @@ Run from the repository root:
 from __future__ import annotations
 
 import argparse
+import functools
 import json
+import math
 import os
 from typing import Dict, List, Optional, Tuple
 
+import gold_rich_club
 from gold_rich_club import _runs, load_layered_graph, rich_club
 
 
@@ -148,7 +168,9 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
     report = {
         "method": "Benjamini-Hochberg", "q": alpha,
         "null_model_type": result.get("null_model_type"),
+        "null_mode": result.get("null_mode", "audit"),
         "n_null_curves": result.get("n_curves"), "seed": result.get("seed"),
+        "n_null_disconnected": result.get("n_null_disconnected"),
         "n_tests": len(rows),
         "k_tested": [int(row["k"]) for row in rows],
         "legacy_three_consecutive_k_verdict": result.get("rich_club_verdict"),
@@ -160,6 +182,12 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
                       regime_verdict="no_valid_regime")
         result["fdr_bh"] = report
         return result
+
+    if result.get("n_curves"):
+        p_min = 1.0 / (result["n_curves"] + 1)
+        report.update(p_resolution=p_min, bh_rank1_cutoff=alpha / len(rows),
+                      n_k_at_p_resolution=sum(math.isclose(float(r["p"]), p_min) for r in rows),
+                      n_k_at_p_resolution_needed=math.ceil(len(rows) * p_min / alpha - 1e-12))
 
     adjusted = bh_adjust([float(row["p"]) for row in rows])
     significant = []
@@ -191,13 +219,19 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
                   "n_nonsignificant_inside": sum(not r["significant_fdr_bh"] for r in inside),
                   "n_above_k_lower": n_above[span[0]],
                   "n_above_k_upper": n_above[span[1]],
-                  "n_distinct_node_sets": len({r["n_above_k"] for r in inside})}
+                  "n_distinct_node_sets": len({r["n_above_k"] for r in inside}),
+                  "single_threshold": span[0] == span[1]}
+    if regime is None:
+        verdict = "no_valid_regime"
+    elif regime["single_threshold"]:
+        verdict = "single_threshold_regime"
+    else:
+        verdict = "valid_regime"
     report.update(
         fdr_significant_k=significant, n_fdr_significant=len(significant),
         fdr_significant_ranges=ranges,
         n_distinct_node_sets=len({n_above[k] for k in significant}),
-        riedel2022_regime=regime, regime_rule=rule,
-        regime_verdict="valid_regime" if regime else "no_valid_regime",
+        riedel2022_regime=regime, regime_rule=rule, regime_verdict=verdict,
     )
     result["fdr_bh"] = report
     return result
@@ -259,6 +293,22 @@ def _self_test() -> None:
     none = add_fdr_results({"per_k": [{"k": k, "p": 0.5, "rho": 1.1, "n_above_k": 9 - k}
                                       for k in range(4)]})["fdr_bh"]
     assert none["riedel2022_regime"] is None and none["regime_verdict"] == "no_valid_regime"
+    # One significant k: the rule returns it, flagged as a single threshold.
+    one = add_fdr_results({"per_k": [{"k": k, "p": 0.001 if k == 2 else 0.5, "rho": 1.1,
+                                      "n_above_k": 9 - k} for k in range(4)]})["fdr_bh"]
+    assert one["riedel2022_regime"]["single_threshold"] is True
+    assert one["regime_verdict"] == "single_threshold_regime"
+    # p resolution: 1,000 curves, 500 tests -> p_min 1/1001, rank-1 cutoff 1e-4,
+    # BH needs 10 k at p_min (10 x 0.05 / 500 = 0.001 >= 1/1001; 9 would not do).
+    res = add_fdr_results({"n_curves": 1000, "per_k": [
+        {"k": k, "p": 1 / 1001 if k < 10 else 0.5, "rho": 1.1, "n_above_k": 600 - k}
+        for k in range(500)]})["fdr_bh"]
+    assert res["n_k_at_p_resolution"] == 10 and res["n_k_at_p_resolution_needed"] == 10
+    assert abs(res["bh_rank1_cutoff"] - 1e-4) < 1e-15 and res["n_fdr_significant"] == 10
+    res9 = add_fdr_results({"n_curves": 1000, "per_k": [
+        {"k": k, "p": 1 / 1001 if k < 9 else 0.5, "rho": 1.1, "n_above_k": 600 - k}
+        for k in range(500)]})["fdr_bh"]
+    assert res9["n_fdr_significant"] == 0
     print("BH-FDR self-tests passed.")
 
 
@@ -272,6 +322,9 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--alpha", type=float, default=0.05)
+    parser.add_argument("--null-mode", choices=["audit", "unconstrained"], default="audit",
+                        help="audit: gold_rich_club.py's connected-preferring nulls (default); "
+                             "unconstrained: one rewiring per seed, kept as drawn")
     parser.add_argument("--json", default="", help="Optional output JSON path")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
@@ -288,11 +341,16 @@ def main() -> None:
     if args.json and os.path.exists(args.json):
         parser.error(f"{args.json} exists; this script never overwrites a result file")
 
+    if args.null_mode == "unconstrained":
+        # The workers look _generate_null up in gold_rich_club at call time and
+        # inherit this module state through fork; retries=1 keeps the first draw.
+        gold_rich_club._generate_null = functools.partial(gold_rich_club._generate_null, retries=1)
     layered = load_layered_graph(args.graph)
     result = rich_club(
         layered, n_null=args.n_null, n_null_rc=args.n_null_rc,
         seed=args.seed, workers=args.workers,
     )
+    result["null_mode"] = args.null_mode
     add_fdr_results(result, alpha=args.alpha)
     summary = result["fdr_bh"]
     print("\nRich-club significance (BH-FDR)")
@@ -303,10 +361,16 @@ def main() -> None:
               f" {row['phi_null_mean']:>8.4f} {row['rho']:>7.4f} {row['p']:>8.4f}"
               f" {row['p_fdr_bh']:>8.4f}  {'yes' if row['significant_fdr_bh'] else '-'}")
     ks = summary["k_tested"]
-    print(f"\n  Null model: {summary['null_model_type']}, {summary['n_null_curves']} curves, seed {summary['seed']}")
+    print(f"\n  Null model: {summary['null_model_type']} ({summary['null_mode']} selection),"
+          f" {summary['n_null_curves']} curves, seed {summary['seed']},"
+          f" {summary['n_null_disconnected']} disconnected")
     print(f"  Tested family: {summary['n_tests']} thresholds"
           + (f", k {ks[0]}..{ks[-1]}" if ks else ""))
     print(f"  FDR q: {summary['q']}")
+    if "p_resolution" in summary:
+        print(f"  p resolution {summary['p_resolution']:.6f}; BH rank-1 cutoff {summary['bh_rank1_cutoff']:.6f};"
+              f" {summary['n_k_at_p_resolution']} k at the resolution, BH needs"
+              f" {summary['n_k_at_p_resolution_needed']} there to reject any")
     print(f"  FDR-significant thresholds: {summary['n_fdr_significant']}"
           f" ({summary['n_distinct_node_sets']} distinct node sets)")
     print("  Consecutive ranges:")
@@ -320,7 +384,8 @@ def main() -> None:
         print(f"    k {reg['k_lower']}..{reg['k_upper']}, length {reg['length']},"
               f" {reg['n_nonsignificant_inside']} non-significant k inside,"
               f" nodes > k {reg['n_above_k_lower']} -> {reg['n_above_k_upper']},"
-              f" {reg['n_distinct_node_sets']} distinct node sets")
+              f" {reg['n_distinct_node_sets']} distinct node sets"
+              + (" (single threshold)" if reg["single_threshold"] else ""))
     print(f"  Legacy 3-consecutive-k verdict (unchanged): {summary['legacy_three_consecutive_k_verdict']}")
     if args.json:
         with open(args.json, "x", encoding="utf-8") as handle:
