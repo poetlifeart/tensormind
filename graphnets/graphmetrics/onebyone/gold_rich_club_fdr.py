@@ -185,9 +185,13 @@ def add_fdr_results(result: Dict[str, object], alpha: float = 0.05) -> Dict[str,
 
     if result.get("n_curves"):
         p_min = 1.0 / (result["n_curves"] + 1)
-        report.update(p_resolution=p_min, bh_rank1_cutoff=alpha / len(rows),
+        m = len(rows)
+        # Smallest c with p_min * m / c < alpha: the strict test below, in
+        # the same arithmetic as bh_adjust (c k at p_min, all others above).
+        needed = next((c for c in range(1, m + 1) if p_min * m / c < alpha), None)
+        report.update(p_resolution=p_min, bh_rank1_cutoff=alpha / m,
                       n_k_at_p_resolution=sum(math.isclose(float(r["p"]), p_min) for r in rows),
-                      n_k_at_p_resolution_needed=math.ceil(len(rows) * p_min / alpha - 1e-12))
+                      n_k_at_p_resolution_needed=needed)
 
     adjusted = bh_adjust([float(row["p"]) for row in rows])
     significant = []
@@ -309,6 +313,18 @@ def _self_test() -> None:
         {"k": k, "p": 1 / 1001 if k < 9 else 0.5, "rho": 1.1, "n_above_k": 600 - k}
         for k in range(500)]})["fdr_bh"]
     assert res9["n_fdr_significant"] == 0
+    # The needed count against the actual decision, including exact boundaries
+    # (m * p_min / q = 1 and 2, where adjusted p equals q and q < q fails).
+    for n_curves, m in ((999, 50), (999, 100), (1999, 100), (4999, 500), (1000, 500), (2500, 300)):
+        p_min = 1 / (n_curves + 1)
+        def fam(c):
+            return add_fdr_results({"n_curves": n_curves, "per_k": [
+                {"k": k, "p": p_min if k < c else 0.5, "rho": 1.1, "n_above_k": m + 9 - k}
+                for k in range(m)]})["fdr_bh"]
+        c = fam(0)["n_k_at_p_resolution_needed"]
+        assert fam(c)["n_fdr_significant"] == c, (n_curves, m, c)
+        assert fam(c - 1)["n_fdr_significant"] == 0, (n_curves, m, c)
+    assert fam(0)["n_k_at_p_resolution_needed"] == 3  # 2500 curves, 300 tests: 300/2501/0.05 = 2.4
     print("BH-FDR self-tests passed.")
 
 
