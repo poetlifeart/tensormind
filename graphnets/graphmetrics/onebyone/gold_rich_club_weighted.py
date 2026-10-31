@@ -126,7 +126,7 @@ def phi_w(E, w, n):
         if (deg > k).sum() < 2:
             break
         i = np.searchsorted(md, k, side='right'); ne = len(md) - i
-        res[k] = 0.0 if ne == 0 else float(suff[i] / top[ne - 1])
+        res[k] = 0.0 if ne == 0 else 1.0 if ne == len(w) else float(suff[i] / top[ne - 1])
     return res
 
 
