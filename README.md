@@ -301,3 +301,133 @@ network exponential where the literature reports it fractal, is not used in
 the papers. Problems found in the source scripts are listed, unchanged, in
 `METRIC_CHECKS.txt` ("PROBLEMS FOUND IN THE SOURCE SCRIPTS").
 
+## Rich club with FDR, weighted rich club, betweenness hubs (`graphnets/graphmetrics/onebyone/`)
+
+Four standalone scripts. They change no existing file: `connectome_audit_gold.py`,
+`gold_rich_club.py` and `gold_betweenness_hubs.py` are untouched, and no scored
+verdict changes. The three analysis scripts each write their own JSON, refuse to
+overwrite one, and have a `--self-test`; `wrc_compare.py` only prints tables.
+
+| script | what it does |
+|---|---|
+| `gold_rich_club_fdr.py` | binary rich club: every k tested, Benjamini-Hochberg FDR over all k, rich-club regime by the rule of Riedel et al. (2022) |
+| `gold_rich_club_weighted.py` | weighted rich club (Opsahl et al. 2008; BCT `rich_club_wu`) of the 1,015-node quotient or Budapest, with the same FDR and regime; binary alongside, on the same nulls |
+| `wrc_compare.py` | summary tables from a quotient run and a Budapest run of `gold_rich_club_weighted.py` |
+| `gold_betweenness_hubs_sd.py` | betweenness hubs by the mean + 1 SD cutoff, with the audit's 2 × mean count alongside |
+
+All commands below run from `graphnets/graphmetrics/onebyone/`.
+
+### Rich club with FDR — `gold_rich_club_fdr.py`
+
+- **Curve and nulls.** These are `gold_rich_club.py`'s, unchanged:
+  - binary φ(k) = 2E>k / (N>k (N>k − 1)), on the whole graph;
+  - degree-preserving nulls, 1,000 curves by default: the 100 main nulls (seeds
+    `seed+1000+i`), then 900 more (seeds `seed+5000+j`).
+- **Tested k.** Every k that is in the real curve and in every null curve, with
+  null mean > 0.
+- **Per-k test.** ρ = φ / mean φnull and p = (#{φnull ≥ φ} + 1) / (M + 1), where M
+  is the number of null curves.
+- **Correction.** BH over all tested k. A k is significant if its adjusted p is below
+  `--alpha` and ρ > 1.
+- **Regime.** The rule of Riedel et al. (2022), quoted in the docstring along with
+  the readings taken where their text is not explicit.
+- **Legacy verdict.** `gold_rich_club.py`'s three-consecutive-k verdict is kept
+  unchanged, as `legacy_three_consecutive_k_verdict`.
+
+```bash
+python3 gold_rich_club_fdr.py --self-test
+python3 gold_rich_club_fdr.py --graph GRAPH --json richclub_fdr.json
+```
+
+`--graph` takes `.npz` or `.gml`. The options and their defaults:
+
+| option | default | meaning |
+|---|---|---|
+| `--n-null` | 100 | main nulls |
+| `--n-null-rc` | 1000 | rich-club curves in all |
+| `--seed` | 42 | base seed |
+| `--workers` | 0 | 0 means min(6, CPUs − 2) |
+| `--alpha` | 0.05 | FDR level |
+| `--null-mode` | `audit` | `audit` prefers connected nulls, as the audit does; `unconstrained` keeps the first rewiring |
+
+The JSON's `fdr_bh` block holds:
+- the significant k and their consecutive ranges;
+- the number of distinct node sets;
+- the regime and its verdict;
+- the p resolution, 1/(M + 1).
+
+### Weighted rich club — `gold_rich_club_weighted.py`, `wrc_compare.py`
+
+The script takes the graph by name, `quotient` or `budapest`. Export the quotient
+files first.
+
+- **Weights.**
+  - The quotient has three:
+    - `raw`: parent edges between the two supernodes (`cnew_coarse_w.npy`).
+    - `axons`: the axon law of `bundles.py`, f(W) = round(W^0.05 (1 + (W−1)/11)^0.95),
+      minimum 1. It is applied to each colour-pair bundle and summed per quotient edge.
+    - `size_normalized`: raw / (|A||B|).
+  - Budapest has one, `fibre_count_mean` (`bud_w.npy` row 0).
+  - Binary φ is always added.
+- **Coefficient.** φw(k) = W>k / (sum of the E>k largest weights in the whole
+  graph). When every edge is in the club, φw is 1 exactly.
+- **Nulls.** Maslov-Sneppen double-edge swaps, 10 m successful swaps; each weight
+  stays on its edge, as in BCT `randmio_und`. Null s uses seed `seed+1000+s`. In
+  `audit` mode the first connected of up to 8 rewirings is kept. These are not the
+  nulls of `gold_rich_club_fdr.py`.
+- **Statistics.** `gold_rich_club_fdr.add_fdr_results`, unchanged.
+
+```bash
+(cd ../../construction/bilateral && python3 export_graphs.py)    # writes bilateral/graphs/
+python3 gold_rich_club_weighted.py --self-test
+python3 gold_rich_club_weighted.py --graph quotient --weights raw,axons --json wrc_quotient.json
+python3 gold_rich_club_weighted.py --graph budapest --json wrc_budapest.json
+python3 wrc_compare.py --quotient wrc_quotient.json --budapest wrc_budapest.json
+```
+
+The options and their defaults:
+
+| option | default | meaning |
+|---|---|---|
+| `--n-null` | 1000 | null graphs |
+| `--seed` | 42 | base seed |
+| `--workers` | CPUs − 1 | null workers |
+| `--alpha` | 0.05 | FDR level |
+| `--null-mode` | `audit` | `audit` or `unconstrained` |
+| `--weights` | all | comma list of the weightings to run |
+| `--root` | two levels up | the `graphnets/` directory |
+
+The results do not depend on `--workers`. The quotient with `raw,axons` and 1,000
+nulls took 554 s on 20 workers (the CPU under Runtimes).
+
+`wrc_compare.py` needs both JSONs. It recomputes the real curves from the graphs and
+checks them against the JSONs, then prints:
+- per weighting: the significant k, the regime and the largest ρ;
+- ρ at matched club sizes of 500, 250, 150, 100, 50 and 20 nodes;
+- the two-node clubs;
+- where the heavy edges sit relative to the hubs.
+
+### Betweenness hubs — `gold_betweenness_hubs_sd.py`
+
+This count is descriptive, not one of the nine scored criteria.
+- **Betweenness.** As in the audit: Brandes' algorithm, normalized by
+  (n − 1)(n − 2)/2, on the whole graph.
+- **Hub.** A node with betweenness > mean + SD (population SD, ddof = 0). This is the
+  cutoff of Lord et al. (2016) and Oldham & Fornito (2019).
+- **Legacy count.** The audit's count, betweenness > 2 × mean, is reported alongside
+  as `n_hubs_legacy`. The audit itself still uses 2 × mean.
+
+```bash
+python3 gold_betweenness_hubs_sd.py --self-test
+python3 gold_betweenness_hubs_sd.py --graph GRAPH --json bh_sampled.json                  # 200 sampled sources, seed 42, as in the audit
+python3 gold_betweenness_hubs_sd.py --graph GRAPH --k 0 --workers 8 --json bh_exact.json  # exact: every node a source
+```
+
+The JSON holds:
+- the mean, SD, maximum and both cutoffs;
+- the hub lists under both rules;
+- the top nodes;
+- the betweenness of every node.
+
+Sampling moves the counts, so report the exact values.
+
